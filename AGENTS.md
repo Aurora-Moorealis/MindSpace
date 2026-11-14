@@ -22,17 +22,46 @@ o cualquier cosa que se termine en una sola sesión y no toque otros módulos.
 
 ### Convención de carpetas y ramas
 
+La convención de ramas del repositorio es **`main` → `features` → `<modulo>`**:
+
+```
+main                  # estable; solo recibe integraciones validadas
+└── features          # rama de integración del trabajo en curso
+    ├── player        # rama de módulo
+    ├── inventory     # rama de módulo
+    └── ...
+```
+
+- Las ramas de módulo **salen siempre de `features`**, nunca directamente de
+  `main`.
+- El trabajo de cada módulo se integra primero en `features`. Cuando el conjunto
+  está validado, `features` se fusiona en `main`.
+- No se commitea directamente en `main` ni en `features`: solo se integran ramas
+  mediante merge o pull request.
 - Los worktrees van **fuera del repositorio**, como hermanos de la raíz, para que
   Godot no los importe como parte del proyecto:
   `../MindSpace-worktrees/<modulo>`.
-- Una rama por worktree, creada desde `main` actualizado. Nombres:
-  `feat/<modulo>`, `fix/<modulo>`, `refactor/<modulo>`.
+- Una rama de módulo por worktree, con el mismo nombre que el módulo
+  (`player`, `inventory`, `combat`…).
 - Un worktree = un módulo. No metas dos módulos independientes en el mismo.
 
 ```bash
 # Desde la raíz del repositorio
+git fetch
+git switch features
+git pull
+
 mkdir -p ../MindSpace-worktrees
-git worktree add ../MindSpace-worktrees/player -b feat/player
+git worktree add ../MindSpace-worktrees/player -b player
+```
+
+Si `features` todavía no existe, créala desde `main` actualizado antes de sacar
+ninguna rama de módulo:
+
+```bash
+git switch main && git pull
+git switch -c features
+git push -u origin features
 ```
 
 El worktree aparece como una carpeta normal: se abre con Godot desde ahí y se
@@ -40,20 +69,32 @@ trabaja como en el repo principal.
 
 ### Reglas dentro del worktree
 
-1. Antes de empezar, asegúrate de que la rama sale de `main` al día
-   (`git fetch && git switch main && git pull`).
+1. Antes de empezar, asegúrate de que la rama de módulo sale de `features` al
+   día (`git fetch && git switch features && git pull`).
 2. Abre el proyecto **desde la ruta del worktree**. Cada worktree genera su
    propio `.godot/`; no compartas ni enlaces esa carpeta entre worktrees.
-3. Sincroniza a menudo con `main` (`git rebase main`) para evitar conflictos
-   grandes, sobre todo si el cambio toca escenas, `.uid` o recursos compartidos.
+3. Sincroniza a menudo con `features` (`git rebase features`) para evitar
+   conflictos grandes, sobre todo si el cambio toca escenas, `.uid` o recursos
+   compartidos.
 4. Valida el módulo **en su worktree** antes de integrarlo: que el proyecto
    arranque sin `ERROR`/`SCRIPT ERROR` y que las escenas y scripts del módulo
    carguen.
-5. Al terminar, haz commit en la rama y súbela (`git push -u origin <rama>`).
-   La integración en `main` se hace con merge o pull request, no dejando el
-   worktree abierto indefinidamente.
+5. Al terminar, haz commit en la rama de módulo y súbela
+   (`git push -u origin <modulo>`). La rama de módulo se integra en `features`;
+   `features` se integra en `main` cuando el trabajo está validado. No dejes el
+   worktree abierto indefinidamente ni fusiones un módulo directamente en `main`.
 6. No compartas un worktree entre dos agentes ni trabajes dos ramas en la misma
    carpeta.
+
+### Flujo de integración
+
+1. `features` se actualiza desde `main`.
+2. Cada módulo sale de `features` y se trabaja en su worktree.
+3. Al terminar, la rama del módulo se fusiona en `features` (merge o pull
+   request) tras validar que el proyecto arranca.
+4. Cuando el conjunto de módulos de `features` está estable, se fusiona en
+   `main`.
+5. Se eliminan las ramas de módulo y sus worktrees ya integrados.
 
 ### Con OpenCode
 
@@ -85,6 +126,9 @@ git worktree prune                # limpiar referencias huérfanas
 
 ### Qué no hacer
 
+- Sacar ramas de módulo de `main` o fusionarlas directamente en `main`: el paso
+  intermedio es siempre `features`.
+- Commitear directamente en `main` o en `features`.
 - Copiar o mover la carpeta de un worktree **dentro** del repositorio principal.
 - Versionar `.godot/`, builds o la carpeta de worktrees.
 - Duplicar `.uid` al copiar escenas entre worktrees: cada recurso necesita su
