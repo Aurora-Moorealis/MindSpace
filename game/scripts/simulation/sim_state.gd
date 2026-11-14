@@ -138,4 +138,5 @@ func _initial_resource(
 ## Initial health row of one machine, keyed as machine_<id>_initial_health.
 func _machine_initial_health(economy: EconomyData, id: StringName) -> float:
 	var row_id: StringName = StringName("machine_" + String(id) + "_initial_health")
-	return economy.get_value(row_id, _FALLBACK_MACHINE_HEALTH)
+	var initial_health: float = economy.get_value(row_id, _FALLBACK_MACHINE_HEALTH)
+	return clampf(initial_health, 0.0, MachineState.MAX_HEALTH)

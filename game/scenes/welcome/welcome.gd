@@ -1,15 +1,15 @@
 extends Control
-## Game entry menu.
+## Game's entry menu.
 ##
-## Title screen with the main actions. It is point 20 of the
-## formal design (`docs/designs/junior-astronauta-outpost-lunar.md`), which still
-## plans to add the mission selector here: 1 playable mission and 2 greyed
-## "coming soon" rows (see `docs/future/selector-mision.md`).
+## Title screen with the main actions. It is part of item 20 of the formal
+## design (`docs/designs/junior-astronauta-outpost-lunar.md`), which still plans
+## to add the mission selector here: 1 playable mission and 2 grey "coming soon"
+## rows (see `docs/future/selector-mision.md`).
 
-## Scene the start action leads to once it exists.
+## Scene the "Start game" button goes to: the worlds screen.
 const START_SCENE: String = "res://scenes/worlds/worlds.tscn"
 
-## Scene the settings action leads to once it exists.
+## Scene the "Settings" button goes to once it exists.
 const SETTINGS_SCENE: String = "res://scenes/settings/settings.tscn"
 
 ## Seconds the toast stays visible before fading out.
