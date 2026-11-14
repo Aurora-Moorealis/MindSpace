@@ -44,7 +44,7 @@ const BODIES: Array[String] = [
 @onready var _accept_button: Button = %AcceptButton
 @onready var _back_button: Button = %BackButton
 
-var _world_name: String = "astronauta"
+var _world_name: String = "astronaut"
 var _index: int = 0
 var _skipped: bool = false
 var _animation_tween: Tween = null

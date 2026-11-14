@@ -73,10 +73,14 @@ static func validate_name(display_name: String, existing: Array[World]) -> Strin
 
 
 ## Creates the world, saves it and leaves it selected.
-## Returns the created world, or `null` when it could not be saved.
+## Returns the created world, or `null` when the name is invalid or it could not
+## be saved. The name is validated here too, so every caller gets the same rules
+## as the screen.
 static func create_world(display_name: String) -> World:
 	var clean: String = display_name.strip_edges()
 	var worlds: Array[World] = list_worlds()
+	if not validate_name(clean, worlds).is_empty():
+		return null
 
 	var world: World = World.new()
 	world.id = "%s-%d" % [_slug(clean), int(Time.get_unix_time_from_system())]
