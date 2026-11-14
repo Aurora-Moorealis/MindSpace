@@ -36,8 +36,8 @@ main                  # estable; solo recibe integraciones validadas
   `main`.
 - El trabajo de cada módulo se integra primero en `features`. Cuando el conjunto
   está validado, `features` se fusiona en `main`.
-- No se commitea directamente en `main` ni en `features`: solo se integran ramas
-  mediante merge o pull request.
+- **`main` y `features` no se tocan directamente.** Nadie commitea ni hace push
+  sobre ellas: todo cambio entra exclusivamente mediante **Pull Request**.
 - Los worktrees van **fuera del repositorio**, como hermanos de la raíz, para que
   Godot no los importe como parte del proyecto:
   `../MindSpace-worktrees/<modulo>`.
@@ -85,15 +85,38 @@ trabaja como en el repo principal.
    worktree abierto indefinidamente ni fusiones un módulo directamente en `main`.
 6. No compartas un worktree entre dos agentes ni trabajes dos ramas en la misma
    carpeta.
+7. No toques escenas ni archivos de otro módulo. Si una prueba necesita una
+   escena compartida, trabaja sobre una copia (ver más abajo).
+
+### Escenas: no tocar las de otros módulos
+
+Cada módulo es dueño de sus propias escenas. Las escenas compartidas (menús,
+pantallas de flujo, `scenes/` común, o cualquier `.tscn` que use más de un
+módulo) no se editan directamente: un cambio en una escena compartida afecta a
+todo el mundo y genera conflictos difíciles de resolver.
+
+- **No modifiques escenas de otro módulo.** Si una IA trabaja en `player`, no
+  puede editar escenas de `inventory`, `combat` u otro módulo.
+- **No edites directamente una escena compartida.** Si necesitas probar algo que
+  implica cambiarla, haz una **copia aparte** y trabaja sobre la copia.
+- Las copias de prueba van en `tests/` (ignorada por Git) o en la carpeta del
+  módulo con un sufijo claro (`mi_escena_test.tscn`). No las commitees ni las
+  referencies desde producción.
+- Al copiar una escena, elimina su `uid` o genera uno nuevo: dos recursos con el
+  mismo `uid` rompen el proyecto.
+- Si el cambio en la escena compartida es realmente necesario, **no lo hagas por
+  tu cuenta**: párate y pídelo al usuario. Ese cambio va en su propia rama y su
+  propio Pull Request, separado del trabajo del módulo.
 
 ### Flujo de integración
 
 1. `features` se actualiza desde `main`.
-2. Cada módulo sale de `features` y se trabaja en su worktree.
-3. Al terminar, la rama del módulo se fusiona en `features` (merge o pull
-   request) tras validar que el proyecto arranca.
-4. Cuando el conjunto de módulos de `features` está estable, se fusiona en
-   `main`.
+2. Cada módulo sale de `features` y se trabaja en su worktree, tocando solo sus
+   propias escenas y archivos.
+3. Al terminar, la rama del módulo se integra en `features` **mediante Pull
+   Request**, tras validar que el proyecto arranca.
+4. Cuando el conjunto de módulos de `features` está estable, se integra en
+   `main` **mediante Pull Request**.
 5. Se eliminan las ramas de módulo y sus worktrees ya integrados.
 
 ### Con OpenCode
@@ -128,7 +151,10 @@ git worktree prune                # limpiar referencias huérfanas
 
 - Sacar ramas de módulo de `main` o fusionarlas directamente en `main`: el paso
   intermedio es siempre `features`.
-- Commitear directamente en `main` o en `features`.
+- Commitear, hacer push o fusionar directamente en `main` o en `features`: solo
+  se entra mediante Pull Request.
+- Modificar escenas de otro módulo o editar directamente una escena compartida.
+  Para probar, usa una copia en `tests/` o con sufijo `_test`.
 - Copiar o mover la carpeta de un worktree **dentro** del repositorio principal.
 - Versionar `.godot/`, builds o la carpeta de worktrees.
 - Duplicar `.uid` al copiar escenas entre worktrees: cada recurso necesita su
