@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://dj2ogqhjeb8qf"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_4f3hr"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_6ha7x"]
+
+[sub_resource type="Resource" id="Resource_sb8bm"]
+script = ExtResource("1_4f3hr")
+
+[resource]
+script = ExtResource("2_6ha7x")
+id = &"capacity_energy"
+value = 10.0
+max_value = 100.0
+unit = "u"
+provenance = SubResource("Resource_sb8bm")

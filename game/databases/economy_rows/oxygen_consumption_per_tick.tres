@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://q7epkfd2j16s"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_bhidj"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_gopy6"]
+
+[sub_resource type="Resource" id="Resource_svcmf"]
+script = ExtResource("1_bhidj")
+
+[resource]
+script = ExtResource("2_gopy6")
+id = &"oxygen_consumption_per_tick"
+value = 0.1
+max_value = 10.0
+unit = "u"
+provenance = SubResource("Resource_svcmf")

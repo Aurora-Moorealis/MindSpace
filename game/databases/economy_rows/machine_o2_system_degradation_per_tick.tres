@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://c8clexgcrnkba"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_4yv0s"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_y7ya5"]
+
+[sub_resource type="Resource" id="Resource_nwurl"]
+script = ExtResource("1_4yv0s")
+
+[resource]
+script = ExtResource("2_y7ya5")
+id = &"machine_o2_system_degradation_per_tick"
+value = 0.02
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_nwurl")

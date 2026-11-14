@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://ckua0b1usib7c"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_2jevs"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_ynfh4"]
+
+[sub_resource type="Resource" id="Resource_e8qou"]
+script = ExtResource("1_2jevs")
+
+[resource]
+script = ExtResource("2_ynfh4")
+id = &"capacity_oxygen"
+value = 10.0
+max_value = 100.0
+unit = "u"
+provenance = SubResource("Resource_e8qou")

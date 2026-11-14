@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://duvhkwgv0gosd"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_2p468"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_3di1i"]
+
+[sub_resource type="Resource" id="Resource_03b1b"]
+script = ExtResource("1_2p468")
+
+[resource]
+script = ExtResource("2_3di1i")
+id = &"day_length_ticks"
+value = 12.0
+min_value = 1.0
+max_value = 1000.0
+unit = "ticks"
+provenance = SubResource("Resource_03b1b")

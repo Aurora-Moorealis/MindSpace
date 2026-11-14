@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://d3e6nsdeflf6n"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_qiim6"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_4ws46"]
+
+[sub_resource type="Resource" id="Resource_lditg"]
+script = ExtResource("1_qiim6")
+
+[resource]
+script = ExtResource("2_4ws46")
+id = &"water_recycler_output_per_tick"
+value = 0.15
+max_value = 10.0
+unit = "u"
+provenance = SubResource("Resource_lditg")
