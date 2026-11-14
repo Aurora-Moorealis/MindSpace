@@ -32,6 +32,7 @@ func _init() -> void:
 	_check_overlap(events)
 	_check_intensity(events)
 	_check_provenance(events)
+	_check_rejects_invalid_rows()
 
 	print(
 		"events_check: %d checks, %s"
@@ -363,6 +364,27 @@ func _check_provenance(events: EventData) -> void:
 				not row.provenance.date_archived.is_empty(),
 				"'%s' real_data requires date_archived" % String(row.id)
 			)
+
+
+func _check_rejects_invalid_rows() -> void:
+	var invalid: EventRow = EventRow.new()
+	invalid.id = &"invalid_row"
+	invalid.archetype = EventRow.Archetype.MACHINE_BREAKDOWN
+	invalid.target_type = EventRow.TargetType.RESOURCE
+	invalid.target_id = &"food"
+	invalid.onset_tick = 0
+	invalid.duration_ticks = 1
+	invalid.intensity_start = 1.0
+	invalid.intensity_peak = 1.0
+	invalid.intensity_end = 1.0
+
+	var invalid_data: EventData = EventData.new()
+	invalid_data.rows = [invalid]
+	var problems: Array[String] = invalid_data.validate_rows()
+	_expect(
+		not problems.is_empty(),
+		"validator must reject a row with a wrong target, a positive breakdown delta and no provenance"
+	)
 
 
 func _require_row(events: EventData, id: StringName) -> EventRow:
