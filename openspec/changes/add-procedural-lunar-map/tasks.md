@@ -55,5 +55,5 @@
 ## 10. Cierre
 
 - [x] 10.1 Actualizar este `tasks.md` marcando solo las tareas verificadas y ejecutar `openspec validate add-procedural-lunar-map --strict` desde el worktree; debe decir «is valid».
-- [ ] 10.2 Abrir Pull Request de `map-gen` hacia `features` con el resumen del harness, el resultado del checker y el tiempo de generación de 256×256. No fusionar directamente en `main` ni en `features`.
+- [x] 10.2 Abrir Pull Request de `map-gen` hacia `features` con el resumen del harness, el resultado del checker y el tiempo de generación de 256×256. No fusionar directamente en `main` ni en `features`.
 - [ ] 10.3 Tras la revisión y el merge, eliminar el worktree `../MindSpace-worktrees/map-gen` y la rama `map-gen` según la convención del repositorio. No archivar el cambio OpenSpec hasta que esté integrado y revisado.
