@@ -96,7 +96,9 @@ static func _apply_degradation(
 		var previous_health: float = machine.health
 		var row_id: StringName = StringName("machine_" + String(id) + "_degradation_per_tick")
 		var degradation: float = economy.get_value(row_id, 0.0)
-		machine.health = maxf(0.0, machine.health - degradation)
+		machine.health = clampf(
+			machine.health - degradation, 0.0, MachineState.MAX_HEALTH
+		)
 		if previous_health > 0.0 and machine.health <= 0.0:
 			machine.powered = false
 			var payload: Dictionary[Variant, Variant] = {}
