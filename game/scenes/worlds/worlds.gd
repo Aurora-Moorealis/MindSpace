@@ -38,9 +38,13 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	if _form.visible and not _worlds.is_empty():
+		_cancel_form()
+	else:
 		_go_back()
-		get_viewport().set_input_as_handled()
+	get_viewport().set_input_as_handled()
 
 
 func _refresh() -> void:
@@ -125,6 +129,16 @@ func _on_create_button_pressed() -> void:
 	_error.text = ""
 	_name_edit.text = ""
 	_name_edit.grab_focus()
+
+
+## Leaves the creation form without saving and goes back to the list.
+func _cancel_form() -> void:
+	_form.visible = false
+	_list_scroll.visible = true
+	_create_button.visible = true
+	_error.text = ""
+	_name_edit.text = ""
+	_create_button.grab_focus()
 
 
 func _on_confirm_button_pressed() -> void:
