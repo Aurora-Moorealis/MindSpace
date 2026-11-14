@@ -6,8 +6,8 @@ extends Control
 ## to add the mission selector here: 1 playable mission and 2 grey "coming soon"
 ## rows (see `docs/future/selector-mision.md`).
 
-## Scene the "Start game" button goes to once it exists.
-const START_SCENE: String = "res://scenes/intro_stills/intro_stills.tscn"
+## Scene the "Start game" button goes to: the worlds screen.
+const START_SCENE: String = "res://scenes/worlds/worlds.tscn"
 
 ## Scene the "Settings" button goes to once it exists.
 const SETTINGS_SCENE: String = "res://scenes/settings/settings.tscn"
@@ -15,7 +15,7 @@ const SETTINGS_SCENE: String = "res://scenes/settings/settings.tscn"
 ## Seconds the toast stays visible before fading out.
 const TOAST_HOLD_SECONDS: float = 2.0
 
-## Seconds the toast takes to disappear.
+## Seconds the toast takes to fade out.
 const TOAST_FADE_SECONDS: float = 0.4
 
 @onready var _play_button: Button = %PlayButton
@@ -30,10 +30,12 @@ func _ready() -> void:
 
 
 func _on_play_pressed() -> void:
-	if ResourceLoader.exists(START_SCENE):
-		get_tree().change_scene_to_file(START_SCENE)
+	if not ResourceLoader.exists(START_SCENE):
+		_show_toast("Cannot find the worlds screen (%s)." % START_SCENE)
 		return
-	_show_toast("The intro does not exist yet. Next step: intro_stills.")
+	var error: Error = get_tree().change_scene_to_file(START_SCENE)
+	if error != OK:
+		_show_toast("Could not open the worlds screen (error %d)." % error)
 
 
 func _on_options_pressed() -> void:

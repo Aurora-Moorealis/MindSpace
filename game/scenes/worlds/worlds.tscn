@@ -1,0 +1,146 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/images/menu/menu_bg.png" id="1_bg"]
+[ext_resource type="Theme" path="res://themes/pixel_theme.tres" id="2_theme"]
+[ext_resource type="Script" path="res://scenes/worlds/worlds.gd" id="3_script"]
+
+[node name="Worlds" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("3_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_bg")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="Ui" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 470
+theme_override_constants/margin_bottom = 28
+
+[node name="Column" type="VBoxContainer" parent="Ui"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Ui/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_colors/font_shadow_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 40
+text = "Worlds"
+
+[node name="Subtitle" type="Label" parent="Ui/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.290196, 0.658824, 0.705882, 1)
+theme_override_colors/font_shadow_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "Choose a world"
+
+[node name="Gap" type="Control" parent="Ui/Column"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="ListScroll" type="ScrollContainer" parent="Ui/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(272, 100)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="Ui/Column/ListScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CreateButton" type="Button" parent="Ui/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(272, 52)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Create world"
+
+[node name="Form" type="VBoxContainer" parent="Ui/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameEdit" type="LineEdit" parent="Ui/Column/Form"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(272, 48)
+layout_mode = 2
+size_flags_horizontal = 0
+placeholder_text = "World name"
+max_length = 24
+
+[node name="ConfirmButton" type="Button" parent="Ui/Column/Form"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(272, 52)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Create world"
+
+[node name="Error" type="Label" parent="Ui/Column/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.886275, 0.478431, 1)
+theme_override_colors/font_shadow_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="Ui/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" type="Button" parent="Ui/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Back"
+
+[node name="Toast" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.886275, 0.478431, 1)
+theme_override_colors/font_shadow_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+horizontal_alignment = 1
+
+[connection signal="pressed" from="Ui/Column/CreateButton" to="." method="_on_create_button_pressed"]
+[connection signal="pressed" from="Ui/Column/Form/ConfirmButton" to="." method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="Ui/Column/BackButton" to="." method="_on_back_pressed"]
+[connection signal="text_submitted" from="Ui/Column/Form/NameEdit" to="." method="_on_name_submitted"]
+[connection signal="text_changed" from="Ui/Column/Form/NameEdit" to="." method="_on_name_changed"]
