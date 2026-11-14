@@ -16,6 +16,8 @@ enum Type {
 	SOL_COMPLETED,
 	DEATH,
 	GAME_OVER,
+	EVENT_STARTED,
+	EVENT_ENDED,
 }
 
 var type: Type = Type.REPAIR
@@ -38,7 +40,7 @@ func _init(
 
 ## True when p_value is within the declared Type range.
 static func is_valid_type(p_value: int) -> bool:
-	return p_value >= Type.REPAIR and p_value <= Type.GAME_OVER
+	return p_value >= Type.REPAIR and p_value <= Type.EVENT_ENDED
 
 
 ## True when every value (recursively, through nested arrays and dictionaries)

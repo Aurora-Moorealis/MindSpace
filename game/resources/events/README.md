@@ -112,3 +112,38 @@ godot --headless --path game --script res://scripts/dev/events_check.gd
 
 El checker comprueba carga del registro, IDs únicos, targets, signos, ventanas,
 solapamiento, interpolación y procedencia.
+
+## Runtime y prueba visual
+
+`GameSim` carga `events.tres` al arrancar y se lo pasa a `SimTick.step()`. El
+scheduler vive en `SimTick`: expira eventos, encola los que vencen, respeta el
+solape y el retraso determinista, y aplica la intensidad de cada arquetipo.
+`GameSim` publica los hechos `EVENT_STARTED`/`EVENT_ENDED` en `EventLog`.
+
+Escena local de prueba (ignorada por Git):
+
+```bash
+godot --path game res://tests/events_live/live.tscn
+```
+
+Controles: `Play`/`Pause`, `×1`/`×5`/`×10`, `Step 1`, `Step 5`, `Next event`,
+`Reset` y `EVA` para alternar interior/exterior. La línea temporal marca el tick
+actual y el banner muestra los eventos activos con su intensidad.
+
+Para arrancar ya avanzado:
+
+```bash
+godot --path game res://tests/events_live/live.tscn -- --ticks 9 --outside
+```
+
+Para generar una captura:
+
+```bash
+godot --path game res://tests/events_live/live.tscn -- --ticks 9 --outside --capture
+```
+
+El checker de runtime está en `game/scripts/dev/events_runtime_check.gd`:
+
+```bash
+godot --headless --path game --script res://scripts/dev/events_runtime_check.gd
+```

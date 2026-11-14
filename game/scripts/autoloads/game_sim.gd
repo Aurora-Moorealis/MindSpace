@@ -11,6 +11,7 @@ signal game_reset()
 
 const ECONOMY_PATH: String = "res://databases/economy.tres"
 const MACHINES_PATH: String = "res://databases/machines.tres"
+const EVENTS_PATH: String = "res://databases/events.tres"
 const SECONDS_PER_TICK: float = 60.0
 const MAX_TICKS_PER_FRAME: int = 10
 
@@ -22,6 +23,7 @@ var paused: bool = false
 
 var _economy: EconomyData = null
 var _machines: MachineDatabase = null
+var _events: EventData = null
 var _time_accumulator: float = 0.0
 
 
@@ -30,6 +32,7 @@ var _time_accumulator: float = 0.0
 func _ready() -> void:
 	_economy = _load_economy()
 	_machines = _load_machines()
+	_events = _load_events()
 	state.reset_from_economy(_economy)
 
 
@@ -55,7 +58,7 @@ func feed_time(seconds: float) -> int:
 
 ## Steps the simulation once and publishes the facts of that tick.
 func advance_tick() -> void:
-	var facts: Array[LogEntry] = SimTick.step(state, _economy, _machines)
+	var facts: Array[LogEntry] = SimTick.step(state, _economy, _machines, _events)
 	EventLog.log_entries(facts)
 	tick_advanced.emit(state.tick)
 	for fact: LogEntry in facts:
@@ -268,6 +271,8 @@ func _spend_energy(amount: float) -> void:
 		SimState.ENERGY,
 		maxf(0.0, state.get_resource(SimState.ENERGY) - maxf(0.0, amount))
 	)
+func get_events() -> EventData:
+	return _events
 
 
 ## Loads and validates the economy database. A missing or wrongly typed resource
@@ -321,3 +326,17 @@ func _warn_machine_coverage(database: MachineDatabase) -> void:
 			push_warning(
 				"GameSim: machine '%s' has no sheet in %s" % [String(id), MACHINES_PATH]
 			)
+## Loads and validates the event registry. A missing or invalid registry leaves
+## an empty EventData so the simulation still boots with events disabled.
+func _load_events() -> EventData:
+	var loaded: Resource = ResourceLoader.load(EVENTS_PATH)
+	if loaded == null:
+		push_warning("GameSim: could not load events at " + EVENTS_PATH)
+		return EventData.new()
+	if not loaded is EventData:
+		push_warning("GameSim: " + EVENTS_PATH + " is not an EventData resource")
+		return EventData.new()
+	var events: EventData = loaded
+	for message: String in events.validate_rows():
+		push_warning("GameSim: event row problem: " + message)
+	return events
