@@ -19,7 +19,7 @@ posibles y hay que elegir una.
 
 ## Criterios de aceptación
 
-- La decisión queda escrita en `docs/guia-estetica.md` (sección de cohetes).
+- La decisión queda escrita en la spec `art-style`.
 - Si es A: la zona teal del morro se identifica por geometría (`x` e `y` del
   cono), no por índice de color a secas, porque el mismo teal se usa en las
   franjas del cuerpo.

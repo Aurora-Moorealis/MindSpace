@@ -39,7 +39,7 @@ el polvo por la llama creciente.
 ## Criterios de aceptación
 
 - `lint_sprite` sin píxeles sueltos en ningún frame.
-- Sin colores nuevos fuera de la paleta de `docs/guia-estetica.md`.
+- Sin colores nuevos fuera de la paleta de la spec `art-style`.
 - El bucle no "salta" al pasar del frame 6 al 1.
 - Revisada a 2× y a tamaño de juego.
 

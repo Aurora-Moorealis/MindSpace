@@ -15,7 +15,8 @@ context: |
     inglés cuando el diseño formal lo indique.
   - Arte: pixel art de rejilla fija. Canvas 850x480 con arte a 425x240 y escala
     x2 (cada píxel artístico son 2x2 en pantalla). Paleta cerrada y contorno de
-    1 px. Ver docs/guia-estetica.md antes de proponer o tocar cualquier asset.
+    1 px. Las reglas están en la spec `art-style` y el procedimiento en
+    docs/guia-estetica.md; consúltalas antes de proponer o tocar cualquier asset.
   - GDScript con tipado explícito obligatorio (ver AGENTS.md): prohibido `:=` y
     cualquier declaración sin tipo, incluidos bucles, lambdas y señales.
   - El proyecto Godot vive en game/. La raíz del repositorio solo contiene

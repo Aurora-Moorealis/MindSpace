@@ -35,4 +35,4 @@ Tres imágenes a 850×480, en el mismo estilo que el fondo del menú:
 
 El arte se genera con el mismo proceso que el fondo del menú: concepto →
 conversión a rejilla 425×240 con píxel gordo → limpieza de paleta y contorno
-(ver `docs/guia-estetica.md`).
+(ver la spec `art-style` y el manual `docs/guia-estetica.md`).
