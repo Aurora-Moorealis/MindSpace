@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://do4y0r8ueghcj"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_q8qn8"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_4g1py"]
+
+[sub_resource type="Resource" id="Resource_icfjd"]
+script = ExtResource("1_q8qn8")
+
+[resource]
+script = ExtResource("2_4g1py")
+id = &"initial_health"
+value = 100.0
+max_value = 1000.0
+unit = "hp"
+provenance = SubResource("Resource_icfjd")

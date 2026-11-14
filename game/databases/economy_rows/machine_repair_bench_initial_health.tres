@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://bt62uks0xdpxs"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_5obp7"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_ctrxb"]
+
+[sub_resource type="Resource" id="Resource_oy37j"]
+script = ExtResource("1_5obp7")
+
+[resource]
+script = ExtResource("2_ctrxb")
+id = &"machine_repair_bench_initial_health"
+value = 100.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_oy37j")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://bujfhyrja5430"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_5t8be"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_30x6y"]
+
+[sub_resource type="Resource" id="Resource_1hgh6"]
+script = ExtResource("1_5t8be")
+
+[resource]
+script = ExtResource("2_30x6y")
+id = &"power_hydroponics_per_tick"
+value = 0.4
+max_value = 10.0
+unit = "u"
+provenance = SubResource("Resource_1hgh6")

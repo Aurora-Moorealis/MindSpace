@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://bh7gek24esc43"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_6gqa4"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_ph0l7"]
+
+[sub_resource type="Resource" id="Resource_8uu3l"]
+script = ExtResource("1_6gqa4")
+
+[resource]
+script = ExtResource("2_ph0l7")
+id = &"initial_food"
+value = 10.0
+max_value = 100.0
+unit = "u"
+provenance = SubResource("Resource_8uu3l")

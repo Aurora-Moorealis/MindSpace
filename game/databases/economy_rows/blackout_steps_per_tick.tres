@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://c81ufhtamsdot"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_yr31f"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_jbxhe"]
+
+[sub_resource type="Resource" id="Resource_lfssb"]
+script = ExtResource("1_yr31f")
+
+[resource]
+script = ExtResource("2_jbxhe")
+id = &"blackout_steps_per_tick"
+value = 1.0
+max_value = 10.0
+unit = "machines"
+provenance = SubResource("Resource_lfssb")
