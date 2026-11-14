@@ -58,9 +58,25 @@ cada sala se añadirá después.
 ### Los muros se giran en el mapa
 
 La loseta de muro está dibujada con el canto iluminado al **norte y oeste** y la
-línea de apoyo al **sur y este**. Para formar un anillo continuo, el mapa la
-**rota** (90°/180°/270°) en los tramos verticales y en las esquinas. No están
-dibujadas las cuatro orientaciones: se giran.
+línea de apoyo al **sur y este**. Para formar un anillo continuo el mapa la gira,
+y por eso el muro tiene **cuatro orientaciones como tiles alternativos**:
+
+| Alternativa | Transformación | Uso |
+| --- | --- | --- |
+| `0` | ninguna | muro horizontal, canto arriba |
+| `1` | `transpose` | muro vertical, canto a la izquierda |
+| `2` | `transpose` + `flip_h` | muro vertical, canto a la derecha |
+| `3` | `flip_v` | muro horizontal, canto abajo |
+
+En `TileMapLayer` se pasan como cuarto argumento:
+`set_cell(cell, 0, Vector2i(0, 1), 1)`.
+
+### Escena de muestra
+
+`game/scenes/tiles_demo/` pinta un trozo de mapa con los tres TileSet: suelo,
+una sala con muros (las cuatro orientaciones), pasillo, puerta, rocas y
+minerales. Sirve para comprobar que encajan; no forma parte del flujo del juego.
+La captura está en `art/tiles/demo-mapa.png`.
 
 ## TileSet de Godot
 
