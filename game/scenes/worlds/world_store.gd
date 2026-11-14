@@ -47,12 +47,12 @@ static func list_worlds() -> Array[World]:
 static func validate_name(display_name: String, existing: Array[World]) -> String:
 	var clean: String = display_name.strip_edges()
 	if clean.is_empty():
-		return "Escribe un nombre."
+		return "Write a name."
 	if clean.length() > MAX_NAME_LENGTH:
-		return "Máximo %d caracteres." % MAX_NAME_LENGTH
+		return "Max %d characters." % MAX_NAME_LENGTH
 	for world: World in existing:
 		if world.name.to_lower() == clean.to_lower():
-			return "Ya existe un mundo con ese nombre."
+			return "A world with that name already exists."
 	return ""
 
 

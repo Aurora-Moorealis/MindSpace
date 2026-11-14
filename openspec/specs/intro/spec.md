@@ -25,11 +25,11 @@ cualquier texto de la historia.
 ### Requirement: Historia por partes
 
 La historia SHALL presentarse en siete partes, una por pantalla y en el orden
-escrito, avanzando solo cuando el jugador pulse "Continuar".
+escrito, avanzando solo cuando el jugador pulse la acción de continuar.
 
 #### Scenario: Avanzar
 
-- **WHEN** el jugador pulsa "Continuar"
+- **WHEN** el jugador pulsa la acción de continuar
 - **THEN** aparece la siguiente parte de la historia
 
 #### Scenario: Orden de las partes
@@ -54,17 +54,17 @@ a la historia.
 
 #### Scenario: Saltar
 
-- **WHEN** el jugador pulsa "Saltar" mientras se reproduce la animación
+- **WHEN** el jugador pulsa la acción de saltar mientras se reproduce la animación
 - **THEN** la animación termina y aparece la primera parte de la historia
 
 ### Requirement: Aceptar la misión
 
-La última parte SHALL ofrecer aceptar la misión, y aceptar SHALL confirmar la
-misión del mundo elegido.
+La última parte SHALL ofrecer la acción de aceptar la misión, y aceptarla SHALL
+confirmar la misión del mundo elegido.
 
 #### Scenario: Aceptar
 
-- **WHEN** el jugador pulsa "Aceptar la misión" en la última parte
+- **WHEN** el jugador pulsa la acción de aceptar en la última parte
 - **THEN** aparece una confirmación que nombra al mundo elegido
 
 #### Scenario: Volver atrás

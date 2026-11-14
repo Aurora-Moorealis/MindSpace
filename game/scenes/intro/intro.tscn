@@ -107,7 +107,7 @@ offset_top = 20.0
 offset_right = -24.0
 offset_bottom = 60.0
 grow_horizontal = 0
-text = "Saltar"
+text = "Skip"
 
 [node name="Story" type="Control" parent="."]
 unique_name_in_owner = true
@@ -148,7 +148,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.290196, 0.658824, 0.705882, 1)
 theme_override_font_sizes/font_size = 24
-text = "Aviso"
+text = "Notice"
 
 [node name="StoryBody" type="Label" parent="Story/Panel/Margin/Column"]
 unique_name_in_owner = true
@@ -166,7 +166,7 @@ alignment = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
-text = "Continuar"
+text = "Continue"
 
 [node name="Accept" type="Control" parent="."]
 unique_name_in_owner = true
@@ -210,7 +210,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
 theme_override_font_sizes/font_size = 24
 autowrap_mode = 2
-text = "¿Aceptas la misión?"
+text = "Accept the mission?"
 
 [node name="AcceptNote" type="Label" parent="Accept/Panel/Margin/Column"]
 unique_name_in_owner = true
@@ -224,13 +224,13 @@ text = ""
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-text = "Aceptar la misión"
+text = "Accept mission"
 
 [node name="BackButton" type="Button" parent="Accept/Panel/Margin/Column"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-text = "Volver a mundos"
+text = "Back to worlds"
 
 [node name="Fade" type="ColorRect" parent="."]
 unique_name_in_owner = true

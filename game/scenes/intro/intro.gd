@@ -2,29 +2,29 @@ extends Control
 ## Intro: salida de la Tierra, travesía a la Luna y la historia por partes.
 ##
 ## Primero se reproduce la animación (lanzamiento y viaje), después la historia
-## avanza con "Continuar" y al final se acepta la misión. El nombre del mundo
+## avanza con la acción de continuar y al final se acepta la misión. El nombre del mundo
 ## elegido en la pantalla anterior sustituye a {nombre} en los textos.
 
 const WORLDS_SCENE: String = "res://scenes/worlds/worlds.tscn"
 
 const TITLES: Array[String] = [
-	"Aviso",
-	"Una pregunta desde la Tierra",
-	"Tu misión",
-	"Preparativos",
-	"Una compañera de viaje",
-	"Llegada",
-	"El primer paso",
+	"Notice",
+	"A question from Earth",
+	"Your mission",
+	"Preparations",
+	"A travel companion",
+	"Arrival",
+	"The first step",
 ]
 
 const BODIES: Array[String] = [
-	"Esta es una misión futura imaginada. Usamos ciencia real y simplificamos algunos procesos para jugar.",
-	"Durante años, nuestras sondas y astronautas han explorado la Luna. Nos han mostrado cráteres, mares de roca oscura y pistas de su historia. Pero todavía tenemos mucho que aprender: ¿qué necesitaríamos para quedarnos allí y mantener una base funcionando?",
-	"Por eso necesitamos tu ayuda, {nombre}. Tu misión será construir una pequeña base de investigación, aprovechar algunos recursos lunares y contarnos qué funciona, qué falla y qué debemos mejorar.",
-	"No viajarás sin preparación. Tu módulo lleva aire, agua, comida, herramientas y un taller. También transporta piezas que todavía no podemos fabricar en la Luna. Estas reservas te darán tiempo para empezar, pero tendrás que aprender a administrarlas.",
-	"¡Muuuy buenas, {nombre}! Soy Aurora, tu asistente de misión. Tengo guardados mapas, instrucciones y datos científicos. Yo te ayudaré a entender las señales de la base. Las decisiones las tomarás tú.",
-	"Después de un viaje de pocos días, aterrizas cerca de un cráter elegido por sus posibles recursos. El módulo se convierte en tu primer refugio. Afuera te esperan rocas, depósitos por investigar y un paisaje gris que todavía guarda muchas preguntas.",
-	"Empieza por revisar tus reservas y activar el panel solar. Después podrás explorar, recoger materiales y ampliar la base. Cada descubrimiento ayudará a la Tierra a comprender cómo preparar futuras misiones. ¿Todo listo? Tu primera jornada en la Luna comienza ahora.",
+	"This is an imagined future mission. We use real science and simplify some processes so you can play.",
+	"For years, our probes and astronauts have explored the Moon. They have shown us craters, seas of dark rock and clues to its history. But we still have much to learn: what would it take to stay there and keep a base running?",
+	"That is why we need your help, {name}. Your mission is to build a small research base, make use of some lunar resources and tell us what works, what fails and what we should improve.",
+	"You will not travel unprepared. Your module carries air, water, food, tools and a workshop. It also carries parts we cannot make on the Moon yet. These supplies will give you time to start, but you will have to learn to manage them.",
+	"Well, hello there, {name}! I am Aurora, your mission assistant. I keep maps, instructions and scientific data. I will help you read the base signals. You make the decisions.",
+	"After a journey of a few days, you land near a crater chosen for its possible resources. The module becomes your first shelter. Outside, rocks, deposits to study and a grey landscape still full of questions are waiting for you.",
+	"Start by checking your supplies and switching on the solar panel. Then you can explore, collect materials and expand the base. Every discovery will help Earth understand how to prepare future missions. All set? Your first day on the Moon starts now.",
 ]
 
 @onready var _space: Control = %Space
@@ -58,7 +58,7 @@ func _ready() -> void:
 	_accept.visible = false
 	_ship_small.visible = false
 	_moon.visible = false
-	_accept_title.text = "¿Aceptas la misión, %s?" % _world_name
+	_accept_title.text = "Accept the mission, %s?" % _world_name
 	_next.pressed.connect(_on_next_pressed)
 	_skip.pressed.connect(_on_skip_pressed)
 	_accept_button.pressed.connect(_on_accept_pressed)
@@ -150,8 +150,8 @@ func _show_story() -> void:
 func _show_part(index: int) -> void:
 	_index = index
 	_story_title.text = TITLES[index]
-	_story_body.text = BODIES[index].replace("{nombre}", _world_name)
-	_next.text = "Continuar" if index < TITLES.size() - 1 else "Aceptar la misión"
+	_story_body.text = BODIES[index].replace("{name}", _world_name)
+	_next.text = "Continue" if index < TITLES.size() - 1 else "Accept mission"
 	_next.grab_focus()
 
 
@@ -177,7 +177,7 @@ func _show_accept() -> void:
 
 func _on_accept_pressed() -> void:
 	_accept_button.disabled = true
-	_accept_note.text = "Misión aceptada. La base llega en el siguiente paso."
+	_accept_note.text = "Mission accepted. The base arrives in the next step."
 
 
 func _go_back() -> void:

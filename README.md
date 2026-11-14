@@ -1,6 +1,8 @@
 # MindSpace
 
-<!-- TODO: One or two sentences describing the game and its core idea. -->
+A small lunar research base simulator for the NASA Space Apps Challenge 2026.
+Keep oxygen, water, food and power alive, repair the machines, study the
+Moon around you and send your findings back to Earth.
 
 A game built with the [Godot Engine](https://godotengine.org/).
 

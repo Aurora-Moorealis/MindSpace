@@ -50,7 +50,7 @@ func _refresh() -> void:
 	_list_scroll.visible = has_worlds
 	_create_button.visible = has_worlds
 	_form.visible = not has_worlds
-	_subtitle.text = "Elige un mundo" if has_worlds else "Escribe el nombre de tu mundo"
+	_subtitle.text = "Choose a world" if has_worlds else "Name your world"
 	_error.text = ""
 
 	if has_worlds:
@@ -75,7 +75,7 @@ func _make_row(world: World) -> HBoxContainer:
 	row.add_child(play)
 
 	var remove: Button = Button.new()
-	remove.text = "Borrar"
+	remove.text = "Delete"
 	remove.custom_minimum_size = Vector2(96, 44)
 	remove.set_meta("confirming", false)
 	remove.pressed.connect(_on_delete_pressed.bind(world, remove))
@@ -94,18 +94,18 @@ func _on_delete_pressed(world: World, button: Button) -> void:
 		return
 	if not bool(button.get_meta("confirming", false)):
 		button.set_meta("confirming", true)
-		button.text = "¿Seguro?"
+		button.text = "Sure?"
 		get_tree().create_timer(DELETE_CONFIRM_SECONDS).timeout.connect(
 			_reset_delete_button.bind(button)
 		)
 		return
 
 	if not WorldStore.delete_world(world.id):
-		_show_toast("No se pudo borrar el mundo.")
+		_show_toast("Could not delete the world.")
 		return
 
 	_worlds = WorldStore.list_worlds()
-	_show_toast("Mundo borrado: %s" % world.name)
+	_show_toast("World deleted: %s" % world.name)
 	_refresh()
 
 
@@ -113,7 +113,7 @@ func _reset_delete_button(button: Button) -> void:
 	if not is_instance_valid(button):
 		return
 	button.set_meta("confirming", false)
-	button.text = "Borrar"
+	button.text = "Delete"
 
 
 func _on_create_button_pressed() -> void:
@@ -134,7 +134,7 @@ func _on_confirm_button_pressed() -> void:
 
 	var world: World = WorldStore.create_world(_name_edit.text)
 	if world == null:
-		_error.text = "No se pudo guardar el mundo."
+		_error.text = "Could not save the world."
 		return
 
 	_world_ready(world)

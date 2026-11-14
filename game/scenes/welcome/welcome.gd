@@ -31,18 +31,18 @@ func _ready() -> void:
 
 func _on_play_pressed() -> void:
 	if not ResourceLoader.exists(START_SCENE):
-		_show_toast("No encuentro la pantalla de mundos (%s)." % START_SCENE)
+		_show_toast("Cannot find the worlds screen (%s)." % START_SCENE)
 		return
 	var error: Error = get_tree().change_scene_to_file(START_SCENE)
 	if error != OK:
-		_show_toast("No se pudo abrir la pantalla de mundos (error %d)." % error)
+		_show_toast("Could not open the worlds screen (error %d)." % error)
 
 
 func _on_options_pressed() -> void:
 	if ResourceLoader.exists(SETTINGS_SCENE):
 		get_tree().change_scene_to_file(SETTINGS_SCENE)
 		return
-	_show_toast("Configuración: próximamente.")
+	_show_toast("Settings: coming soon.")
 
 
 ## Muestra un aviso temporal en la parte baja del menú.

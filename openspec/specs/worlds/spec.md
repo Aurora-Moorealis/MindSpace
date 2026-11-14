@@ -25,17 +25,17 @@ abrir la pantalla de selección, de modo que sobrevivan entre sesiones.
 
 Un mundo nuevo SHALL tener un nombre no vacío, de 24 caracteres como máximo y
 distinto de los existentes. Si no cumple, la creación SHALL rechazarse con un
-mensaje y no SHALL guardarse nada.
+mensaje que explique el motivo y no SHALL guardarse nada.
 
 #### Scenario: Nombre vacío
 
 - **WHEN** se intenta crear un mundo sin escribir nombre
-- **THEN** aparece el mensaje "Escribe un nombre" y no se crea nada
+- **THEN** aparece un mensaje de nombre obligatorio y no se crea nada
 
 #### Scenario: Nombre repetido
 
 - **WHEN** se intenta crear un mundo con un nombre que ya existe, sin distinguir mayúsculas
-- **THEN** aparece el mensaje de nombre repetido y no se crea nada
+- **THEN** aparece un mensaje de nombre repetido y no se crea nada
 
 #### Scenario: Nombre válido
 
@@ -50,8 +50,8 @@ su estado normal sin borrar nada.
 
 #### Scenario: Primera pulsación
 
-- **WHEN** se pulsa "Borrar" en un mundo
-- **THEN** el botón cambia a "¿Seguro?" y el mundo sigue existiendo
+- **WHEN** se pulsa la acción de borrar en un mundo
+- **THEN** el botón pasa a pedir confirmación y el mundo sigue existiendo
 
 #### Scenario: Segunda pulsación
 
@@ -61,7 +61,7 @@ su estado normal sin borrar nada.
 #### Scenario: Se arrepiente
 
 - **WHEN** pasan tres segundos sin segunda pulsación
-- **THEN** el botón vuelve a "Borrar" y el mundo no se ha tocado
+- **THEN** el botón vuelve a su estado normal y el mundo no se ha tocado
 
 ### Requirement: Entrada al mundo
 
@@ -79,5 +79,5 @@ La pantalla SHALL permitir volver al menú principal sin elegir ningún mundo.
 
 #### Scenario: Volver
 
-- **WHEN** el jugador pulsa "Volver" o la tecla de cancelar
+- **WHEN** el jugador pulsa la acción de volver o la tecla de cancelar
 - **THEN** el juego regresa al menú principal
