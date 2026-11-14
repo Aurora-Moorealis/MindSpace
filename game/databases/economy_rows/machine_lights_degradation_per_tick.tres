@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://bpcuc484j1mvb"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_lp7q6"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_ai54o"]
+
+[sub_resource type="Resource" id="Resource_q4ciq"]
+script = ExtResource("1_lp7q6")
+
+[resource]
+script = ExtResource("2_ai54o")
+id = &"machine_lights_degradation_per_tick"
+value = 0.02
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_q4ciq")

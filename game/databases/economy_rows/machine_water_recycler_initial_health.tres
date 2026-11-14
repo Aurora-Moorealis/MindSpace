@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://dc2vfyyqkhqvi"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_ruy4d"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_njes5"]
+
+[sub_resource type="Resource" id="Resource_r64i1"]
+script = ExtResource("1_ruy4d")
+
+[resource]
+script = ExtResource("2_njes5")
+id = &"machine_water_recycler_initial_health"
+value = 100.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_r64i1")

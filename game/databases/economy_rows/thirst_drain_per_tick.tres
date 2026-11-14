@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://b86krwt0a2j6m"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_nrdat"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_r5da3"]
+
+[sub_resource type="Resource" id="Resource_1l55p"]
+script = ExtResource("1_nrdat")
+
+[resource]
+script = ExtResource("2_r5da3")
+id = &"thirst_drain_per_tick"
+value = 0.5
+max_value = 100.0
+unit = "%"
+provenance = SubResource("Resource_1l55p")

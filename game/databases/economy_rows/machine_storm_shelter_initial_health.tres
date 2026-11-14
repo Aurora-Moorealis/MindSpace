@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://ruuv0oef8m5"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_7yi4t"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_icmyf"]
+
+[sub_resource type="Resource" id="Resource_jhgw7"]
+script = ExtResource("1_7yi4t")
+
+[resource]
+script = ExtResource("2_icmyf")
+id = &"machine_storm_shelter_initial_health"
+value = 100.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_jhgw7")

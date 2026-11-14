@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://c65uo2w0w4b5a"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_iujaf"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_lwb5m"]
+
+[sub_resource type="Resource" id="Resource_642kj"]
+script = ExtResource("1_iujaf")
+
+[resource]
+script = ExtResource("2_lwb5m")
+id = &"machine_lights_initial_health"
+value = 100.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_642kj")

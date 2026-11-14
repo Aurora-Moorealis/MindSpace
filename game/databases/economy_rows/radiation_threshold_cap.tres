@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://b64yuas7y3sg5"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_ynu13"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_vd3ke"]
+
+[sub_resource type="Resource" id="Resource_vlcis"]
+script = ExtResource("1_ynu13")
+
+[resource]
+script = ExtResource("2_vd3ke")
+id = &"radiation_threshold_cap"
+value = 30.0
+max_value = 100.0
+unit = "%"
+provenance = SubResource("Resource_vlcis")

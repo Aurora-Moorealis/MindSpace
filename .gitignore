@@ -19,6 +19,9 @@ mono_crash.*.json
 # Local tests (never committed)
 **/tests/*
 
+# Agent review cache (local only, never committed)
+.ai/
+
 # OS / editor files
 .DS_Store
 Thumbs.db
