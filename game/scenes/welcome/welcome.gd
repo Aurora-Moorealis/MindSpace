@@ -30,10 +30,12 @@ func _ready() -> void:
 
 
 func _on_play_pressed() -> void:
-	if ResourceLoader.exists(START_SCENE):
-		get_tree().change_scene_to_file(START_SCENE)
+	if not ResourceLoader.exists(START_SCENE):
+		_show_toast("No encuentro la pantalla de mundos (%s)." % START_SCENE)
 		return
-	_show_toast("La intro todavía no existe. Siguiente paso: intro_stills.")
+	var error: Error = get_tree().change_scene_to_file(START_SCENE)
+	if error != OK:
+		_show_toast("No se pudo abrir la pantalla de mundos (error %d)." % error)
 
 
 func _on_options_pressed() -> void:
