@@ -4,6 +4,124 @@ Guía para agentes que trabajen en **MindSpace** (proyecto Godot 4.x). Todo lo q
 haya aquí es específico de este repositorio y complementa las convenciones
 globales. Si algo choca con una instrucción directa del usuario, manda el usuario.
 
+## Organización de archivos
+
+El proyecto Godot vive en **`game/`**: ahí está `project.godot` y todas las rutas
+`res://` son relativas a esa carpeta. La raíz del repositorio solo contiene
+documentación y configuración de Git. Todo archivo nuevo del juego va dentro de
+`game/` siguiendo esta estructura.
+
+| Carpeta (bajo `game/`) | Qué va | Ejemplo |
+| --- | --- | --- |
+| `addons/` | Addons de Godot y de terceros. **No editar** salvo que el encargo sea el addon. | `addons/limboai/` |
+| `assets/` | Assets **compartidos** que no pertenecen a un contenido concreto (`audio/`, `fonts/`, `images/`, `particles/`, `tilesets/`). | `assets/images/health_bar/` |
+| `components/` | Librerías reutilizables entre proyectos, gestionadas con **LibraryManager**. | `components/move_system/` |
+| `content/` | Contenido del juego: cada cosa con **todo lo suyo** en `content/<tipo>/<nombre>/`. | `content/entities/player/` |
+| `databases/` | (Opcional) Resources `.tres` que hacen de base de datos o registro. | `databases/effect_connections.tres` |
+| `resources/` | Scripts que definen clases `Resource` y resources compartidos que **no** son contenido. | `resources/potions/potion_data.gd` |
+| `scenes/` | Escenas «de verdad»: pantallas, menús y flujo del juego. No personajes ni entidades. | `scenes/pause_menu/` |
+| `scripts/` | Código **solo de este proyecto**: autoloads, managers, glue. | `scripts/autoloads/event_bus.gd` |
+| `script_templates/` | Plantillas del editor para humanos. **No tocar.** | `script_templates/Object/named_class.gd` |
+| `shaders/` | (Opcional) Shaders compartidos por varias partes del proyecto. | `shaders/effects_shader.tres` |
+| `tests/` | (Opcional) Zona local de pruebas, **ignorada por git**. | `tests/player_theme_test.tscn` |
+| `themes/` | (Opcional) Temas compartidos del proyecto. | `themes/default_theme.tres` |
+
+Carpetas extra (`ai/` de LimboAI, `registries/`…) se respetan tal cual. Si no
+sabes si una carpeta es del motor, del proyecto o de un addon, no la muevas.
+
+### Dónde va cada cosa
+
+1. **¿Personaje, entidad, máquina, objeto, poción, efecto o similar?**
+   → `content/<tipo>/<nombre>/` con su escena, script, `.tres`, arte, audio y
+   subcarpetas.
+2. **¿Pantalla, menú, nivel o escena de flujo?** → `scenes/<escena>/`.
+3. **¿Código que podría usarse en otro proyecto tal cual?**
+   → `components/<libreria>/` + `dependencies.txt`.
+4. **¿Código que solo tiene sentido en este proyecto?**
+   → `scripts/<sistema>/` (autoloads, managers, glue, helpers).
+5. **¿Script que define una clase `Resource`?** → `resources/<dominio>/<clase>.gd`.
+   La **instancia** `.tres` va donde se use.
+6. **¿`.tres` que hace de base de datos/registro?** → `databases/`.
+7. **¿Asset compartido?** → `assets/<audio|fonts|images|particles|tilesets>/`.
+   Si solo lo usa un contenido, va dentro de ese contenido.
+8. **¿Shader compartido?** → `shaders/`; si es de un contenido o escena, con
+   ellos.
+9. **¿Prueba o experimento?** → `tests/` (nunca se sube).
+10. **¿Duda entre `components/` y `scripts/`?** Si se puede llevar a otro proyecto
+    sin arrastrar nada de este, `components/`; si depende de autoloads, clases o
+    contenido de este proyecto, `scripts/`.
+
+### Reglas de `content/`
+
+- Estructura obligatoria: `content/<tipo>/<nombre>/`. El **tipo** en plural y
+  snake_case (`entities`, `machines`, `objects`, `potions`, `potion_effects`);
+  el **nombre** en snake_case y descriptivo (`player`, `slime`,
+  `potions_mixer`).
+- Todo lo del contenido vive en su carpeta, aunque sea de distinto tipo:
+  escena, script, `.aseprite`, PNG, sonidos, estados y subcarpetas por función
+  (`ui/`, `explosion/`, `states/`, `sounds/`).
+- No dejes archivos sueltos en `content/<tipo>/` ni carpetas de contenido vacías.
+  La única excepción es una clase base compartida por todo el tipo
+  (`content/entities/entity.gd`).
+- Si dudas entre crear un tipo nuevo y reutilizar uno, reutiliza el tipo
+  existente. Crear un tipo nuevo es una decisión de estructura: pregunta.
+
+### Reglas de `scenes/`
+
+- Estructura: `scenes/<escena>/<contenido-de-la-escena>`.
+- Solo pantallas, menús, carga, pausa y flujo del juego. Un personaje, enemigo,
+  máquina u objeto **no** va aquí: va en `content/`.
+- Lo que solo usa esa escena se queda en su carpeta. Si un botón o widget se usa
+  en varias, súbelo a `components/` (reutilizable entre proyectos) o a `themes/`
+  (tema compartido).
+
+### `components/` y LibraryManager
+
+- Cada librería es `components/<libreria>/` con su código, escenas, resources y
+  un `dependencies.txt` (una dependencia local o URL de GitHub por línea).
+- La IA puede escribir aquí solo si el código es realmente genérico: sin
+  referencias a `content/`, a autoloads ni a clases del juego.
+- No escribas en `~/Documents/GodotLibraries`: se publica con «Push to storage»
+  desde el editor. Al terminar, avisa al usuario de que debe hacerlo.
+- «Update from storage» **sobrescribe** `components/`: haz push de los cambios
+  locales antes. No borres carpetas a mano; usa LibraryManager.
+
+### Resources, databases, assets, shaders y themes
+
+- **Resource (clase):** `resources/<dominio>/<clase>.gd`, con `class_name`,
+  `extends Resource` y exports tipados.
+- **Resource (instancia):** donde se use. Si es de un contenido, dentro de su
+  carpeta; si lo comparten varios, en `resources/` o en el ancestro común.
+- **Database:** `.tres` en `databases/`. No añadas autoloads nuevos sin pedirlo.
+- **Assets:** compartidos en `assets/`; los de un solo contenido, dentro del
+  contenido. Un PNG de un enemigo no va en `assets/images/`.
+- **Shaders:** compartidos en `shaders/`; los de un contenido, con él.
+- **Themes:** compartidos en `themes/`; el de una sola escena puede vivir en su
+  carpeta.
+
+### Nombres
+
+| Elemento | Convención | Ejemplo |
+| --- | --- | --- |
+| Carpeta de contenido | snake_case | `potion_effects` |
+| Script | snake_case | `potion_data.gd` |
+| `class_name` | PascalCase | `PotionData` |
+| Función / variable | snake_case | `_update_data` |
+| Constante | SCREAMING_SNAKE_CASE | `MAX_SPEED` |
+| Señal | snake_case, preferible en pasado | `died` |
+| Enum | PascalCase; valores UPPER_SNAKE_CASE | `State.IDLE` |
+| Escena | snake_case y repetir el nombre de la carpeta | `welcome/welcome.tscn` |
+
+### Qué no hacer con la estructura
+
+- Meter assets de un contenido en `assets/`.
+- Meter scripts de un contenido en `scripts/` si son exclusivos de ese contenido.
+- Meter personajes en `scenes/`.
+- Meter instancias `.tres` de contenido en `resources/` por costumbre.
+- Editar `addons/` o `script_templates/`.
+- Commitear `tests/`, `.godot/`, builds ni credenciales.
+- Reestructurar un proyecto existente sin pedirlo.
+
 ## Worktrees de Git
 
 Los worktrees permiten tener varias ramas del repositorio abiertas a la vez, cada
@@ -64,8 +182,8 @@ git switch -c features
 git push -u origin features
 ```
 
-El worktree aparece como una carpeta normal: se abre con Godot desde ahí y se
-trabaja como en el repo principal.
+El worktree aparece como una carpeta normal. El proyecto Godot se abre desde
+`<worktree>/game`, que es donde está `project.godot`.
 
 ### Reglas dentro del worktree
 
@@ -215,6 +333,6 @@ para tiparlos.
 Valida siempre con el checker, en modo estricto:
 
 ```bash
-bash ~/.config/opencode/skills/godot/scripts/check-gdscript.sh -p . --strict
+bash ~/.config/opencode/skills/godot/scripts/check-gdscript.sh -p game --strict
 ```
 

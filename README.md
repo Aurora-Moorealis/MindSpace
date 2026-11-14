@@ -12,17 +12,19 @@ A game built with the [Godot Engine](https://godotengine.org/).
 
 ## Getting started
 
-This repository only contains the project scaffolding. Create or copy the Godot
-project (`project.godot`) into the repository root, then open it with the editor:
+This repository keeps the Godot project in the `game/` folder. Open it with the
+editor:
 
 ```bash
-godot --editor --path .
+godot --editor --path game
 ```
 
 The `.godot/` folder is generated automatically the first time the project is
 opened and is intentionally ignored by Git.
 
 ## Project structure
+
+Inside `game/`:
 
 | Folder | Contents |
 | --- | --- |
