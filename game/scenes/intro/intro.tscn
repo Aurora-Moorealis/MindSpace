@@ -1,0 +1,244 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/images/intro/sky.png" id="1_sky"]
+[ext_resource type="Texture2D" path="res://assets/images/intro/earth.png" id="2_earth"]
+[ext_resource type="Texture2D" path="res://assets/images/intro/moon.png" id="3_moon"]
+[ext_resource type="Texture2D" path="res://assets/images/rockets/rocket-ascent@2x.png" id="4_ship_big"]
+[ext_resource type="Texture2D" path="res://assets/images/rockets/rocket-ascent.png" id="5_ship_small"]
+[ext_resource type="Theme" path="res://themes/pixel_theme.tres" id="6_theme"]
+[ext_resource type="Script" path="res://scenes/intro/intro.gd" id="7_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.058824, 0.090196, 0.121569, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.290196, 0.658824, 0.705882, 1)
+
+[node name="Intro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_theme")
+script = ExtResource("7_script")
+
+[node name="Sky" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_sky")
+expand_mode = 1
+stretch_mode = 0
+mouse_filter = 2
+
+[node name="Space" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Earth" type="TextureRect" parent="Space"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -60.0
+offset_top = 300.0
+offset_right = 147.0
+offset_bottom = 507.0
+texture = ExtResource("2_earth")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="Moon" type="TextureRect" parent="Space"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 596.0
+offset_top = 96.0
+offset_right = 708.0
+offset_bottom = 208.0
+texture = ExtResource("3_moon")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="ShipBig" type="TextureRect" parent="Space"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 140.0
+offset_top = 250.0
+offset_right = 376.0
+offset_bottom = 514.0
+texture = ExtResource("4_ship_big")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="ShipSmall" type="TextureRect" parent="Space"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 90.0
+offset_top = 400.0
+offset_right = 208.0
+offset_bottom = 532.0
+texture = ExtResource("5_ship_small")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="SkipButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -196.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 60.0
+grow_horizontal = 0
+text = "Saltar"
+
+[node name="Story" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Story"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 56.0
+offset_top = 96.0
+offset_right = -56.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="Story/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 20
+
+[node name="Column" type="VBoxContainer" parent="Story/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StoryTitle" type="Label" parent="Story/Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.290196, 0.658824, 0.705882, 1)
+theme_override_font_sizes/font_size = 24
+text = "Aviso"
+
+[node name="StoryBody" type="Label" parent="Story/Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="Story/Panel/Margin/Column"]
+layout_mode = 2
+alignment = 2
+
+[node name="NextButton" type="Button" parent="Story/Panel/Margin/Column/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 52)
+layout_mode = 2
+text = "Continuar"
+
+[node name="Accept" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Accept"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -150.0
+offset_right = 260.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="Accept/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Accept/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AcceptTitle" type="Label" parent="Accept/Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 2
+text = "¿Aceptas la misión?"
+
+[node name="AcceptNote" type="Label" parent="Accept/Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 0.886275, 0.478431, 1)
+autowrap_mode = 2
+text = ""
+
+[node name="AcceptButton" type="Button" parent="Accept/Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "Aceptar la misión"
+
+[node name="BackButton" type="Button" parent="Accept/Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Volver a mundos"
+
+[node name="Fade" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)

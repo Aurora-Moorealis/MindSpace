@@ -6,6 +6,7 @@ extends Control
 ## El mundo elegido queda en `WorldStore.selected` para la escena siguiente.
 
 const WELCOME_SCENE: String = "res://scenes/welcome/welcome.tscn"
+const INTRO_SCENE: String = "res://scenes/intro/intro.tscn"
 
 const TOAST_HOLD_SECONDS: float = 2.0
 const TOAST_FADE_SECONDS: float = 0.4
@@ -152,10 +153,9 @@ func _on_back_pressed() -> void:
 	_go_back()
 
 
-## Punto de entrada al resto del juego.
-## TODO: cargar aquí la siguiente escena cuando exista (intro o base).
+## Entra en el mundo elegido: primero la intro.
 func _world_ready(world: World) -> void:
-	_show_toast("Mundo listo: %s" % world.name)
+	get_tree().change_scene_to_file(INTRO_SCENE)
 
 
 func _go_back() -> void:
