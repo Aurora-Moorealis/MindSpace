@@ -4,6 +4,13 @@ Guía para agentes que trabajen en **MindSpace** (proyecto Godot 4.x). Todo lo q
 haya aquí es específico de este repositorio y complementa las convenciones
 globales. Si algo choca con una instrucción directa del usuario, manda el usuario.
 
+## EGM (Elephant-Goldfish Model)
+
+Los artefactos de EGM (briefs, borradores y reports de revisión) se escriben en
+la carpeta `.egm/` de la raíz del repositorio. Si no existe, EGM la crea.
+
+EGM artifact directory: .egm
+
 ## Organización de archivos
 
 El proyecto Godot vive en **`game/`**: ahí está `project.godot` y todas las rutas
