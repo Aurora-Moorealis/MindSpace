@@ -118,7 +118,5 @@ func _load_economy() -> EconomyData:
 	var economy: EconomyData = loaded
 	for message: String in economy.validate_rows():
 		push_warning("GameSim: economy row problem: " + message)
-	# Clamp after validating so the audit still sees the authored values.
-	for row: EconomyRow in economy.rows:
-		row.value = clampf(row.value, row.min_value, row.max_value)
+	# Rows are never mutated: an out-of-range value falls back at read time.
 	return economy

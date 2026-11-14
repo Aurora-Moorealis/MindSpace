@@ -40,6 +40,8 @@ func _init() -> void:
 	_check_blackout_order(economy)
 	_check_radiation(economy)
 	_check_summary_counters(economy)
+	_check_sol_from_economy()
+	_check_economy_fallback()
 
 	print("sim_smoke: %d checks, %s" % [_checks, "FAIL" if _failures > 0 else "OK"])
 	quit(1 if _failures > 0 else 0)
@@ -434,11 +436,11 @@ func _count_facts(entries: Array[LogEntry], type: LogEntry.Type) -> int:
 	return count
 
 
-## Comparable list of the (type, tick) pairs of a fact sequence.
+## Comparable list of the (type, tick, payload) tuples of a fact sequence.
 func _fact_signature(entries: Array[LogEntry]) -> Array[String]:
 	var signature: Array[String] = []
 	for entry: LogEntry in entries:
-		signature.append("%d@%d" % [entry.type, entry.tick])
+		signature.append("%d@%d:%s" % [entry.type, entry.tick, str(entry.payload)])
 	return signature
 
 
@@ -458,6 +460,58 @@ func _resources_from_payload(payload: Dictionary[Variant, Variant]) -> Dictionar
 			var value_float: float = value
 			result[key_name] = value_float
 	return result
+
+
+## (g) The sol length follows the economy rows instead of a hardcoded constant.
+func _check_sol_from_economy() -> void:
+	var economy: EconomyData = EconomyData.new()
+	economy.rows.append(_row(&"day_length_ticks", 6.0))
+	economy.rows.append(_row(&"night_length_ticks", 6.0))
+	var state: SimState = _fresh_state(economy)
+	_expect(
+		state.get_sol_length(economy) == 12,
+		"g: sol length must be day + night (got %d)" % state.get_sol_length(economy)
+	)
+
+	var sols: Array[int] = []
+	for i: int in range(12):
+		for fact: LogEntry in SimTick.step(state, economy):
+			if fact.type == LogEntry.Type.SOL_COMPLETED:
+				sols.append(int(fact.payload.get(&"sol")))
+	_expect(sols == [1], "g: 12 ticks must close exactly sol 1 (got %s)" % str(sols))
+
+	for i: int in range(12):
+		for fact: LogEntry in SimTick.step(state, economy):
+			if fact.type == LogEntry.Type.SOL_COMPLETED:
+				sols.append(int(fact.payload.get(&"sol")))
+	_expect(sols == [1, 2], "g: 24 ticks must close sols 1 and 2 (got %s)" % str(sols))
+	print("sim_smoke: g) sol_length=12 sols=%s" % str(sols))
+
+
+## (h) An out-of-range row yields the fallback instead of a clamped value.
+func _check_economy_fallback() -> void:
+	var economy: EconomyData = EconomyData.new()
+	economy.rows.append(_row(&"solar_output_per_tick", 500.0))
+	_expect(
+		is_equal_approx(economy.get_value(&"solar_output_per_tick", 1.5), 1.5),
+		"h: an out-of-range row must yield the fallback (got %f)"
+		% economy.get_value(&"solar_output_per_tick", 1.5)
+	)
+	_expect(
+		is_equal_approx(economy.get_value(&"missing_row", 2.5), 2.5),
+		"h: a missing row must yield the fallback (got %f)"
+		% economy.get_value(&"missing_row", 2.5)
+	)
+	print("sim_smoke: h) out-of-range and missing rows fall back")
+
+
+## Economy row with 100 as its upper bound.
+func _row(id: StringName, value: float) -> EconomyRow:
+	var row: EconomyRow = EconomyRow.new()
+	row.id = id
+	row.value = value
+	row.max_value = 100.0
+	return row
 
 
 func _expect(condition: bool, message: String) -> void:

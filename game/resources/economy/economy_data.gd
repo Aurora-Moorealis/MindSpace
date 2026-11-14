@@ -10,13 +10,16 @@ func get_row(id: StringName) -> EconomyRow:
 			return row
 	return null
 
-# Returns the row value clamped to [min_value, max_value].
-# A missing row yields the fallback as-is (no clamping applied).
+# Returns the row value when it is inside [min_value, max_value].
+# A missing row or an out-of-range value yields the fallback, so a bad row can
+# never corrupt the simulation even before it is fixed in the database.
 func get_value(id: StringName, fallback: float) -> float:
 	var row: EconomyRow = get_row(id)
 	if row == null:
 		return fallback
-	return clampf(row.value, row.min_value, row.max_value)
+	if row.value < row.min_value or row.value > row.max_value:
+		return fallback
+	return row.value
 
 # Returns the provenance of the row with the given id, or null when there is no row.
 func get_provenance(id: StringName) -> DataProvenance:

@@ -1,21 +1,21 @@
 extends Control
-## Menú de entrada del juego.
+## Game's entry menu.
 ##
-## Pantalla de título con las acciones principales. Forma parte del punto 20 del
-## diseño formal (`docs/designs/junior-astronauta-outpost-lunar.md`), que todavía
-## prevé añadir aquí el selector de misión: 1 misión jugable y 2 filas grises
-## "coming soon" (ver `docs/future/selector-mision.md`).
+## Title screen with the main actions. It is part of item 20 of the formal
+## design (`docs/designs/junior-astronauta-outpost-lunar.md`), which still plans
+## to add the mission selector here: 1 playable mission and 2 grey "coming soon"
+## rows (see `docs/future/selector-mision.md`).
 
-## Escena a la que lleva "Iniciar juego" cuando exista.
+## Scene the "Start game" button goes to once it exists.
 const START_SCENE: String = "res://scenes/intro_stills/intro_stills.tscn"
 
-## Escena a la que lleva "Configuración" cuando exista.
+## Scene the "Settings" button goes to once it exists.
 const SETTINGS_SCENE: String = "res://scenes/settings/settings.tscn"
 
-## Segundos que el aviso permanece visible antes de desvanecerse.
+## Seconds the toast stays visible before fading out.
 const TOAST_HOLD_SECONDS: float = 2.0
 
-## Segundos que tarda el aviso en desaparecer.
+## Seconds the toast takes to disappear.
 const TOAST_FADE_SECONDS: float = 0.4
 
 @onready var _play_button: Button = %PlayButton
@@ -33,17 +33,17 @@ func _on_play_pressed() -> void:
 	if ResourceLoader.exists(START_SCENE):
 		get_tree().change_scene_to_file(START_SCENE)
 		return
-	_show_toast("La intro todavía no existe. Siguiente paso: intro_stills.")
+	_show_toast("The intro does not exist yet. Next step: intro_stills.")
 
 
 func _on_options_pressed() -> void:
 	if ResourceLoader.exists(SETTINGS_SCENE):
 		get_tree().change_scene_to_file(SETTINGS_SCENE)
 		return
-	_show_toast("Configuración: próximamente.")
+	_show_toast("Settings: coming soon.")
 
 
-## Muestra un aviso temporal en la parte baja del menú.
+## Shows a temporary toast at the bottom of the menu.
 func _show_toast(message: String) -> void:
 	_toast.text = message
 	if _toast_tween != null and _toast_tween.is_valid():
