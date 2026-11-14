@@ -1,32 +1,54 @@
 schema: spec-driven
 
-# Project context (optional)
-# Add only constraints that should guide OpenSpec artifacts and workflows.
-# Include constraints an agent cannot infer by reading the code.
-# Keep general project documentation and discoverable codebase facts out.
-# Example:
-#   context: |
-#     Designs and tasks must cover Windows, macOS, and Linux
-#     Write all artifacts in Spanish
+# Contexto de proyecto: solo lo que un agente no puede deducir leyendo el código
+# ni AGENTS.md. Lo usan los artefactos como restricción, no se copia en ellos.
+context: |
+  MindSpace es un juego 2D en Godot 4.7 para el NASA Space Apps Challenge 2026,
+  construido en ~36 horas por tres personas. El alcance está congelado en
+  docs/designs/junior-astronauta-outpost-lunar.md: cualquier propuesta que lo
+  amplíe debe justificarlo por escrito o aplazarlo a docs/future/.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Restricciones que afectan a los artefactos:
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  - Idioma: los artefactos y la documentación se escriben en español. Los
+    identificadores de código, en inglés. Los textos que ve el jugador, en
+    inglés cuando el diseño formal lo indique.
+  - Arte: pixel art de rejilla fija. Canvas 850x480 con arte a 425x240 y escala
+    x2 (cada píxel artístico son 2x2 en pantalla). Paleta cerrada y contorno de
+    1 px. Ver docs/guia-estetica.md antes de proponer o tocar cualquier asset.
+  - GDScript con tipado explícito obligatorio (ver AGENTS.md): prohibido `:=` y
+    cualquier declaración sin tipo, incluidos bucles, lambdas y señales.
+  - El proyecto Godot vive en game/. La raíz del repositorio solo contiene
+    documentación, arte y configuración.
+  - La ventana escala en enteros con aspecto fijo: el layout se diseña para
+    850x480 exactos, no para resoluciones arbitrarias.
+
+  Prioridad de producto: una demo jugable de 2-5 minutos vale más que una
+  mecánica nueva. Prefiere cortes y aplazamientos explícitos antes que ampliar
+  alcance.
+
+# Reglas por artefacto. Las claves deben existir en el esquema spec-driven.
+rules:
+  proposal:
+    - Máximo 500 palabras, con una sección "Fuera de alcance" explícita.
+    - Enlaza docs/designs/ en lugar de copiar su contenido.
+  specs:
+    - Cada requisito lleva al menos un escenario con WHEN/THEN.
+    - "Usa SHALL o MUST como verbo normativo (lo exige openspec validate --strict) y deja el resto del texto en español."
+    - Los requisitos describen comportamiento observable, nunca detalles de implementación.
+    - "Nada de texto de UI hardcodeado en los requisitos: remite a la tabla de strings."
+  design:
+    - Justifica las alternativas descartadas cuando la decisión no sea obvia.
+    - Nombra los archivos concretos que se crean o modifican.
+  tasks:
+    - Tareas de dos horas como máximo.
+    - Cada tarea nombra los archivos o escenas que toca.
+
+operations:
+  apply:
+    guidance:
+      - Antes de cerrar el cambio, ejecuta check-gdscript.sh -p game --strict y arranca el proyecto con godot --headless --quit para descartar errores de carga.
+      - Si el cambio toca arte, comprueba alfa binario y lint_sprite antes de darlo por bueno.
+  archive:
+    guidance:
+      - Resume qué requisitos pasan a las specs principales antes de archivar.
