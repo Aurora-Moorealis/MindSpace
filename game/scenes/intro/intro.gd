@@ -47,6 +47,7 @@ const BODIES: Array[String] = [
 var _world_name: String = "astronauta"
 var _index: int = 0
 var _skipped: bool = false
+var _animation_tween: Tween = null
 
 
 func _ready() -> void:
@@ -78,26 +79,24 @@ func _play_intro() -> void:
 	_fade.color.a = 1.0
 	await _fade_to(0.0, 0.4)
 	if _skipped:
-		_show_story()
 		return
 
 	await _play_launch()
 	if _skipped:
-		_show_story()
 		return
 
 	await _fade_to(1.0, 0.35)
 	if _skipped:
-		_show_story()
 		return
 
 	_prepare_travel()
 	await _fade_to(0.0, 0.35)
 	if _skipped:
-		_show_story()
 		return
 
 	await _play_travel()
+	if _skipped:
+		return
 	_show_story()
 
 
@@ -107,6 +106,7 @@ func _play_launch() -> void:
 	_ship_big.position = Vector2(140.0, 250.0)
 
 	var tween: Tween = create_tween()
+	_animation_tween = tween
 	tween.set_parallel(true)
 	tween.tween_property(_ship_big, "position", Vector2(360.0, -280.0), 2.6) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
@@ -125,6 +125,7 @@ func _prepare_travel() -> void:
 
 func _play_travel() -> void:
 	var tween: Tween = create_tween()
+	_animation_tween = tween
 	tween.tween_property(_ship_small, "position", Vector2(520.0, 150.0), 3.0) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
@@ -132,6 +133,7 @@ func _play_travel() -> void:
 
 func _fade_to(alpha: float, seconds: float) -> void:
 	var tween: Tween = create_tween()
+	_animation_tween = tween
 	tween.tween_property(_fade, "color:a", alpha, seconds)
 	await tween.finished
 
@@ -163,7 +165,12 @@ func _on_next_pressed() -> void:
 
 
 func _on_skip_pressed() -> void:
+	if _skipped:
+		return
 	_skipped = true
+	if _animation_tween != null and _animation_tween.is_valid():
+		_animation_tween.kill()
+	_animation_tween = null
 	_show_story()
 
 

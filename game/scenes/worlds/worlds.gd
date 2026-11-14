@@ -33,6 +33,8 @@ func _ready() -> void:
 	_worlds = WorldStore.list_worlds()
 	_toast.modulate.a = 0.0
 	_refresh()
+	if not WorldStore.last_load_error.is_empty():
+		_show_toast(WorldStore.last_load_error)
 
 
 func _unhandled_input(event: InputEvent) -> void:
