@@ -24,8 +24,8 @@ historia.
 
 ### Requirement: Idioma de la documentación
 
-La documentación, los comentarios del código y los nombres de archivo SHALL
-seguir en español; solo el texto que ve el jugador pasa a inglés.
+La documentación SHALL seguir en español. El código SHALL estar en inglés:
+comentarios, identificadores y mensajes de log.
 
 #### Scenario: Documentación
 
@@ -35,4 +35,4 @@ seguir en español; solo el texto que ve el jugador pasa a inglés.
 #### Scenario: Código
 
 - **WHEN** se lee un script
-- **THEN** sus comentarios están en español y los identificadores en inglés
+- **THEN** sus comentarios, identificadores y mensajes de log están en inglés

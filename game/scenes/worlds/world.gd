@@ -1,15 +1,15 @@
 class_name World
 extends Resource
-## Mundo guardado.
+## Saved world.
 ##
-## Se guarda como tres cadenas; la persistencia la hace `WorldStore`.
+## Stored as three strings; `WorldStore` handles persistence.
 
 @export var id: String = ""
 @export var name: String = ""
 @export var created_at: String = ""
 
 
-## Construye un mundo desde el Variant que devuelve `JSON.parse_string`.
+## Builds a world from the Variant returned by `JSON.parse_string`.
 static func from_variant(data: Variant) -> World:
 	var world: World = World.new()
 	if typeof(data) != TYPE_DICTIONARY:

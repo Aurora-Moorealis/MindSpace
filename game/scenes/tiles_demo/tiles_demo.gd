@@ -1,9 +1,9 @@
 extends Node2D
-## Escena de muestra de los tilesets.
+## Tileset showcase scene.
 ##
-## Pinta un trozo de mapa con suelo, una sala de base y props (rocas y
-## minerales) usando los tres TileSet. Es una referencia visual para comprobar
-## que los tres encajan; no forma parte del flujo del juego.
+## Paints a slice of map with ground, a base room and props (rocks and
+## minerals) using the three TileSets. It is a visual reference to check
+## that the three fit together; not part of the game flow.
 
 const GROUND_VARIANTS: Array[Vector2i] = [
 	Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0),
@@ -58,12 +58,12 @@ func _paint_room() -> void:
 				_base.set_cell(cell, 0, GROUND_CORRIDOR)
 			else:
 				_base.set_cell(cell, 0, GROUND_PLATE)
-	# puerta en el muro inferior
+	# door in the bottom wall
 	_base.set_cell(Vector2i(ROOM_CORRIDOR_X, ROOM_BOTTOM), 0, GROUND_DOOR)
 
 
 func _paint_props() -> void:
-	# rocas: fila 0 del atlas de props
+	# rocks: row 0 of the props atlas
 	var rocks: Array[Vector2i] = [
 		Vector2i(1, 12), Vector2i(2, 2), Vector2i(14, 4), Vector2i(17, 12),
 		Vector2i(20, 2), Vector2i(24, 11), Vector2i(5, 13),
@@ -72,8 +72,8 @@ func _paint_props() -> void:
 		var atlas: Vector2i = Vector2i(i % 5, 0)
 		_props.set_cell(rocks[i], 0, atlas)
 
-	# minerales: fila 1 del atlas de props (0 ilmenita, 1 silice, 2 hielo, 3 basalto)
-	# x e y son la celda; z es el mineral
+	# minerals: row 1 of the props atlas (0 ilmenite, 1 silica, 2 ice, 3 basalt)
+	# x and y are the cell; z is the mineral
 	var deposits: Array[Vector3i] = [
 		Vector3i(13, 7, 0), Vector3i(14, 7, 0), Vector3i(13, 8, 0),
 		Vector3i(16, 8, 1), Vector3i(17, 7, 1),

@@ -1,9 +1,9 @@
 extends Control
-## Intro: salida de la Tierra, travesía a la Luna y la historia por partes.
+## Intro: launch from Earth, the trip to the Moon and the story in parts.
 ##
-## Primero se reproduce la animación (lanzamiento y viaje), después la historia
-## avanza con la acción de continuar y al final se acepta la misión. El nombre del mundo
-## elegido en la pantalla anterior sustituye a {nombre} en los textos.
+## The animation plays first (launch and travel), then the story
+## advances with the continue action and ends by accepting the mission. The
+## chosen world name from the previous screen replaces {name} in the texts.
 
 const WORLDS_SCENE: String = "res://scenes/worlds/worlds.tscn"
 
@@ -73,7 +73,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-# ---------------------------------------------------------------- animación
+# ---------------------------------------------------------------- animation
 func _play_intro() -> void:
 	_fade.color.a = 1.0
 	await _fade_to(0.0, 0.4)
@@ -101,7 +101,7 @@ func _play_intro() -> void:
 	_show_story()
 
 
-## Salida: la Tierra abajo y el cohete subiendo en diagonal.
+## Launch: Earth below and the rocket climbing diagonally.
 func _play_launch() -> void:
 	_earth.position = Vector2(-60.0, 300.0)
 	_ship_big.position = Vector2(140.0, 250.0)
@@ -115,7 +115,7 @@ func _play_launch() -> void:
 	await tween.finished
 
 
-## Viaje: el cohete se aleja hacia la Luna, que se ve pequeña al fondo.
+## Travel: the rocket moves away towards the small Moon in the background.
 func _prepare_travel() -> void:
 	_ship_big.visible = false
 	_ship_small.visible = true
@@ -136,7 +136,7 @@ func _fade_to(alpha: float, seconds: float) -> void:
 	await tween.finished
 
 
-# ---------------------------------------------------------------- historia
+# ---------------------------------------------------------------- story
 func _show_story() -> void:
 	_fade.color.a = 0.0
 	_space.modulate = Color(1.0, 1.0, 1.0, 0.45)

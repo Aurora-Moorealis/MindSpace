@@ -1,9 +1,9 @@
 extends Control
-## Selección de mundo: lista los guardados o pide un nombre si no hay ninguno.
+## World selection: lists the saved ones or asks for a name when there are none.
 ##
-## Sin mundos, la pantalla va directa al formulario. Con mundos, cada fila
-## permite entrar o borrar; borrar pide confirmación en el propio botón.
-## El mundo elegido queda en `WorldStore.selected` para la escena siguiente.
+## With no worlds the screen goes straight to the form. With worlds, each row
+## can enter or delete; deleting asks for confirmation in the button itself.
+## The chosen world stays in `WorldStore.selected` for the next scene.
 
 const WELCOME_SCENE: String = "res://scenes/welcome/welcome.tscn"
 const INTRO_SCENE: String = "res://scenes/intro/intro.tscn"
@@ -11,7 +11,7 @@ const INTRO_SCENE: String = "res://scenes/intro/intro.tscn"
 const TOAST_HOLD_SECONDS: float = 2.0
 const TOAST_FADE_SECONDS: float = 0.4
 
-## Segundos que el botón de borrar espera la segunda pulsación.
+## Seconds the delete button waits for the second press.
 const DELETE_CONFIRM_SECONDS: float = 3.0
 
 @onready var _subtitle: Label = %Subtitle
@@ -62,7 +62,7 @@ func _refresh() -> void:
 		_name_edit.grab_focus()
 
 
-## Fila: el nombre entra al mundo, el botón de la derecha borra.
+## Row: the name enters the world, the button on the right deletes.
 func _make_row(world: World) -> HBoxContainer:
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
@@ -153,7 +153,7 @@ func _on_back_pressed() -> void:
 	_go_back()
 
 
-## Entra en el mundo elegido: primero la intro.
+## Enters the chosen world: the intro first.
 func _world_ready(world: World) -> void:
 	get_tree().change_scene_to_file(INTRO_SCENE)
 

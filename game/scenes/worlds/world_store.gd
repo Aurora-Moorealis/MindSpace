@@ -1,20 +1,20 @@
 class_name WorldStore
 extends RefCounted
-## Persistencia de mundos guardados.
+## Saved world persistence.
 ##
-## Los mundos viven en `user://worlds.json` como una lista con `id`, `name` y
-## `created_at`. Sin autoload: es una clase estática que cualquier escena llama.
+## Worlds live in `user://worlds.json` as a list with `id`, `name` and
+## `created_at`. No autoload: a static class any scene can call.
 
 const SAVE_PATH: String = "user://worlds.json"
 
-## Longitud máxima del nombre visible.
+## Maximum length of the visible name.
 const MAX_NAME_LENGTH: int = 24
 
-## Mundo elegido en la última selección. La lee la escena siguiente.
+## World chosen in the last selection. The next scene reads it.
 static var selected: World = null
 
 
-## Lee la lista de mundos guardados. Devuelve una lista vacía si no hay archivo.
+## Reads the saved worlds. Returns an empty list when there is no file.
 static func list_worlds() -> Array[World]:
 	var result: Array[World] = []
 	if not FileAccess.file_exists(SAVE_PATH):
@@ -22,14 +22,14 @@ static func list_worlds() -> Array[World]:
 
 	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if file == null:
-		push_warning("WorldStore: no se pudo abrir %s" % SAVE_PATH)
+		push_warning("WorldStore: could not open %s" % SAVE_PATH)
 		return result
 	var raw: String = file.get_as_text()
 	file.close()
 
 	var parsed: Variant = JSON.parse_string(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
-		push_warning("WorldStore: %s no es un objeto JSON válido" % SAVE_PATH)
+		push_warning("WorldStore: %s is not a valid JSON object" % SAVE_PATH)
 		return result
 
 	var entries: Variant = (parsed as Dictionary).get("worlds", [])
@@ -43,7 +43,7 @@ static func list_worlds() -> Array[World]:
 	return result
 
 
-## Comprueba el nombre y devuelve un mensaje de error, o "" si es válido.
+## Checks the name and returns an error message, or "" when it is valid.
 static func validate_name(display_name: String, existing: Array[World]) -> String:
 	var clean: String = display_name.strip_edges()
 	if clean.is_empty():
@@ -56,8 +56,8 @@ static func validate_name(display_name: String, existing: Array[World]) -> Strin
 	return ""
 
 
-## Crea el mundo, lo guarda y lo deja como seleccionado.
-## Devuelve el mundo creado, o `null` si no se pudo guardar.
+## Creates the world, saves it and leaves it selected.
+## Returns the created world, or `null` when it could not be saved.
 static func create_world(display_name: String) -> World:
 	var clean: String = display_name.strip_edges()
 	var worlds: Array[World] = list_worlds()
@@ -74,7 +74,7 @@ static func create_world(display_name: String) -> World:
 	return world
 
 
-## Borra el mundo con ese id. Devuelve true si se guardó el cambio.
+## Deletes the world with that id. Returns true when the change was saved.
 static func delete_world(world_id: String) -> bool:
 	var remaining: Array[World] = []
 	for world: World in list_worlds():
@@ -85,7 +85,7 @@ static func delete_world(world_id: String) -> bool:
 	return _write(remaining)
 
 
-## Marca un mundo como elegido sin crear nada.
+## Marks a world as chosen without creating anything.
 static func select(world: World) -> void:
 	selected = world
 
@@ -106,7 +106,7 @@ static func _slug(text: String) -> String:
 static func _write(worlds: Array[World]) -> bool:
 	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
-		push_warning("WorldStore: no se pudo escribir %s" % SAVE_PATH)
+		push_warning("WorldStore: could not write %s" % SAVE_PATH)
 		return false
 	var serialized: Array[Variant] = []
 	for world: World in worlds:
