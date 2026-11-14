@@ -33,6 +33,7 @@ const _FALLBACK_CAPACITY: float = 10.0
 const _FALLBACK_INITIAL: float = 0.0
 const _FALLBACK_HEALTH: float = 100.0
 const _FALLBACK_HUNGER: float = 100.0
+const _FALLBACK_THIRST: float = 100.0
 const _FALLBACK_DAY_LENGTH: float = 12.0
 const _FALLBACK_NIGHT_LENGTH: float = 12.0
 const _FALLBACK_MACHINE_HEALTH: float = 100.0
@@ -69,7 +70,7 @@ func reset_from_economy(economy: EconomyData) -> void:
 	radiation_dose = 0.0
 	peak_radiation = 0.0
 	hunger = economy.get_value(&"initial_hunger", _FALLBACK_HUNGER)
-	thirst = economy.get_value(&"initial_thirst", _FALLBACK_HUNGER)
+	thirst = economy.get_value(&"initial_thirst", _FALLBACK_THIRST)
 	suit_reserve_ticks = int(economy.get_value(&"suit_reserve_ticks", 0.0))
 	is_outside = false
 	machines.clear()
