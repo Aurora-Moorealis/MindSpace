@@ -4,6 +4,40 @@ Guía para agentes que trabajen en **MindSpace** (proyecto Godot 4.x). Todo lo q
 haya aquí es específico de este repositorio y complementa las convenciones
 globales. Si algo choca con una instrucción directa del usuario, manda el usuario.
 
+## Idioma del código y las interfaces
+
+**Todo el código y todos los comentarios van en inglés**, sin excepciones:
+
+- Comentarios de cualquier tipo (`#`, docstrings de `##`, comentarios de bloque).
+- Identificadores: nombres de variables, funciones, señales, clases (`class_name`),
+  constantes, enums, archivos, escenas, nodos y recursos.
+- Mensajes de log, `push_error`/`push_warning`, asserts y textos de depuración.
+- Nombres de commits y de ramas, según lo que pida el repositorio.
+
+**Las interfaces (UI) también van en inglés**: todo texto visible para el jugador
+(botones, etiquetas, títulos, tooltips, diálogos, menús, mensajes de error en
+pantalla y texto de placeholders). No se traduce a español ni se deja en el idioma
+del usuario; si hace falta localización, se hace con el sistema de traducciones del
+proyecto, no hardcodeando español.
+
+```gdscript
+# Good
+signal health_changed(current: int, maximum: int)
+var remaining_lives: int = 3
+label.text = "Continue"
+push_warning("Save file not found, starting a new game.")
+
+# Wrong
+signal vida_cambiada(actual: int, maxima: int)
+var vidas_restantes: int = 3
+label.text = "Continuar"
+push_warning("No se encontró la partida, empezando una nueva.")
+```
+
+La **documentación** (README, `docs/`, `AGENTS.md`, comentarios de ficheros de
+configuración que no son código) sí puede ir en el idioma del usuario. La regla
+aplica a lo que ejecuta el juego o lo lee otro desarrollador en el código.
+
 ## EGM (Elephant-Goldfish Model)
 
 Los artefactos de EGM (briefs, borradores y reports de revisión) se escriben en
