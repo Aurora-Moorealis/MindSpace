@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://c6d6ncwfjf80g"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_smnue"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_4hd0q"]
+
+[sub_resource type="Resource" id="Resource_yr05q"]
+script = ExtResource("1_smnue")
+
+[resource]
+script = ExtResource("2_4hd0q")
+id = &"machine_solar_array_degradation_per_tick"
+value = 0.02
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_yr05q")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://b6sgtg3tkr72q"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_phj80"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_qfxmy"]
+
+[sub_resource type="Resource" id="Resource_3pldq"]
+script = ExtResource("1_phj80")
+
+[resource]
+script = ExtResource("2_qfxmy")
+id = &"food_consumption_per_tick"
+value = 0.1
+max_value = 10.0
+unit = "u"
+provenance = SubResource("Resource_3pldq")

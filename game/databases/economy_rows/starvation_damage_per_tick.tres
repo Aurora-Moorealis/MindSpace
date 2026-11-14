@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://c4x2t74a0p0go"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_6car1"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_bwnur"]
+
+[sub_resource type="Resource" id="Resource_drhje"]
+script = ExtResource("1_6car1")
+
+[resource]
+script = ExtResource("2_bwnur")
+id = &"starvation_damage_per_tick"
+value = 1.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_drhje")

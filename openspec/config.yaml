@@ -28,6 +28,10 @@ context: |
   mecánica nueva. Prefiere cortes y aplazamientos explícitos antes que ampliar
   alcance.
 
+  Proceso obligatorio: ningún cambio de comportamiento se implementa ni se
+  commitea sin su cambio de OpenSpec (proposal, specs delta y tasks), validado
+  con `--strict` y archivado en el commit que lo cierra. Ver AGENTS.md.
+
 # Reglas por artefacto. Las claves deben existir en el esquema spec-driven.
 rules:
   proposal:

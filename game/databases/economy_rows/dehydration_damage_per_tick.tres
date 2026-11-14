@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://but3x0cg0yhys"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_fkn5d"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_wwdb0"]
+
+[sub_resource type="Resource" id="Resource_klb6k"]
+script = ExtResource("1_fkn5d")
+
+[resource]
+script = ExtResource("2_wwdb0")
+id = &"dehydration_damage_per_tick"
+value = 1.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_klb6k")

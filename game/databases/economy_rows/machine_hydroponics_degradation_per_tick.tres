@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://kdw6ma86uc3d"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_fqmwe"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_82la6"]
+
+[sub_resource type="Resource" id="Resource_t0ygi"]
+script = ExtResource("1_fqmwe")
+
+[resource]
+script = ExtResource("2_82la6")
+id = &"machine_hydroponics_degradation_per_tick"
+value = 0.02
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_t0ygi")

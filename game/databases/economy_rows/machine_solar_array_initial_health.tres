@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://ct4rlasrv0obm"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_k6jjp"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_p2s1f"]
+
+[sub_resource type="Resource" id="Resource_w1jiv"]
+script = ExtResource("1_k6jjp")
+
+[resource]
+script = ExtResource("2_p2s1f")
+id = &"machine_solar_array_initial_health"
+value = 100.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_w1jiv")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://dfkyn0g5egq5g"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_581kf"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_4wltr"]
+
+[sub_resource type="Resource" id="Resource_wjh2p"]
+script = ExtResource("1_581kf")
+
+[resource]
+script = ExtResource("2_4wltr")
+id = &"hydroponics_food_output_per_tick"
+value = 0.15
+max_value = 10.0
+unit = "u"
+provenance = SubResource("Resource_wjh2p")

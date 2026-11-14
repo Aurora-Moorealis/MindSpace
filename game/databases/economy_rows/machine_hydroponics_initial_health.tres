@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://dctt67s3t833y"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_melfu"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_oo7kc"]
+
+[sub_resource type="Resource" id="Resource_kabqj"]
+script = ExtResource("1_melfu")
+
+[resource]
+script = ExtResource("2_oo7kc")
+id = &"machine_hydroponics_initial_health"
+value = 100.0
+max_value = 100.0
+unit = "hp"
+provenance = SubResource("Resource_kabqj")

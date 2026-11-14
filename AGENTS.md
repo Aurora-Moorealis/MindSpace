@@ -67,6 +67,30 @@ Si un cambio de OpenSpec nace de un documento de `docs/designs/`, su
 contenido en los dos sistemas: cada decisión vive en un único sitio y el otro la
 enlaza.
 
+### Regla obligatoria: nada se hace sin OpenSpec
+
+**Todo cambio de comportamiento pasa por OpenSpec, siempre.** No hay excepciones
+por "es pequeño" ni por "es solo una pantalla".
+
+1. Antes de tocar código: `openspec new change <nombre-en-kebab-case>`.
+2. Se escriben los artefactos del esquema (`proposal.md`, las specs delta,
+   `design.md` si la decisión no es obvia, y `tasks.md`).
+3. Antes de commitear: `openspec validate <nombre> --strict` debe pasar.
+4. El commit que cierra el trabajo **archiva el cambio**
+   (`openspec archive <nombre> --yes`), de modo que la spec quede en
+   `openspec/specs/`.
+
+Solo se salta cuando no cambia ningún comportamiento (typo, formato,
+documentación, refactor interno). En ese caso el cambio se crea igualmente con
+`skip_specs: true` en su `.openspec.yaml`.
+
+Un cambio que toca una capability existente usa `MODIFIED` y copia el bloque
+completo del requisito desde `openspec/specs/`; el validador rechaza perder
+escenarios por el camino.
+
+Las specs se escriben en español, con `SHALL`/`MUST` como verbo normativo (lo
+exige el validador) y escenarios `#### Scenario:` en WHEN/THEN.
+
 ## Organización de archivos
 
 El proyecto Godot vive en **`game/`**: ahí está `project.godot` y todas las rutas
