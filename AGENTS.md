@@ -11,6 +11,28 @@ la carpeta `.egm/` de la raíz del repositorio. Si no existe, EGM la crea.
 
 EGM artifact directory: .egm
 
+### Documentos generados y OpenSpec
+
+EGM produce, además de sus artefactos de trabajo en `.egm/`, el **documento de
+diseño formal** de cada feature en `docs/designs/<feature>.md` (lo crea la skill
+`egm-draft` al finalizar la redacción). Ese es el documento que se comparte y se
+revisa; `.egm/` guarda el material de trabajo: brief de concepto, borradores y
+reportes de las lentes Goldfish por etapa.
+
+El proyecto también usa **OpenSpec**: la carpeta `openspec/` (specs y changes),
+los comandos `/opsx-*` en `.opencode/commands/` y las skills `openspec-*` en
+`.opencode/skills/`. EGM y OpenSpec se complementan; no se sustituyen:
+
+| Necesidad | Dónde va |
+| --- | --- |
+| Explorar y conceptualizar una idea, brief y revisión adversarial | EGM (`.egm/`, y el diseño final en `docs/designs/`) |
+| Especificar un cambio concreto (proposal, delta specs, tasks) y aplicarlo | OpenSpec (`openspec/changes/<change>/`) |
+
+Si un cambio de OpenSpec nace de un documento de `docs/designs/`, su
+`proposal.md` lo referencia por ruta en lugar de copiarlo. No dupliques el mismo
+contenido en los dos sistemas: cada decisión vive en un único sitio y el otro la
+enlaza.
+
 ## Organización de archivos
 
 El proyecto Godot vive en **`game/`**: ahí está `project.godot` y todas las rutas
