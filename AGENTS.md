@@ -160,3 +160,61 @@ git worktree prune                # limpiar referencias huérfanas
 - Duplicar `.uid` al copiar escenas entre worktrees: cada recurso necesita su
   propio `uid`.
 - Dejar worktrees y ramas temporales acumulándose sin integrar ni limpiar.
+
+## GDScript: tipado obligatorio
+
+**Todas las variables se tipan de forma explícita, absolutamente todas, aunque el
+valor parezca obvio.** No se confía en la inferencia del compilador ni en que
+«se vea claro» por el literal.
+
+Esto incluye:
+
+- Variables locales, variables de clase y variables de bucle (`for item: ItemData in items:`).
+- Constantes (`const MAX: int = 3`).
+- Parámetros y valores de retorno (`func f(a: int, b: float) -> bool:`), incluido
+  `-> void` cuando no devuelve nada.
+- Señales (`signal died(who: Node2D)`).
+- Variables `@export` y `@onready`.
+- Arrays y diccionarios, con genéricos (`Array[ItemData]`,
+  `Dictionary[StringName, int]`).
+- Lambdas y `Callable`.
+
+Reglas concretas:
+
+- **Prohibido `:=`.** También `var x = ...` y `const X = ...` sin tipo explícito.
+- `@export var speed: float = 1.0`, nunca `@export var speed = 1`.
+- `@onready var sprite: Sprite2D = $Sprite2D`; mejor todavía `@export` cableado
+  en la escena.
+- `Variant` solo en la frontera (`JSON`, `Expression`, `await`, `get_meta`,
+  APIs dinámicas). Se valida y se castea de inmediato; no se propaga por el
+  código.
+- GDScript 4.7 no soporta colecciones tipadas anidadas:
+  `Dictionary[StringName, Array[int]]` no compila.
+
+| Mal | Bien |
+| --- | --- |
+| `var speed = 10.0` / `var speed := 10.0` | `var speed: float = 10.0` |
+| `const MAX = 3` / `const MAX := 3` | `const MAX: int = 3` |
+| `func f(a, b):` | `func f(a: int, b: float) -> bool:` |
+| `func _ready():` | `func _ready() -> void:` |
+| `signal died(who)` | `signal died(who: Node2D)` |
+| `var items: Array = []` | `var items: Array[ItemData] = []` |
+| `for item in items:` | `for item: ItemData in items:` |
+
+El proyecto debe tener activados los avisos de modo estricto en `project.godot`:
+
+```ini
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/inferred_declaration=2
+```
+
+Si faltan, avisa al usuario antes de añadirlos. El código nuevo y el que se
+modifique debe cumplir esta regla; no reescribas archivos ajenos al cambio solo
+para tiparlos.
+
+Valida siempre con el checker, en modo estricto:
+
+```bash
+bash ~/.config/opencode/skills/godot/scripts/check-gdscript.sh -p . --strict
+```
+
