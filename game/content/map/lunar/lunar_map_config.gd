@@ -33,7 +33,7 @@ const POI_DISTANCE_MAX: float = 64.0
 ## Map width in tiles.
 @export_range(16, 256, 1) var width: int = 64
 ## Map height in tiles.
-@export_range(16, 256, 1) var height: int = 48
+@export_range(16, 256, 1) var height: int = 64
 ## Edge of each square tile in pixels.
 @export_range(8, 64, 1) var tile_size: int = 32
 ## Seed for every random stream. Same seed and config produce the same map.

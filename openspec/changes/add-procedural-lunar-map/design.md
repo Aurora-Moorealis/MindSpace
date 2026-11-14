@@ -56,7 +56,7 @@ Restricciones que condicionan esta implementación:
 
 | Parámetro | Default | Rango / notas |
 | --- | --- | --- |
-| `width`, `height` | 64, 48 | 16–256 tiles. |
+| `width`, `height` | 64, 64 | 16–256 tiles; 2048×2048 px a 32 px por tile. |
 | `tile_size` | 32 | 8–64 px. |
 | `seed` | 1 | Entero; misma seed + misma config = mismo mapa. |
 | `crater_density` | 0.004 | Cráteres por tile. |
@@ -71,6 +71,8 @@ Restricciones que condicionan esta implementación:
 | `poi_min_separation` | 8.0 | Tiles entre POIs. |
 
 `validate() -> Array[String]` informa de valores fuera de rango. El generador duplica la configuración, la ajusta y añade los avisos a `LunarMap.warnings`; nunca aborta por una configuración inválida. **Por qué:** un mapa siempre debe poder generarse para depurar, y el usuario necesita saber qué se cambió.
+
+**Decisión de tamaño provisional:** el default es 64×64 tiles de 32 px, es decir, 2048×2048 px. El diseño padre recomienda un exterior de como máximo dos pantallas (850×480 con tiles de 32 px); el equipo decidió 2048×2048 px para dar margen a los 3 POIs y a la exploración. Se revisará cuando exista el mapa jugable y se pueda medir el tiempo de recorrido.
 
 ### 3. Determinismo por seed y corrientes aleatorias separadas
 
@@ -200,7 +202,7 @@ godot --path game res://content/map/lunar/lunar_map_debug.tscn
 
 El harness comprueba:
 
-1. Configuración por defecto (64×48, 32 px) y clamps de tamaño, tile y densidades.
+1. Configuración por defecto (64×64, 32 px) y clamps de tamaño, tile y densidades.
 2. Determinismo con la misma seed (terreno, elevación, spawn y POIs).
 3. Diferencia entre seeds distintas.
 4. Presencia de mares, tierras altas, cráteres, rocas y crestas con la configuración por defecto.

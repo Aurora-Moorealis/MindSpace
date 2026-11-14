@@ -8,12 +8,12 @@ Define el comportamiento observable del generador procedural de la superficie lu
 
 ### Requirement: Configuración de tamaño y seed
 
-El generador SHALL aceptar una configuración con ancho y alto en tiles, tamaño de tile, seed y parámetros de rasgos. El ancho y el alto SHALL estar en el rango 16–256 tiles; el tamaño de tile SHALL estar en 8–64 px. Un valor fuera de rango SHALL ajustarse a un valor válido y registrarse como advertencia, sin abortar la generación. La configuración por defecto SHALL ser 64×48 tiles de 32 px.
+El generador SHALL aceptar una configuración con ancho y alto en tiles, tamaño de tile, seed y parámetros de rasgos. El ancho y el alto SHALL estar en el rango 16–256 tiles; el tamaño de tile SHALL estar en 8–64 px. Un valor fuera de rango SHALL ajustarse a un valor válido y registrarse como advertencia, sin abortar la generación. La configuración por defecto SHALL ser 64×64 tiles de 32 px (2048×2048 px).
 
 #### Scenario: Tamaño por defecto
 
 - **WHEN** se genera un mapa con la configuración por defecto
-- **THEN** la rejilla mide 64×48 tiles y cada tile mide 32 px
+- **THEN** la rejilla mide 64×64 tiles, cada tile mide 32 px y el mapa ocupa 2048×2048 px
 
 #### Scenario: Tamaño personalizado
 

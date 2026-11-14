@@ -73,14 +73,14 @@ func _initialize() -> void:
 func _check_defaults_and_clamps() -> void:
 	var defaults: LunarMapConfig = _new_config()
 	_check(defaults.width == 64, "default config width is 64")
-	_check(defaults.height == 48, "default config height is 48")
+	_check(defaults.height == 64, "default config height is 64")
 	_check(defaults.tile_size == 32, "default config tile size is 32")
 	_check(defaults.seed == 1, "default config seed is 1")
 	_check(defaults.poi_count == 3, "default config poi_count is 3")
 	_check(defaults.validate().is_empty(), "default config validates without errors")
 
 	var map: LunarMap = _generate(defaults)
-	_check(map.width == 64 and map.height == 48, "default map is 64x48 tiles")
+	_check(map.width == 64 and map.height == 64, "default map is 64x64 tiles")
 	_check(map.tile_size == 32, "default map uses 32 px tiles")
 	_check(map.seed == defaults.seed, "map keeps the requested seed")
 	_check(map.get_script() == MapScript, "generator returns the preloaded LunarMap script")
@@ -574,7 +574,7 @@ func _check_sanitization() -> void:
 	if null_map != null:
 		_check_map_invariants(null_map, "null config")
 		_check(
-			null_map.width == 64 and null_map.height == 48,
+			null_map.width == 64 and null_map.height == 64,
 			"null config falls back to the default size"
 		)
 

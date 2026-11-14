@@ -9,7 +9,7 @@
 
 ## 2. Configuración
 
-- [x] 2.1 Implementar `game/content/map/lunar/lunar_map_config.gd` (`class_name LunarMapConfig`, `extends Resource`) con `width=64`, `height=48`, `tile_size=32`, `seed=1`, `crater_density=0.004`, `min_crater_radius=2.0`, `max_crater_radius=8.0`, `ejecta_radius_multiplier=1.5`, `rock_density=0.015`, `ridge_density=0.0008`, `landing_zone_radius=4`, `landing_zone_center=Vector2i(-1, -1)`, `poi_count=3`, `poi_min_distance=10.0`, `poi_min_separation=8.0`, los `@export_range` correspondientes y las constantes `MIN_MAP_SIZE=16`, `MAX_MAP_SIZE=256`, `MIN_TILE_SIZE=8`, `MAX_TILE_SIZE=64`, `MAX_POI_COUNT=8`. Incluir `validate() -> Array[String]` para valores fuera de rango y rangos invertidos. Verificar con el checker `--strict`.
+- [x] 2.1 Implementar `game/content/map/lunar/lunar_map_config.gd` (`class_name LunarMapConfig`, `extends Resource`) con `width=64`, `height=64`, `tile_size=32`, `seed=1`, `crater_density=0.004`, `min_crater_radius=2.0`, `max_crater_radius=8.0`, `ejecta_radius_multiplier=1.5`, `rock_density=0.015`, `ridge_density=0.0008`, `landing_zone_radius=4`, `landing_zone_center=Vector2i(-1, -1)`, `poi_count=3`, `poi_min_distance=10.0`, `poi_min_separation=8.0`, los `@export_range` correspondientes y las constantes `MIN_MAP_SIZE=16`, `MAX_MAP_SIZE=256`, `MIN_TILE_SIZE=8`, `MAX_TILE_SIZE=64`, `MAX_POI_COUNT=8`. Incluir `validate() -> Array[String]` para valores fuera de rango y rangos invertidos. Verificar con el checker `--strict`.
 - [x] 2.2 Probar la configuración con un script temporal en `game/tests/lunar_config_check.gd`: defaults correctos, valores negativos, ancho 1, alto 9999, tile 0, radios invertidos y `poi_count` fuera de rango; debe terminar con exit code 0 y sin errores.
 
 ## 3. Modelo de datos
