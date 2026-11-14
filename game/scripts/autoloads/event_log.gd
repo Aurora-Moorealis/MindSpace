@@ -12,7 +12,8 @@ var _entries: Array[LogEntry] = []
 
 ## Appends a valid entry and emits fact_logged. Returns false (without
 ## appending) when the entry is null, its type is out of range or its payload
-## is not plain.
+## is not plain. The ledger stores its own copy, and the emitted entry is a copy
+## too, so neither the caller nor a listener can mutate a logged fact.
 func log_entry(entry: LogEntry) -> bool:
 	if entry == null:
 		return false
@@ -20,8 +21,9 @@ func log_entry(entry: LogEntry) -> bool:
 		return false
 	if not LogEntry.is_plain_payload(entry.payload):
 		return false
-	_entries.append(entry)
-	fact_logged.emit(entry)
+	var stored: LogEntry = _copy_entry(entry)
+	_entries.append(stored)
+	fact_logged.emit(_copy_entry(stored))
 	return true
 
 
