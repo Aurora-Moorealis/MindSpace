@@ -7,7 +7,7 @@ extends Control
 ## "coming soon" (ver `docs/future/selector-mision.md`).
 
 ## Escena a la que lleva "Iniciar juego" cuando exista.
-const START_SCENE: String = "res://scenes/intro_stills/intro_stills.tscn"
+const START_SCENE: String = "res://scenes/worlds/worlds.tscn"
 
 ## Escena a la que lleva "Configuración" cuando exista.
 const SETTINGS_SCENE: String = "res://scenes/settings/settings.tscn"
