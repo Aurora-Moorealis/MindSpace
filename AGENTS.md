@@ -279,6 +279,96 @@ git worktree prune                # limpiar referencias huérfanas
   propio `uid`.
 - Dejar worktrees y ramas temporales acumulándose sin integrar ni limpiar.
 
+## Godot MCP Toolkit (opcional)
+
+El proyecto incluye el addon **Godot MCP Toolkit** en
+`game/addons/godot_mcp_toolkit/`. Su servidor MCP está configurado **solo para
+este proyecto** en `.opencode/opencode.jsonc`, no en la configuración global de
+OpenCode.
+
+El MCP conecta al **editor de Godot en marcha** y expone herramientas para
+escenas, nodos, scripts, resources, playtests y depuración. **No es obligatorio**:
+la IA puede trabajar con los ficheros del repositorio, `git`, el checker de
+GDScript y Godot en headless. Úsalo cuando la alternativa por archivos sea
+frágil, lenta o directamente imposible, no por defecto.
+
+### Requisitos
+
+- Godot 4.2+ (el proyecto usa 4.7) y **Node.js 22+**.
+- El addon activado en **Project Settings → Plugins → Godot MCP Toolkit**.
+- El editor abierto en el proyecto (`game/` o `<worktree>/game`).
+- La configuración del cliente ya está escrita en `.opencode/opencode.jsonc`.
+  El propio addon también genera `game/.mcp.json` para otros clientes.
+
+Comprueba la conexión:
+
+```bash
+opencode mcp list
+```
+
+En el editor debe aparecer `[MCPServer] listening on 127.0.0.1:6550` (el puerto
+puede variar entre 6550 y 6560).
+
+### Cuándo usarlo
+
+Úsalo principalmente para lo que no se puede hacer bien sin él:
+
+- **Playtests reales:** arrancar y parar el juego, leer el estado de nodos en
+  vivo, simular input, leer logs y sacar capturas del editor o del juego.
+- **Depuración:** breakpoints, stepping, estado de depuración y diagnóstico de
+  crashes desde el buffer de errores del editor.
+- **Autoría que no es texto plano:** TileMap/TileSet, animaciones con
+  `AnimationPlayer`/`AnimationTree`, `SpriteFrames`, temas, curvas `Path2D`,
+  primitivas 3D, luces, cámaras, partículas y navegación.
+- **Escenas y nodos:** crear, abrir, reparentar nodos, leer/escribir propiedades y
+  obtener un mapa espacial, en lugar de editar `.tscn` a mano.
+- **Servicios de lenguaje GDScript:** diagnósticos del LSP, símbolos, ir a
+  definición, referencias, hover y escaneo de errores del proyecto.
+- **Assets y project settings:** importar binarios, trazar dependencias, editar
+  el input map, autoloads y ajustes del proyecto.
+- **ClassDB:** consultar clases y propiedades reales del motor.
+
+### Cuándo NO usarlo
+
+- Para leer o editar `.gd`, documentación, `git` o la estructura de carpetas: usa
+  las herramientas de archivos normales.
+- Para cambios pequeños y deterministas en texto.
+- Si el editor no está abierto o el plugin no está activo: no bloquees la tarea,
+  cae al flujo por archivos y headless.
+- Para saltarte las reglas del repositorio (tipado, PRs, propiedad de escenas).
+
+### Reglas de uso
+
+1. **Necesita el editor abierto.** Si no hay conexión, no insistas: trabaja con
+   ficheros y valida con Godot headless.
+2. **Un editor por worktree.** Cada worktree tiene su propia instancia; conecta
+   la que corresponda al módulo. No mezcles editores de módulos distintos.
+3. **No cambia las reglas de escenas.** No edites escenas de otro módulo ni
+   escenas compartidas por MCP. Si hay que probar, copia la escena a `tests/` o
+   con sufijo `_test`. El MCP no es una excepción.
+4. **Tampoco salta el tipado.** Las herramientas de escritura de código deben
+   producir GDScript con todos los tipos explícitos, igual que a mano.
+5. **Revisa lo que muta.** Tras una llamada que modifica el proyecto, mira
+   `git status` y `git diff`. No commitees `.godot/`.
+6. **Prefiere leer antes que escribir.** Usa las herramientas de inspección y
+   validación del MCP para comprobar el estado antes de mutar.
+7. **Modo solo lectura si solo inspeccionas:** añade `GODOT_MCP_READ_ONLY=1` al
+   `environment` de `.opencode/opencode.jsonc` para ocultar todas las
+   herramientas que mutan.
+8. **No uses `execute_code` para rodear estas reglas.** Si una operación no cabe
+   en el flujo permitido, para y pregunta.
+
+### Si el MCP no conecta
+
+1. Comprueba que el editor está abierto con el proyecto y el plugin activo.
+2. `node --version` debe ser 22 o superior.
+3. Ejecuta `opencode mcp list` y revisa el estado del servidor.
+4. Si el bridge no encuentra el editor, abre OpenCode desde `game/` (la carpeta
+   del `project.godot`) o ajusta el `cwd` del servidor en
+   `.opencode/opencode.jsonc`.
+5. Si nada funciona, sigue sin él: los ficheros, el checker y Godot headless
+   siguen siendo la vía principal.
+
 ## GDScript: tipado obligatorio
 
 **Todas las variables se tipan de forma explícita, absolutamente todas, aunque el
