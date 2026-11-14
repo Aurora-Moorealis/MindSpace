@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EventRow" format=3 uid="uid://rqkrz1w8ybpi1"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_prov"]
+[ext_resource type="Script" path="res://resources/events/event_row.gd" id="2_row"]
+
+[sub_resource type="Resource" id="Resource_prov"]
+script = ExtResource("1_prov")
+real_data = false
+
+[resource]
+script = ExtResource("2_row")
+id = &"comms_blackout_01"
+archetype = 4
+target_type = 2
+target_id = &""
+onset_tick = 20
+duration_ticks = 6
+intensity_start = 0.0
+intensity_peak = 0.0
+intensity_end = 0.0
+overlap_policy = 2
+delay_min_ticks = 0
+delay_max_ticks = 2
+provenance = SubResource("Resource_prov")

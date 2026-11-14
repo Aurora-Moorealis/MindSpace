@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EventRow" format=3 uid="uid://5zgeopx10fqsg"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_prov"]
+[ext_resource type="Script" path="res://resources/events/event_row.gd" id="2_row"]
+
+[sub_resource type="Resource" id="Resource_prov"]
+script = ExtResource("1_prov")
+real_data = false
+
+[resource]
+script = ExtResource("2_row")
+id = &"machine_breakdown_01"
+archetype = 0
+target_type = 0
+target_id = &"water_recycler"
+onset_tick = 8
+duration_ticks = 4
+intensity_start = -0.5
+intensity_peak = -2.0
+intensity_end = -0.5
+overlap_policy = 1
+overlap_with = Array[StringName]([&"radiation_window_01"])
+delay_min_ticks = 2
+delay_max_ticks = 4
+provenance = SubResource("Resource_prov")

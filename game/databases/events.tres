@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://dzc6upa8s94v5"]
+
+[ext_resource type="Script" path="res://resources/events/event_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://resources/events/event_row.gd" id="2_row"]
+[ext_resource type="Resource" path="res://databases/events_rows/radiation_window_01.tres" id="3_radiation"]
+[ext_resource type="Resource" path="res://databases/events_rows/machine_breakdown_01.tres" id="4_breakdown"]
+[ext_resource type="Resource" path="res://databases/events_rows/production_drop_01.tres" id="5_production"]
+[ext_resource type="Resource" path="res://databases/events_rows/consumption_spike_01.tres" id="6_consumption"]
+[ext_resource type="Resource" path="res://databases/events_rows/comms_blackout_01.tres" id="7_comms"]
+
+[resource]
+script = ExtResource("1_data")
+rows = Array[ExtResource("2_row")]([ExtResource("3_radiation"), ExtResource("4_breakdown"), ExtResource("5_production"), ExtResource("6_consumption"), ExtResource("7_comms")])
