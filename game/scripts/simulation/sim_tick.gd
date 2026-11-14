@@ -12,7 +12,6 @@ const _FALLBACK_RADIATION_CAP: float = 30.0
 const _FALLBACK_RADIATION_DEATH: float = 100.0
 const _FALLBACK_SOLAR_OUTPUT: float = 1.5
 const _FALLBACK_BLACKOUT_STEPS: float = 1.0
-const _TICKS_PER_SOL: int = 24
 
 
 ## Advances p_state one tick and returns the facts emitted by that tick.
@@ -29,7 +28,7 @@ static func step(state: SimState, economy: EconomyData) -> Array[LogEntry]:
 	# Events: no-op in this version.
 	var radiation_damage_applied: bool = _apply_consequences(state, economy, facts)
 	_apply_death(state, economy, facts, radiation_damage_applied)
-	_apply_sol_facts(state, facts)
+	_apply_sol_facts(state, economy, facts)
 	state.tick += 1
 	return facts
 
@@ -227,13 +226,15 @@ static func _apply_death(
 	facts.append(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, over_payload))
 
 
-## Step 7: a SOL_COMPLETED fact every _TICKS_PER_SOL ticks.
-static func _apply_sol_facts(state: SimState, facts: Array[LogEntry]) -> void:
+## Step 7: a SOL_COMPLETED fact at the end of every sol, whose length comes from
+## the same economy rows that drive the day/night phase.
+static func _apply_sol_facts(state: SimState, economy: EconomyData, facts: Array[LogEntry]) -> void:
+	var sol_length: int = state.get_sol_length(economy)
 	var new_tick: int = state.tick + 1
-	if new_tick % _TICKS_PER_SOL != 0:
+	if new_tick % sol_length != 0:
 		return
 	var payload: Dictionary[Variant, Variant] = {}
-	payload[&"sol"] = int(new_tick / _TICKS_PER_SOL)
+	payload[&"sol"] = int(new_tick / sol_length)
 	facts.append(LogEntry.new(LogEntry.Type.SOL_COMPLETED, state.tick, payload))
 
 

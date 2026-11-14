@@ -87,14 +87,24 @@ func reset_from_economy(economy: EconomyData) -> void:
 
 ## Day or night for the current tick, derived from the day/night lengths.
 func get_phase(economy: EconomyData) -> DayPhase:
-	var day_length: int = int(economy.get_value(&"day_length_ticks", _FALLBACK_DAY_LENGTH))
-	var night_length: int = int(economy.get_value(&"night_length_ticks", _FALLBACK_NIGHT_LENGTH))
-	var span: int = day_length + night_length
-	if span < 1:
-		span = 1
-	if tick % span < day_length:
+	if tick % get_sol_length(economy) < _day_length(economy):
 		return DayPhase.DAY
 	return DayPhase.NIGHT
+
+
+## Ticks in one sol: the configured day plus the configured night, never below 1.
+func get_sol_length(economy: EconomyData) -> int:
+	return maxi(1, _day_length(economy) + _night_length(economy))
+
+
+## Configured day length in ticks.
+func _day_length(economy: EconomyData) -> int:
+	return int(economy.get_value(&"day_length_ticks", _FALLBACK_DAY_LENGTH))
+
+
+## Configured night length in ticks.
+func _night_length(economy: EconomyData) -> int:
+	return int(economy.get_value(&"night_length_ticks", _FALLBACK_NIGHT_LENGTH))
 
 
 ## A run is alive until the tick declares it over.
