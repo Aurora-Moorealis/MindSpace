@@ -9,7 +9,7 @@ extends CanvasLayer
 
 const SLOT_COUNT: int = 5
 const LOW_HEALTH_RATIO: float = 0.3
-const HELD_ICON_SIZE: Vector2 = Vector2(24.0, 24.0)
+const HELD_ICON_SIZE: Vector2 = Vector2(16.0, 16.0)
 const CAPACITY_FALLBACK: float = 10.0
 
 @export var low_health_fill: Texture2D = null
@@ -33,6 +33,8 @@ var _slots: Array[InventorySlot] = []
 var _held_item: ItemData = null
 var _normal_health_fill: Texture2D = null
 var _clock_text: String = ""
+var _run_over: bool = false
+var _overlay_open: bool = false
 
 
 func _ready() -> void:
@@ -95,6 +97,13 @@ func add_item(item: ItemData) -> int:
 ## the state outside a tick; the HUD already does it on ticks and reset.
 func refresh_from_sim() -> void:
 	_refresh_stats()
+
+
+## Hides the HUD while another interface (a machine panel) covers the run, and
+## brings it back when that interface closes.
+func set_overlay_open(open: bool) -> void:
+	_overlay_open = open
+	_update_visibility()
 
 
 ## Updates the health bar. Values are clamped to the bar range.
@@ -260,7 +269,8 @@ func _refresh_health() -> void:
 
 
 func _on_game_reset() -> void:
-	visible = true
+	_run_over = false
+	_update_visibility()
 	inventory.reset()
 	_set_held_item(null)
 	_refresh_slots()
@@ -269,4 +279,9 @@ func _on_game_reset() -> void:
 
 ## Hides the layer so the mission summary is not covered by the HUD.
 func _on_game_over(_cause: StringName) -> void:
-	visible = false
+	_run_over = true
+	_update_visibility()
+
+
+func _update_visibility() -> void:
+	visible = not _run_over and not _overlay_open

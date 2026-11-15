@@ -7,6 +7,8 @@ extends CanvasLayer
 ## script owns the transitions around them (end of the run, restart, back to
 ## the menu) and the debug control that forces the run to end.
 
+@onready var _hud: IngameHud = $Hud
+@onready var _panel: MachinePanel = $MachinePanel
 @onready var _debug_button: Button = $DebugEndButton
 ## Typed as Control because evaluation.gd declares no class_name; its public
 ## API (present/hide_summary) and its signals are resolved at runtime.
@@ -16,6 +18,7 @@ extends CanvasLayer
 func _ready() -> void:
 	GameSim.game_over.connect(_on_game_over)
 	GameSim.game_reset.connect(_on_game_reset)
+	_panel.visibility_changed.connect(_on_panel_visibility_changed)
 	_evaluation.restart_requested.connect(_on_restart_requested)
 	_evaluation.menu_requested.connect(_on_menu_requested)
 	# The forced end of the run is a developer tool: it stays hidden outside
@@ -27,6 +30,13 @@ func _ready() -> void:
 ## Shows the mission summary over the frozen scene.
 func _on_game_over(_cause: StringName) -> void:
 	_evaluation.present()
+
+
+## The machine panel is modal: while it is open the HUD steps aside so nothing
+## overlaps the panel or its buttons.
+func _on_panel_visibility_changed() -> void:
+	_hud.set_overlay_open(_panel.visible)
+	_debug_button.visible = OS.is_debug_build() and not _panel.visible
 
 
 ## Hides the summary so a fresh run starts on the playable scene.

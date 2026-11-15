@@ -8,7 +8,7 @@ signal slot_clicked(index: int)
 signal slot_right_clicked(index: int)
 signal slot_dropped(from_index: int, to_index: int)
 
-const DRAG_PREVIEW_SIZE: float = 24.0
+const DRAG_PREVIEW_SIZE: float = 16.0
 ## A release farther than this from the press is a drag, not a click.
 const CLICK_MAX_DISTANCE: float = 8.0
 

@@ -56,7 +56,8 @@ mientras la partida esté pausada.
 El HUD SHALL ser una capa de solo lectura: NO SHALL capturar el movimiento ni la
 interacción del astronauta, y solo los espacios de la hotbar y el objeto en la mano
 SHALL consumir clics o pulsaciones. Con la partida terminada el HUD SHALL ocultarse
-y SHALL volver a mostrarse al empezar una partida nueva.
+y SHALL volver a mostrarse al empezar una partida nueva. Mientras haya un panel de
+máquina abierto el HUD SHALL ocultarse y SHALL volver a mostrarse al cerrarlo.
 
 #### Scenario: Movimiento con el HUD visible
 
@@ -77,6 +78,16 @@ y SHALL volver a mostrarse al empezar una partida nueva.
 
 - **WHEN** el jugador reinicia la misión desde la evaluación
 - **THEN** el HUD vuelve a mostrarse con los valores de la partida nueva
+
+#### Scenario: Panel de máquina abierto
+
+- **WHEN** el jugador abre el panel de una máquina
+- **THEN** el HUD se oculta y el panel queda como única interfaz en pantalla
+
+#### Scenario: Panel de máquina cerrado
+
+- **WHEN** el jugador cierra el panel de la máquina
+- **THEN** el HUD vuelve a mostrarse con los valores actuales de la partida
 
 ### Requirement: HUD solo durante la partida
 
