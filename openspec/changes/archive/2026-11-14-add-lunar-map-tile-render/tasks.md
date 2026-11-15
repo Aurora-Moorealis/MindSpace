@@ -33,7 +33,7 @@
 
 - [x] 6.1 Crear `game/content/map/lunar/lunar_map_camera_debug.gd` y `lunar_map_render_debug.tscn`: instanciar `lunar_map_world.tscn`, mover la `Camera2D` con W/A/S/D y limitarla a los bordes del mapa; verificar con un script temporal en `game/tests/` que la escena carga, `pan_camera()` mueve y el clamp detiene.
 - [x] 6.2 Ampliar `game/content/map/lunar/lunar_map_render_smoke.gd` para cargar `lunar_map_render_debug.tscn` y comprobar movimiento y clamp; ejecutar el harness con código de salida 0.
-- [ ] 6.3 Ejecutar `check-gdscript.sh -p game --strict` y `godot --headless --path game --quit`; abrir la escena en Godot y confirmar manualmente W, A, S y D.
+- [x] 6.3 Ejecutar `check-gdscript.sh -p game --strict` y `godot --headless --path game --quit`; abrir la escena en Godot y confirmar manualmente W, A, S y D.
 
 ## Workflow follow-up
 
