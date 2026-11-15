@@ -1,0 +1,38 @@
+{
+  "animation": "crop_growth",
+  "size": [32, 32],
+  "anchor": [16, 32],
+  "anchor_rule": "bottom-center",
+  "tag": "growth",
+  "frame_duration_ms": 500,
+  "loop": false,
+  "frames": [
+    {
+      "index": 1,
+      "stage": "seed",
+      "file": "frames/crop_growth_1.png",
+      "source": "stages/crop_stage_1_seed.aseprite"
+    },
+    {
+      "index": 2,
+      "stage": "sprout",
+      "file": "frames/crop_growth_2.png",
+      "source": "stages/crop_stage_2_sprout.aseprite"
+    },
+    {
+      "index": 3,
+      "stage": "young",
+      "file": "frames/crop_growth_3.png",
+      "source": "stages/crop_stage_3_young.aseprite"
+    },
+    {
+      "index": 4,
+      "stage": "mature",
+      "file": "frames/crop_growth_4.png",
+      "source": "stages/crop_stage_4_mature.aseprite"
+    }
+  ],
+  "sheet": "crop_growth_sheet.png",
+  "sheet_data": "crop_growth_sheet.json",
+  "preview_gif": "crop_growth_x4.gif"
+}

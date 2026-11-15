@@ -1,0 +1,199 @@
+{
+  "pack": "greenhouse",
+  "kind": "room",
+  "palette": "palette/greenhouse_palette.gpl",
+  "tile_size": 32,
+  "anchor_format": "pixels from the top-left of the PNG; y = contact line",
+  "sprites": [
+    {
+      "name": "grow_bed",
+      "file": "sprites/grow_bed.png",
+      "source": "grow_bed.aseprite",
+      "size": [64, 32],
+      "grid": [2, 1],
+      "anchor": [32, 32],
+      "anchor_rule": "bottom-center",
+      "category": "prop"
+    },
+    {
+      "name": "water_tank",
+      "file": "sprites/water_tank.png",
+      "source": "water_tank.aseprite",
+      "size": [64, 64],
+      "grid": [2, 2],
+      "anchor": [32, 64],
+      "anchor_rule": "bottom-center",
+      "category": "prop"
+    },
+    {
+      "name": "pipe_elbow",
+      "file": "sprites/pipe_elbow.png",
+      "source": "pipe_elbow.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "prop"
+    },
+    {
+      "name": "seed_crate",
+      "file": "sprites/seed_crate.png",
+      "source": "seed_crate.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "prop"
+    },
+    {
+      "name": "crop_seedling",
+      "file": "sprites/crop_seedling.png",
+      "source": "crop_seedling.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "crop"
+    },
+    {
+      "name": "crop_leafy",
+      "file": "sprites/crop_leafy.png",
+      "source": "crop_leafy.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "crop"
+    },
+    {
+      "name": "crop_root",
+      "file": "sprites/crop_root.png",
+      "source": "crop_root.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "crop"
+    },
+    {
+      "name": "crop_vine",
+      "file": "sprites/crop_vine.png",
+      "source": "crop_vine.aseprite",
+      "size": [32, 64],
+      "grid": [1, 2],
+      "anchor": [16, 64],
+      "anchor_rule": "bottom-center",
+      "category": "crop"
+    },
+    {
+      "name": "grow_lamp",
+      "file": "sprites/grow_lamp.png",
+      "source": "grow_lamp.aseprite",
+      "size": [64, 32],
+      "grid": [2, 1],
+      "anchor": [32, 0],
+      "anchor_rule": "top-center",
+      "category": "equipment"
+    },
+    {
+      "name": "fan_unit",
+      "file": "sprites/fan_unit.png",
+      "source": "fan_unit.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 1],
+      "anchor_rule": "top-center",
+      "category": "equipment"
+    },
+    {
+      "name": "sprinkler",
+      "file": "sprites/sprinkler.png",
+      "source": "sprinkler.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "equipment"
+    },
+    {
+      "name": "gauge_panel",
+      "file": "sprites/gauge_panel.png",
+      "source": "gauge_panel.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 5],
+      "anchor_rule": "top-center",
+      "category": "equipment"
+    },
+    {
+      "name": "vent_grille",
+      "file": "sprites/vent_grille.png",
+      "source": "vent_grille.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 0],
+      "anchor_rule": "top-center",
+      "category": "equipment"
+    },
+    {
+      "name": "pot_small",
+      "file": "sprites/pot_small.png",
+      "source": "pot_small.aseprite",
+      "size": [16, 16],
+      "grid": [0.5, 0.5],
+      "anchor": [8, 16],
+      "anchor_rule": "bottom-center",
+      "category": "decor"
+    },
+    {
+      "name": "watering_can",
+      "file": "sprites/watering_can.png",
+      "source": "watering_can.aseprite",
+      "size": [16, 16],
+      "grid": [0.5, 0.5],
+      "anchor": [8, 16],
+      "anchor_rule": "bottom-center",
+      "category": "decor"
+    },
+    {
+      "name": "tool_rack",
+      "file": "sprites/tool_rack.png",
+      "source": "tool_rack.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "decor"
+    },
+    {
+      "name": "hose_coil",
+      "file": "sprites/hose_coil.png",
+      "source": "hose_coil.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "decor"
+    },
+    {
+      "name": "floor_drain",
+      "file": "sprites/floor_drain.png",
+      "source": "floor_drain.aseprite",
+      "size": [32, 32],
+      "grid": [1, 1],
+      "anchor": [16, 32],
+      "anchor_rule": "bottom-center",
+      "category": "decor"
+    },
+    {
+      "name": "warning_sign",
+      "file": "sprites/warning_sign.png",
+      "source": "warning_sign.aseprite",
+      "size": [16, 16],
+      "grid": [0.5, 0.5],
+      "anchor": [8, 16],
+      "anchor_rule": "bottom-center",
+      "category": "decor"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+GIMP Palette
+Name: MindSpace Greenhouse 22
+Columns: 22
+#
+ 17  24  39	Outline
+255 255 255	Suit highlight
+246 250 254	Suit light
+216 226 240	Suit mid
+174 189 210	Suit shade
+124 140 166	Suit deep
+  8  17  32	Visor rim
+ 10  23  40	Visor dark
+ 22  50  79	Visor mid
+ 95 182 218	Glass highlight
+214 244 255	Glass specular
+ 35  45  66	Tech dark
+ 61  73  94	Metal dark
+125 140 163	Metal light
+198  67  47	Accent red
+232 118  58	Accent orange
+244 194  90	Warning light
+ 28  42  32	Green deep
+ 47  74  51	Green dark
+ 74 107  69	Green base
+109 146  87	Green light
+156 191 126	Green highlight

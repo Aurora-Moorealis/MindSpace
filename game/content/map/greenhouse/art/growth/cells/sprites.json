@@ -1,0 +1,33 @@
+{
+  "set": "greenhouse_cells",
+  "size": [16, 16],
+  "anchor": [8, 16],
+  "anchor_rule": "bottom-center",
+  "usage": "3x3 cells per shelf of the v1 display case; each cell grows independently",
+  "stages": [
+    {
+      "index": 1,
+      "name": "seed",
+      "file": "cell_stage_1_seed.png",
+      "source": "cell_stage_1_seed.aseprite"
+    },
+    {
+      "index": 2,
+      "name": "sprout",
+      "file": "cell_stage_2_sprout.png",
+      "source": "cell_stage_2_sprout.aseprite"
+    },
+    {
+      "index": 3,
+      "name": "young",
+      "file": "cell_stage_3_young.png",
+      "source": "cell_stage_3_young.aseprite"
+    },
+    {
+      "index": 4,
+      "name": "mature",
+      "file": "cell_stage_4_mature.png",
+      "source": "cell_stage_4_mature.aseprite"
+    }
+  ]
+}

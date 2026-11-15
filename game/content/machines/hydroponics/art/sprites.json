@@ -1,0 +1,40 @@
+{
+  "pack": "greenhouse",
+  "kind": "machine",
+  "machine": "hydroponics",
+  "palette": "palette/greenhouse_palette.gpl",
+  "tile_size": 32,
+  "anchor_format": "pixels from the top-left of the PNG; y = contact line",
+  "sprites": [
+    {
+      "name": "hydroponics_rack",
+      "file": "sprites/hydroponics_rack.png",
+      "source": "hydroponics_rack.aseprite",
+      "size": [96, 64],
+      "grid": [3, 2],
+      "anchor": [48, 64],
+      "anchor_rule": "bottom-center",
+      "category": "machine"
+    },
+    {
+      "name": "hydroponics_console",
+      "file": "sprites/hydroponics_console.png",
+      "source": "hydroponics_console.aseprite",
+      "size": [64, 32],
+      "grid": [2, 1],
+      "anchor": [32, 32],
+      "anchor_rule": "bottom-center",
+      "category": "machine"
+    },
+    {
+      "name": "nutrient_tank",
+      "file": "sprites/nutrient_tank.png",
+      "source": "nutrient_tank.aseprite",
+      "size": [32, 64],
+      "grid": [1, 2],
+      "anchor": [16, 64],
+      "anchor_rule": "bottom-center",
+      "category": "machine"
+    }
+  ]
+}
