@@ -148,6 +148,16 @@ func get_economy() -> EconomyData:
 	return _economy
 
 
+## Current health of the astronaut, read-only for the HUD.
+func get_health() -> float:
+	return state.health
+
+
+## Health ceiling of the current run, read-only for the HUD.
+func get_max_health() -> float:
+	return state.max_health
+
+
 ## Replaces the cable layout of the run. The argument is copied, so callers can
 ## rebuild their list without mutating the simulation.
 func set_power_links(links: Array[PowerLink]) -> void:
