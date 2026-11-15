@@ -125,12 +125,18 @@ func _on_cell_pressed(index: int) -> void:
 		return
 	var stage: int = _station.cultivation.stage_of(index)
 	if stage == 0:
-		_station.plant_cell(index)
+		if _station.plant_cell(index):
+			AudioManager.play(AudioManager.Sfx.PLANT)
+		else:
+			AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_refresh()
 	elif stage >= HydroponicsState.STAGE_COUNT:
 		_open_actions(index)
 	else:
-		_station.remove_cell(index)
+		if _station.remove_cell(index):
+			AudioManager.play(AudioManager.Sfx.REMOVE)
+		else:
+			AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_refresh()
 
 
@@ -148,6 +154,7 @@ func _build_actions() -> void:
 func _open_actions(index: int) -> void:
 	if _actions == null or _station == null:
 		return
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_action_index = index
 	_actions.clear()
 	_actions.add_item(HARVEST_TEXT, ACTION_HARVEST)
@@ -171,9 +178,15 @@ func _on_action_pressed(action_id: int) -> void:
 		return
 	match action_id:
 		ACTION_HARVEST:
-			_station.harvest_cell(index)
+			if _station.harvest_cell(index):
+				AudioManager.play(AudioManager.Sfx.HARVEST)
+			else:
+				AudioManager.play(AudioManager.Sfx.UI_DENY)
 		ACTION_REMOVE:
-			_station.remove_cell(index)
+			if _station.remove_cell(index):
+				AudioManager.play(AudioManager.Sfx.REMOVE)
+			else:
+				AudioManager.play(AudioManager.Sfx.UI_DENY)
 	_refresh()
 
 

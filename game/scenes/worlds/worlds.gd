@@ -91,6 +91,7 @@ func _make_row(world: World) -> HBoxContainer:
 
 
 func _on_world_pressed(world: World) -> void:
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	WorldStore.select(world)
 	_world_ready(world)
 
@@ -99,6 +100,7 @@ func _on_delete_pressed(world: World, button: Button) -> void:
 	if not is_instance_valid(button):
 		return
 	if not bool(button.get_meta("confirming", false)):
+		AudioManager.play(AudioManager.Sfx.UI_CLICK)
 		button.set_meta("confirming", true)
 		button.text = "Sure?"
 		get_tree().create_timer(DELETE_CONFIRM_SECONDS).timeout.connect(
@@ -107,9 +109,11 @@ func _on_delete_pressed(world: World, button: Button) -> void:
 		return
 
 	if not WorldStore.delete_world(world.id):
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_show_toast("Could not delete the world.")
 		return
 
+	AudioManager.play(AudioManager.Sfx.UI_CLOSE)
 	_worlds = WorldStore.list_worlds()
 	_show_toast("World deleted: %s" % world.name)
 	_refresh()
@@ -123,6 +127,7 @@ func _reset_delete_button(button: Button) -> void:
 
 
 func _on_create_button_pressed() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_list_scroll.visible = false
 	_create_button.visible = false
 	_form.visible = true
@@ -133,6 +138,7 @@ func _on_create_button_pressed() -> void:
 
 ## Leaves the creation form without saving and goes back to the list.
 func _cancel_form() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_form.visible = false
 	_list_scroll.visible = true
 	_create_button.visible = true
@@ -144,15 +150,18 @@ func _cancel_form() -> void:
 func _on_confirm_button_pressed() -> void:
 	var message: String = WorldStore.validate_name(_name_edit.text, _worlds)
 	if not message.is_empty():
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_error.text = message
 		_name_edit.grab_focus()
 		return
 
 	var world: World = WorldStore.create_world(_name_edit.text)
 	if world == null:
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_error.text = "Could not save the world."
 		return
 
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	_world_ready(world)
 
 
@@ -175,6 +184,7 @@ func _world_ready(world: World) -> void:
 
 
 func _go_back() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_CLOSE)
 	get_tree().change_scene_to_file(WELCOME_SCENE)
 
 

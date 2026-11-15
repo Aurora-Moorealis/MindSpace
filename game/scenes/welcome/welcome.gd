@@ -31,17 +31,22 @@ func _ready() -> void:
 
 func _on_play_pressed() -> void:
 	if not ResourceLoader.exists(START_SCENE):
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_show_toast("Cannot find the worlds screen (%s)." % START_SCENE)
 		return
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	var error: Error = get_tree().change_scene_to_file(START_SCENE)
 	if error != OK:
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_show_toast("Could not open the worlds screen (error %d)." % error)
 
 
 func _on_options_pressed() -> void:
 	if ResourceLoader.exists(SETTINGS_SCENE):
+		AudioManager.play(AudioManager.Sfx.UI_OPEN)
 		get_tree().change_scene_to_file(SETTINGS_SCENE)
 		return
+	AudioManager.play(AudioManager.Sfx.UI_DENY)
 	_show_toast("Settings: coming soon.")
 
 
