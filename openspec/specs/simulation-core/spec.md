@@ -7,7 +7,7 @@ Define el comportamiento observable del núcleo que hace avanzar la partida: el 
 
 ### Requirement: Reloj determinista por ticks
 
-El núcleo SHALL avanzar el estado del juego únicamente mediante ticks discretos. Un tick representa 1 hora de juego y ocurre cada 60 segundos reales a ×1. Los multiplicadores ×1/×5/×10 SHALL modificar solo la frecuencia del tick, nunca la escala temporal del motor. La pausa SHALL detener los ticks sin detener la interfaz.
+El núcleo SHALL avanzar el estado del juego únicamente mediante ticks discretos. Un tick representa 1 hora de juego y ocurre cada 60 segundos reales a ×1. Los multiplicadores ×1/×5/×10/×100/×1000/×10000 SHALL modificar solo la frecuencia del tick, nunca la escala temporal del motor. La pausa SHALL detener los ticks sin detener la interfaz.
 
 #### Scenario: Avance a velocidad base
 
@@ -19,6 +19,12 @@ El núcleo SHALL avanzar el estado del juego únicamente mediante ticks discreto
 - **WHEN** el reloj está a ×5 y transcurren 12 segundos reales
 - **THEN** el contador de ticks avanza exactamente 1
 - **WHEN** el reloj está a ×10 y transcurren 6 segundos reales
+- **THEN** el contador de ticks avanza exactamente 1
+- **WHEN** el reloj está a ×100 y transcurren 0,6 segundos reales
+- **THEN** el contador de ticks avanza exactamente 1
+- **WHEN** el reloj está a ×1000 y transcurren 0,06 segundos reales
+- **THEN** el contador de ticks avanza exactamente 1
+- **WHEN** el reloj está a ×10000 y transcurren 0,006 segundos reales
 - **THEN** el contador de ticks avanza exactamente 1
 
 #### Scenario: Pausa

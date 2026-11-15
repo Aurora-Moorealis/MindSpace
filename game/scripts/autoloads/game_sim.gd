@@ -14,9 +14,9 @@ const ECONOMY_PATH: String = "res://databases/economy.tres"
 const MACHINES_PATH: String = "res://databases/machines.tres"
 const EVENTS_PATH: String = "res://databases/events.tres"
 const SECONDS_PER_TICK: float = 60.0
-const MAX_TICKS_PER_FRAME: int = 10
+const MAX_TICKS_PER_FRAME: int = 400
 
-enum Speed { X1, X5, X10 }
+enum Speed { X1, X5, X10, X100, X1000, X10000 }
 
 var state: SimState = SimState.new()
 var speed: Speed = Speed.X1
@@ -144,6 +144,12 @@ func get_rate() -> float:
 			return 5.0
 		Speed.X10:
 			return 10.0
+		Speed.X100:
+			return 100.0
+		Speed.X1000:
+			return 1000.0
+		Speed.X10000:
+			return 10000.0
 		_:
 			return 1.0
 

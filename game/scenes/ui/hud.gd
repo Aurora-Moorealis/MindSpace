@@ -333,6 +333,12 @@ func _speed_text() -> String:
 			return "x5"
 		GameSim.Speed.X10:
 			return "x10"
+		GameSim.Speed.X100:
+			return "x100"
+		GameSim.Speed.X1000:
+			return "x1000"
+		GameSim.Speed.X10000:
+			return "x10000"
 	return "x1"
 
 
@@ -360,8 +366,23 @@ func _step_speed(step: int) -> void:
 			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X1)
 		GameSim.Speed.X10:
-			if step < 0:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X100)
+			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X5)
+		GameSim.Speed.X100:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X1000)
+			elif step < 0:
+				GameSim.set_speed(GameSim.Speed.X10)
+		GameSim.Speed.X1000:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X10000)
+			elif step < 0:
+				GameSim.set_speed(GameSim.Speed.X100)
+		GameSim.Speed.X10000:
+			if step < 0:
+				GameSim.set_speed(GameSim.Speed.X1000)
 	_refresh_time_controls()
 	_refresh_clock(GameSim.state, GameSim.get_economy())
 

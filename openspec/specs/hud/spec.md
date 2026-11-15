@@ -103,7 +103,7 @@ tick y al cambiar la velocidad, sin esperar al siguiente tick.
 
 #### Scenario: Cambio de velocidad
 
-- **WHEN** la partida pasa a x5 o x10
+- **WHEN** la partida pasa a cualquiera de los multiplicadores x5, x10, x100, x1000 o x10000
 - **THEN** el multiplicador del HUD cambia en el mismo momento
 
 ### Requirement: Hotbar enlazada al inventario
@@ -221,19 +221,24 @@ de teclado `pause`, `speed_up` y `speed_down` SHALL seguir disponibles.
 
 ### Requirement: Límites de los controles de tiempo
 
-Los botones de velocidad SHALL mover la velocidad un paso entre x1, x5 y x10 y NO
-SHALL salirse de ese rango. Los tres botones de tiempo SHALL quedar deshabilitados
-con la partida terminada.
+Los botones de velocidad SHALL mover la velocidad un paso entre x1, x5, x10, x100,
+x1000 y x10000 y NO SHALL salirse de ese rango. Los tres botones de tiempo SHALL
+quedar deshabilitados con la partida terminada.
 
 #### Scenario: Subir la velocidad
 
 - **WHEN** el jugador pulsa el botón de subir velocidad en x1
 - **THEN** la simulación pasa a x5 y el multiplicador del reloj lo refleja sin esperar a un tick
 
-#### Scenario: Velocidad al máximo
+#### Scenario: Velocidad alta
 
 - **WHEN** el jugador pulsa el botón de subir velocidad estando en x10
-- **THEN** la velocidad sigue en x10 y el HUD no muestra un valor fuera de rango
+- **THEN** la simulación pasa a x100 y el multiplicador del reloj lo refleja sin esperar a un tick
+
+#### Scenario: Velocidad al máximo
+
+- **WHEN** el jugador pulsa el botón de subir velocidad estando en x10000
+- **THEN** la velocidad sigue en x10000 y el HUD no muestra un valor fuera de rango
 
 #### Scenario: Partida terminada
 
