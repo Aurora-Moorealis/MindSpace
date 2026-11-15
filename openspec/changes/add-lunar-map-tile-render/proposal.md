@@ -24,7 +24,7 @@ otra de revisión con cámara libre. No introduce jugador, colisiones ni gamepla
   transitable recibe un prop sólido.
 - **Escena `lunar_map_world.tscn`**: tres `TileMapLayer` con los TileSets reales,
   cámara en el spawn a escala de juego y generación desde una `LunarMapConfig`.
-- **Escena de revisión**: `lunar_map_camera_debug.tscn` instancia el mundo y
+- **Escena de revisión**: `lunar_map_render_debug.tscn` instancia el mundo y
   mueve la cámara con WASD a escala 1:1 para recorrer el mapa.
 - **Verificación headless**: harness de cobertura, mapeo, determinismo, props,
   escena y cámara de revisión.

@@ -13,7 +13,7 @@ extends SceneTree
 ## Exits with code 0 when every check passes and 1 otherwise.
 
 const WORLD_SCENE: PackedScene = preload("res://content/map/lunar/lunar_map_world.tscn")
-const CAMERA_DEBUG_SCENE_PATH: String = "res://content/map/lunar/lunar_map_camera_debug.tscn"
+const CAMERA_DEBUG_SCENE_PATH: String = "res://content/map/lunar/lunar_map_render_debug.tscn"
 const GROUND_TILESET: TileSet = preload("res://content/map/tiles/ground_tileset.tres")
 const BASE_TILESET: TileSet = preload("res://content/map/tiles/base_tileset.tres")
 const PROPS_TILESET: TileSet = preload("res://content/map/props/props_tileset.tres")

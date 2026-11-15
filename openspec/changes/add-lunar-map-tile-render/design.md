@@ -61,7 +61,7 @@ Restricciones que condicionan la implementación:
 | `lunar_map_world.gd` | `Node2D` con `class_name LunarMapWorld` | Controlador de escena: genera, pinta y centra la cámara. |
 | `lunar_map_world.tscn` | Escena | Tres `TileMapLayer` con los TileSets reales, cámara y script. |
 | `lunar_map_camera_debug.gd` | `Node2D` con `class_name LunarMapCameraDebug` | Escena de revisión: instancia el mundo y mueve su cámara con WASD. |
-| `lunar_map_camera_debug.tscn` | Escena | Escena de revisión con cámara libre. |
+| `lunar_map_render_debug.tscn` | Escena | Escena de revisión con cámara libre. |
 | `lunar_map_render_smoke.gd` | `SceneTree` | Harness headless de la representación. |
 
 El mapper no conoce `TileMapLayer`; el renderer no conoce la escena; el
@@ -205,7 +205,7 @@ Comprueba, sobre mapas generados de 16×16 y 64×64:
    pequeño.
 7. La escena `lunar_map_world.tscn` se instancia en headless, genera un mapa,
    tiene las tres capas con celdas y deja la cámara en el spawn con zoom 1:1.
-8. La escena `lunar_map_camera_debug.tscn` se instancia en headless, obtiene el
+8. La escena `lunar_map_render_debug.tscn` se instancia en headless, obtiene el
    mapa, `pan_camera()` mueve la cámara y el clamp la detiene en los bordes.
 
 Comandos de cierre:
@@ -228,7 +228,7 @@ directamente; la integración es un Pull Request de `map-render` a `features`.
 
 ### 9. Escena de revisión que reutiliza el mundo
 
-`lunar_map_camera_debug.tscn` es una escena de desarrollo. Su script
+`lunar_map_render_debug.tscn` es una escena de desarrollo. Su script
 `LunarMapCameraDebug` instancia `lunar_map_world.tscn`, espera un frame, obtiene
 la `Camera2D` del mundo y la mueve con W, A, S y D. No duplica capas ni lógica de
 render: la revisión usa exactamente el mismo mapa que la escena de juego.
@@ -261,7 +261,7 @@ sus propias capas (duplica TileSets, wiring y el riesgo de divergencia).
 1. Implementar en la rama `map-render` del checkout principal, sin tocar
    `features`.
 2. Validar con el harness, el checker estricto y el arranque headless.
-3. Revisar visualmente `lunar_map_world.tscn` y `lunar_map_camera_debug.tscn` y,
+3. Revisar visualmente `lunar_map_world.tscn` y `lunar_map_render_debug.tscn` y,
    si hace falta, ajustar el mapeo antes del commit.
 4. Commit en `map-render`, push y Pull Request a `features`.
 5. Tras el merge, eliminar cualquier worktree temporal y la rama de módulo.
