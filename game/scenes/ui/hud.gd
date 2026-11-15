@@ -52,6 +52,10 @@ var _clock_text: String = ""
 var _astronaut: Astronaut = null
 ## Last interaction target received, kept so its name is only rebuilt on change.
 var _interaction_target: Node = null
+## True once the run ended, so the HUD stays hidden behind the summary.
+var _run_over: bool = false
+## True while a modal interface (a machine panel) covers the run.
+var _overlay_open: bool = false
 
 
 func _ready() -> void:
@@ -161,6 +165,13 @@ func add_item(item: ItemData) -> int:
 ## the state outside a tick; the HUD already does it on ticks and reset.
 func refresh_from_sim() -> void:
 	_refresh_stats()
+
+
+## Hides the HUD while another interface (a machine panel) covers the run, and
+## brings it back when that interface closes.
+func set_overlay_open(open: bool) -> void:
+	_overlay_open = open
+	_update_visibility()
 
 
 ## Updates the health bar. Values are clamped to the bar range.
@@ -418,7 +429,8 @@ func _refresh_health() -> void:
 
 
 func _on_game_reset() -> void:
-	visible = true
+	_run_over = false
+	_update_visibility()
 	inventory.reset()
 	_set_held_item(null)
 	_refresh_slots()
@@ -429,4 +441,9 @@ func _on_game_reset() -> void:
 
 ## Hides the layer so the mission summary is not covered by the HUD.
 func _on_game_over(_cause: StringName) -> void:
-	visible = false
+	_run_over = true
+	_update_visibility()
+
+
+func _update_visibility() -> void:
+	visible = not _run_over and not _overlay_open

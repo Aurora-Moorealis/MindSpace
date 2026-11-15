@@ -11,6 +11,7 @@ extends CanvasLayer
 @export var astronaut_path: NodePath = ^"../Astronaut"
 
 @onready var _hud: IngameHud = $Hud
+@onready var _panel: MachinePanel = $MachinePanel
 @onready var _debug_button: Button = $DebugEndButton
 @onready var _evaluation: Evaluation = $Evaluation
 
@@ -19,6 +20,7 @@ func _ready() -> void:
 	_bind_hud_astronaut()
 	GameSim.game_over.connect(_on_game_over)
 	GameSim.game_reset.connect(_on_game_reset)
+	_panel.visibility_changed.connect(_on_panel_visibility_changed)
 	_evaluation.restart_requested.connect(_on_restart_requested)
 	_evaluation.menu_requested.connect(_on_menu_requested)
 	# The forced end of the run is a developer tool: it stays hidden outside
@@ -44,6 +46,13 @@ func _bind_hud_astronaut() -> void:
 ## Shows the mission summary over the frozen scene.
 func _on_game_over(_cause: StringName) -> void:
 	_evaluation.present()
+
+
+## The machine panel is modal: while it is open the HUD steps aside so nothing
+## overlaps the panel or its buttons.
+func _on_panel_visibility_changed() -> void:
+	_hud.set_overlay_open(_panel.visible)
+	_debug_button.visible = OS.is_debug_build() and not _panel.visible
 
 
 ## Hides the summary so a fresh run starts on the playable scene.
