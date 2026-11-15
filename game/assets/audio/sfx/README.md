@@ -46,7 +46,7 @@ Wired actions:
 | --- | --- |
 | Welcome, worlds, intro, evaluation, run UI | click, open, close, deny |
 | Machine panel | open, close, repair, upgrade, deny |
-| Hydroponics panel | plant, harvest, remove, deny |
+| Hydroponics interface | plant, harvest, remove, deny |
 | Hotbar HUD | click, selection, drag/drop |
 | HUD time controls | click |
 | Radiation crossing | radiation_alarm |
