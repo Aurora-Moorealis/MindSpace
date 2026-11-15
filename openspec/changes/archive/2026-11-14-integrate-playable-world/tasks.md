@@ -43,7 +43,7 @@
 ## 9. Cierre
 
 - [x] 9.1 Ejecutar `openspec validate integrate-playable-world --strict` y corregir lo que reporte. (≤ 15 min)
-- [x] 9.2 Actualizar este `tasks.md` con la evidencia de cada tarea, revisar `git status`/`git diff` para confirmar que solo cambian archivos del módulo, commitear en `playable-world` y abrir Pull Request hacia `features`. Archivar el cambio OpenSpec tras la integración. (≤ 30 min)
+- [x] 9.2 Actualizar este `tasks.md` con la evidencia de cada tarea, revisar `git status`/`git diff` para confirmar que solo cambian archivos del módulo, commitear en `playable-world` y abrir Pull Request hacia `features`. Archivar el cambio OpenSpec tras la integración. (≤ 30 min) — Hecho: commit `e469135`, PR [#16](https://github.com/Aurora-Moorealis/MindSpace/pull/16), archivado en `openspec/changes/archive/2026-11-14-integrate-playable-world/`.
 
 ## Evidencia de la implementación
 
@@ -66,4 +66,4 @@
 | 8.3 | 21 harnesses exit 0; `tick_check` 106 y `empty_economy_check` 37 reparados, con copia actualizada en la raíz. |
 | 8.4 | Captura real Xvfb 850×480 en `/tmp/opencode/playable-world-capture.png`; `06-map-before`/`07-map-after` muestran movimiento y seguimiento de cámara. |
 | 9.1 | `openspec validate integrate-playable-world --strict` → `Change 'integrate-playable-world' is valid`. |
-| 9.2 | Evidencia actualizada y `git status`/`git diff` revisados (solo rutas del módulo y `tasks.md`); commit/PR/archivo pendientes de confirmación. |
+| 9.2 | Commit `e469135` en `playable-world`, PR #16 (https://github.com/Aurora-Moorealis/MindSpace/pull/16) y cambio archivado; `openspec validate --all --strict` 13/13. |
