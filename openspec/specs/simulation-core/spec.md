@@ -78,17 +78,17 @@ Cada tick SHALL ejecutar, en este orden: producción, consumos, degradación pas
 
 ### Requirement: Producción y consumo de recursos
 
-En cada tick el núcleo SHALL producir y consumir O₂, agua, comida y energía según la economía, las máquinas y sus mejoras. Los consumos de una máquina SHALL proceder de su ficha. Los recursos SHALL mantenerse en `[0, capacidad]` y el consumo SHALL aplicarse después de la producción. Los valores efectivos SHALL incluir los deltas de mejora y nunca ser negativos en consumo y degradación.
+En cada tick el núcleo SHALL producir y consumir O₂, agua, comida y energía según la economía, las máquinas y sus mejoras. Los consumos de una máquina SHALL proceder de su ficha. Los recursos SHALL mantenerse en `[0, capacidad]`, el consumo SHALL aplicarse después de la producción y los valores efectivos SHALL incluir los deltas de mejora, nunca negativos en consumo y degradación. La energía SHALL almacenarse en las baterías de la red eléctrica.
 
 #### Scenario: Producción solar de día
 
-- **WHEN** el tick ocurre en fase de día y el panel solar está operativo
-- **THEN** la energía producida se suma a la batería hasta su capacidad
+- **WHEN** el tick ocurre en fase de día, el panel solar está operativo y su red tiene una batería con hueco
+- **THEN** la energía producida se suma a las baterías de esa red hasta su capacidad
 
 #### Scenario: Consumo de soporte vital
 
 - **WHEN** transcurre un tick con la tripulación viva
-- **THEN** O₂, agua, comida y energía disminuyen según las filas de consumo aplicables
+- **THEN** O₂, agua y comida disminuyen según las filas de consumo aplicables y la energía de cada red baja según la demanda de sus máquinas alimentadas
 
 #### Scenario: Recursos acotados
 
@@ -100,12 +100,17 @@ En cada tick el núcleo SHALL producir y consumir O₂, agua, comida y energía 
 #### Scenario: Consumo propio de una máquina
 
 - **WHEN** una máquina operativa declara consumos en su ficha
-- **THEN** el tick descuenta esos consumos, y una máquina apagada o averiada no consume
+- **THEN** el tick descuenta esos consumos de la red de la máquina, y una máquina apagada o averiada no consume
 
 #### Scenario: Mejora de producción o consumo
 
 - **WHEN** una máquina operativa tiene una mejora que altera su producción, su consumo de energía o su degradación
 - **THEN** el tick aplica el valor base más el delta de la mejora, con clamp a cero en consumo y degradación
+
+#### Scenario: Panel sin almacenamiento
+
+- **WHEN** el panel solar produce y su red no contiene ninguna batería
+- **THEN** la producción se descarta y ninguna otra red recibe esa energía
 
 ### Requirement: Escalera de consecuencias vitales
 
@@ -130,21 +135,26 @@ Cuando un recurso vital llega a cero, el núcleo SHALL aplicar la escalera fija:
 
 ### Requirement: Apagado por falta de energía
 
-Si la energía disponible es 0, el núcleo SHALL apagar máquinas en orden fijo: luces → hidropónica → reciclador → sistema de O₂. Una máquina apagada SHALL dejar de consumir energía y de producir. El orden SHALL ser independiente del orden de inserción de las máquinas.
+Si la carga disponible de una red es 0 y no recibe producción en ese tick, el núcleo SHALL apagar máquinas de esa red en orden fijo: luces → hidropónica → reciclador → sistema de O₂. Una máquina apagada SHALL dejar de consumir energía y de producir. El orden SHALL ser independiente del orden de inserción de las máquinas y el apagado de una red SHALL NOT afectar a las máquinas de otra red.
 
 #### Scenario: Apagón
 
-- **WHEN** la energía llega a 0
-- **THEN** las luces se apagan primero y el sistema de O₂ es el último en apagarse
+- **WHEN** la carga de una red llega a 0
+- **THEN** las luces de esa red se apagan primero y su sistema de O₂ es el último en apagarse
 
 #### Scenario: Máquina apagada
 
 - **WHEN** una máquina está apagada por el apagón
 - **THEN** no consume energía ni aporta producción en ese tick
 
+#### Scenario: Redes separadas
+
+- **WHEN** una red se queda sin carga mientras otra red conserva carga
+- **THEN** las máquinas de la red con carga siguen funcionando
+
 ### Requirement: Radiación acumulativa irreversible
 
-La dosis de radiación SHALL ser un acumulador que nunca decrece. Bajo techo SHALL permanecer constante; en el exterior SHALL crecer según distancia y duración. Por encima del 30% SHALL limitar la salud máxima y causar daño progresivo; al 100% SHALL causar la muerte.
+La dosis de radiación SHALL ser un acumulador que nunca decrece. Bajo techo SHALL permanecer constante; en el exterior SHALL crecer según distancia, duración y el multiplicador del traje equipado. Por encima del 30% SHALL limitar la salud máxima y causar daño progresivo; al 100% SHALL causar la muerte.
 
 #### Scenario: Interior sin ganancia
 
@@ -155,6 +165,11 @@ La dosis de radiación SHALL ser un acumulador que nunca decrece. Bajo techo SHA
 
 - **WHEN** el astronauta permanece en el exterior durante un tick
 - **THEN** la dosis aumenta según la distancia y el tiempo configurados
+
+#### Scenario: Traje reforzado
+
+- **WHEN** el astronauta lleva el traje reforzado y pasa un tick en el exterior
+- **THEN** la dosis aumenta según la fila de exterior multiplicada por la fila del traje reforzado
 
 #### Scenario: Dosis irreversible
 
