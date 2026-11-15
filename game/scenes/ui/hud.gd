@@ -42,6 +42,7 @@ func _ready() -> void:
 	inventory.selection_changed.connect(_on_selection_changed)
 	GameSim.tick_advanced.connect(_on_sim_tick_advanced)
 	GameSim.game_reset.connect(_on_game_reset)
+	GameSim.game_over.connect(_on_game_over)
 	_refresh_slots()
 	_set_held_item(null)
 	_refresh_stats()
@@ -259,7 +260,13 @@ func _refresh_health() -> void:
 
 
 func _on_game_reset() -> void:
+	visible = true
 	inventory.reset()
 	_set_held_item(null)
 	_refresh_slots()
 	_refresh_stats()
+
+
+## Hides the layer so the mission summary is not covered by the HUD.
+func _on_game_over(_cause: StringName) -> void:
+	visible = false

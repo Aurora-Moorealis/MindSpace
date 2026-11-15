@@ -55,7 +55,8 @@ mientras la partida esté pausada.
 
 El HUD SHALL ser una capa de solo lectura: NO SHALL capturar el movimiento ni la
 interacción del astronauta, y solo los espacios de la hotbar y el objeto en la mano
-SHALL consumir clics o pulsaciones.
+SHALL consumir clics o pulsaciones. Con la partida terminada el HUD SHALL ocultarse
+y SHALL volver a mostrarse al empezar una partida nueva.
 
 #### Scenario: Movimiento con el HUD visible
 
@@ -70,7 +71,12 @@ SHALL consumir clics o pulsaciones.
 #### Scenario: Partida terminada
 
 - **WHEN** la partida termina
-- **THEN** el HUD deja de refrescar la vida y los recursos y la evaluación queda por encima de él
+- **THEN** el HUD se oculta y la evaluación queda visible sin nada encima
+
+#### Scenario: Partida nueva
+
+- **WHEN** el jugador reinicia la misión desde la evaluación
+- **THEN** el HUD vuelve a mostrarse con los valores de la partida nueva
 
 ### Requirement: HUD solo durante la partida
 
