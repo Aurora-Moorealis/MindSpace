@@ -1,10 +1,11 @@
 class_name SimTick
 extends RefCounted
 
-## Deterministic advance of one simulation tick (contract v1.1).
+## Deterministic advance of one simulation tick (contract v1).
 ## No randomness and no real time: same state plus same economy, same result.
-## The step order is fixed: production, consumption, degradation, events
-## (currently a no-op), consequences, death and calendar facts.
+## The step order is fixed: production, consumption, degradation, machine work
+## (repairs in progress), events (currently a no-op), consequences, death and
+## calendar facts.
 
 const _FALLBACK_CAPACITY: float = 10.0
 const _FALLBACK_MAX_HEALTH: float = 100.0
@@ -16,7 +17,9 @@ const _FALLBACK_SUIT_MULTIPLIER: float = 1.0
 
 
 ## Advances p_state one tick and returns the facts emitted by that tick.
-static func step(state: SimState, economy: EconomyData) -> Array[LogEntry]:
+static func step(
+	state: SimState, economy: EconomyData, machines: MachineDatabase
+) -> Array[LogEntry]:
 	var facts: Array[LogEntry] = []
 	# A finished run keeps counting ticks but emits nothing else.
 	if state.game_over:
@@ -25,11 +28,14 @@ static func step(state: SimState, economy: EconomyData) -> Array[LogEntry]:
 
 	var networks: Array[PowerNetwork] = PowerGrid.build(state)
 	_apply_production(state, economy, networks)
-	_apply_consumption(state, economy, networks)
+	_apply_consumption(state, economy, machines, networks)
 	state.sync_energy_resource()
 	_apply_degradation(state, economy, facts)
+	_apply_machine_work(state, facts)
 	# Events: no-op in this version.
-	var radiation_damage_applied: bool = _apply_consequences(state, economy, networks, facts)
+	var radiation_damage_applied: bool = _apply_consequences(
+		state, economy, networks, facts
+	)
 	_apply_death(state, economy, facts, radiation_damage_applied)
 	_apply_sol_facts(state, economy, facts)
 	state.tick += 1
@@ -37,43 +43,57 @@ static func step(state: SimState, economy: EconomyData) -> Array[LogEntry]:
 
 
 ## Step 2: machines that are powered and healthy produce during the day.
+## Each output is the economy base plus the machine production delta. Solar
+## output is stored in the batteries of the panel's own network.
 static func _apply_production(
-	state: SimState,
-	economy: EconomyData,
-	networks: Array[PowerNetwork]
+	state: SimState, economy: EconomyData, networks: Array[PowerNetwork]
 ) -> void:
 	var is_day: bool = state.get_phase(economy) == SimState.DayPhase.DAY
-	if is_day and _is_operational(_machine(state, SimState.MACHINE_SOLAR_ARRAY)):
-		var solar_output: float = economy.get_value(&"solar_output_per_tick", _FALLBACK_SOLAR_OUTPUT)
+	var solar: MachineState = _machine(state, SimState.MACHINE_SOLAR_ARRAY)
+	if is_day and _is_operational(solar):
+		var solar_base: float = economy.get_value(
+			&"solar_output_per_tick", _FALLBACK_SOLAR_OUTPUT
+		)
+		var solar_output: float = _effective_output(solar, SimState.ENERGY, solar_base)
 		for network: PowerNetwork in networks:
 			if network.has_node(SimState.MACHINE_SOLAR_ARRAY):
 				network.add_charge(state, economy, solar_output)
-	if _is_operational(_machine(state, SimState.MACHINE_HYDROPONICS)):
+	var hydroponics: MachineState = _machine(state, SimState.MACHINE_HYDROPONICS)
+	if _is_operational(hydroponics):
+		var food_base: float = economy.get_value(&"hydroponics_food_output_per_tick", 0.0)
 		_add_resource(
 			state,
 			SimState.FOOD,
-			economy.get_value(&"hydroponics_food_output_per_tick", 0.0),
+			_effective_output(hydroponics, SimState.FOOD, food_base),
 			economy
+		)
+		var oxygen_base: float = economy.get_value(
+			&"hydroponics_oxygen_output_per_tick", 0.0
 		)
 		_add_resource(
 			state,
 			SimState.OXYGEN,
-			economy.get_value(&"hydroponics_oxygen_output_per_tick", 0.0),
+			_effective_output(hydroponics, SimState.OXYGEN, oxygen_base),
 			economy
 		)
-	if _is_operational(_machine(state, SimState.MACHINE_WATER_RECYCLER)):
+	var recycler: MachineState = _machine(state, SimState.MACHINE_WATER_RECYCLER)
+	if _is_operational(recycler):
+		var water_base: float = economy.get_value(&"water_recycler_output_per_tick", 0.0)
 		_add_resource(
 			state,
 			SimState.WATER,
-			economy.get_value(&"water_recycler_output_per_tick", 0.0),
+			_effective_output(recycler, SimState.WATER, water_base),
 			economy
 		)
 
 
-## Step 3: crew upkeep and the power draw of every network.
+## Step 3: crew upkeep plus the consumption sheet of every operating machine.
+## Invalid entries are sanitized on read: null, empty/unknown resources and
+## duplicated resources are ignored, and a negative amount counts as zero.
 static func _apply_consumption(
 	state: SimState,
 	economy: EconomyData,
+	machines: MachineDatabase,
 	networks: Array[PowerNetwork]
 ) -> void:
 	_subtract_resource(
@@ -88,12 +108,52 @@ static func _apply_consumption(
 	state.hunger = maxf(0.0, state.hunger - economy.get_value(&"hunger_drain_per_tick", 0.0))
 	state.thirst = maxf(0.0, state.thirst - economy.get_value(&"thirst_drain_per_tick", 0.0))
 	for network: PowerNetwork in networks:
-		if not network.has_charge(state):
+		var energy_drain: float = 0.0
+		for id: StringName in network.nodes:
+			var machine: MachineState = _machine(state, id)
+			if not _is_operational(machine):
+				continue
+			var data: MachineData = null
+			if machines != null:
+				data = machines.get_machine(id)
+			# A missing sheet was already reported at boot: consume nothing.
+			if data == null:
+				continue
+			energy_drain += _apply_machine_consumption(state, machine, data)
+		network.spend_charge(state, energy_drain)
+
+
+## Applies the sanitized consumption of one machine and returns its energy
+## drain. The first valid entry per resource wins; later duplicates are ignored.
+static func _apply_machine_consumption(
+	state: SimState, machine: MachineState, data: MachineData
+) -> float:
+	var energy_drain: float = 0.0
+	var has_energy_entry: bool = false
+	var seen_resources: Dictionary[StringName, bool] = {}
+	for entry: MachineConsumption in data.consumption:
+		if entry == null:
 			continue
-		network.spend_charge(state, network.demand(state, economy))
+		# Invalid or unknown resources are ignored: they never create state keys.
+		if not MachineConsumption.VALID_RESOURCES.has(entry.resource):
+			continue
+		if seen_resources.has(entry.resource):
+			continue
+		seen_resources[entry.resource] = true
+		var amount: float = maxf(0.0, entry.amount_per_tick)
+		if entry.resource == SimState.ENERGY:
+			has_energy_entry = true
+			energy_drain += maxf(0.0, amount + machine.power_delta)
+		else:
+			_subtract_resource(state, entry.resource, amount)
+	# A power upgrade still applies when the sheet declares no energy entry.
+	if not has_energy_entry:
+		energy_drain += maxf(0.0, machine.power_delta)
+	return energy_drain
 
 
 ## Step 4: wear each machine down; crossing from health to zero is a breakdown.
+## Degradation is the economy row plus the machine degradation delta.
 static func _apply_degradation(
 	state: SimState,
 	economy: EconomyData,
@@ -105,7 +165,9 @@ static func _apply_degradation(
 			continue
 		var previous_health: float = machine.health
 		var row_id: StringName = StringName("machine_" + String(id) + "_degradation_per_tick")
-		var degradation: float = economy.get_value(row_id, 0.0)
+		var degradation: float = maxf(
+			0.0, economy.get_value(row_id, 0.0) + machine.degradation_delta
+		)
 		machine.health = clampf(
 			machine.health - degradation, 0.0, MachineState.MAX_HEALTH
 		)
@@ -114,6 +176,29 @@ static func _apply_degradation(
 			var payload: Dictionary[Variant, Variant] = {}
 			payload[&"machine"] = id
 			facts.append(LogEntry.new(LogEntry.Type.MACHINE_BREAKDOWN, state.tick, payload))
+
+
+## Step 5: every repair in progress accumulates player work divisions; the
+## tick that reaches the total restores the machine and emits one REPAIR fact.
+static func _apply_machine_work(state: SimState, facts: Array[LogEntry]) -> void:
+	for id: StringName in SimState.MACHINE_IDS:
+		var machine: MachineState = _machine(state, id)
+		if machine == null:
+			continue
+		if machine.repair_ticks_total <= 0:
+			continue
+		if machine.repair_work_done >= float(machine.repair_ticks_total):
+			continue
+		machine.repair_work_done += state.player.repair_speed_multiplier
+		if machine.repair_work_done < float(machine.repair_ticks_total):
+			continue
+		machine.health = MachineState.MAX_HEALTH
+		machine.powered = true
+		machine.repair_ticks_total = 0
+		machine.repair_work_done = 0.0
+		var payload: Dictionary[Variant, Variant] = {}
+		payload[&"machine"] = id
+		facts.append(LogEntry.new(LogEntry.Type.REPAIR, state.tick, payload))
 
 
 ## Step 6: energy, oxygen, hunger, thirst and radiation consequences.
@@ -138,13 +223,15 @@ static func _apply_consequences(
 
 
 ## Blackout bookkeeping per network: one BLACKOUT fact per episode and network,
-## plus the shutdown order applied only inside the depleted network.
+## plus the shutdown order applied only inside the depleted network. The legacy
+## blackout_active flag stays true while any network is in blackout.
 static func _apply_energy_consequences(
 	state: SimState,
 	economy: EconomyData,
 	networks: Array[PowerNetwork],
 	facts: Array[LogEntry]
 ) -> void:
+	var any_blackout: bool = false
 	for network: PowerNetwork in networks:
 		if not network.has_load(state):
 			state.blackout_networks[network.id] = false
@@ -152,12 +239,14 @@ static func _apply_energy_consequences(
 		if network.total_charge(state) > 0.0:
 			state.blackout_networks[network.id] = false
 			continue
+		any_blackout = true
 		if not bool(state.blackout_networks.get(network.id, false)):
 			state.blackout_networks[network.id] = true
 			var payload: Dictionary[Variant, Variant] = {}
 			payload[&"network"] = network.id
 			facts.append(LogEntry.new(LogEntry.Type.BLACKOUT, state.tick, payload))
 		_shut_down_machines(state, economy, network)
+	state.blackout_active = any_blackout
 
 
 ## Powers off up to blackout_steps_per_tick machines of the priority list,
@@ -285,6 +374,13 @@ static func _is_operational(machine: MachineState) -> bool:
 	if machine == null:
 		return false
 	return machine.powered and not machine.is_broken()
+
+
+## Base economy output plus the machine production delta, never negative.
+static func _effective_output(
+	machine: MachineState, resource_id: StringName, base: float
+) -> float:
+	return maxf(0.0, base + machine.output_deltas.get(resource_id, 0.0))
 
 
 ## Adds amount to a resource, clamped to its capacity row.

@@ -40,22 +40,41 @@ escrito, avanzando solo cuando el jugador pulse la acción de continuar.
 ### Requirement: Nombre del jugador
 
 Los textos de la historia SHALL mostrar el nombre del mundo elegido allí donde
-el guion lleve el marcador de nombre.
+el guion lleve el marcador de nombre. Si no hay ningún mundo seleccionado, SHALL
+usarse el nombre neutro `"astronaut"` en lugar del marcador, de un texto vacío o
+de un nombre en otro idioma.
 
 #### Scenario: Sustitución
 
 - **WHEN** el mundo se llama "Ramer"
 - **THEN** las partes que usan el marcador muestran "Ramer" en lugar del marcador
 
+#### Scenario: Sin mundo seleccionado
+
+- **WHEN** se abre la introducción sin un mundo seleccionado
+- **THEN** los textos que usan el marcador muestran "astronaut"
+
 ### Requirement: Saltar la animación
 
 Durante la animación SHALL existir una acción para saltarla y pasar directamente
-a la historia.
+a la historia. Al saltar, la animación pendiente SHALL detenerse y la historia
+SHALL permanecer en la parte que el jugador esté viendo: ni el final del tween
+en curso ni el resto de la secuencia SHALL reiniciarla o retrocederla.
 
 #### Scenario: Saltar
 
 - **WHEN** el jugador pulsa la acción de saltar mientras se reproduce la animación
 - **THEN** la animación termina y aparece la primera parte de la historia
+
+#### Scenario: El progreso se conserva
+
+- **WHEN** el jugador salta la animación, avanza a una parte posterior y el tween pendiente termina
+- **THEN** la historia sigue en esa parte posterior y no vuelve a la primera
+
+#### Scenario: Salto durante un fundido
+
+- **WHEN** el jugador salta mientras la pantalla se está fundiendo a negro
+- **THEN** el fundido se cancela y la historia se ve con claridad
 
 ### Requirement: Aceptar la misión
 

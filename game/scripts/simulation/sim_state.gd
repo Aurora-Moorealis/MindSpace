@@ -2,7 +2,8 @@ class_name SimState
 extends RefCounted
 
 ## Mutable state of one simulation run (contract v1.1).
-## Holds data and derived queries only; SimTick is the sole writer.
+## Holds data and derived queries only: SimTick is the only writer during a
+## tick and GameSim the only writer outside it (player sub-tick actions).
 
 const OXYGEN: StringName = &"oxygen"
 const WATER: StringName = &"water"
@@ -55,16 +56,20 @@ var suit_reserve_ticks: int = 0
 var suit_level: int = 0
 var is_outside: bool = false
 var machines: Dictionary[StringName, MachineState] = {}
+## Player statistics and their upgrade-driven multipliers.
+var player: PlayerStats = PlayerStats.new()
 var batteries: Dictionary[StringName, float] = {}
 var power_links: Array[PowerLink] = []
 var battery_capacity: float = _FALLBACK_CAPACITY
+var blackout_active: bool = false
 var blackout_networks: Dictionary[StringName, bool] = {}
 var game_over: bool = false
 var death_cause: StringName = &""
 
 
 ## Restores a fresh run from the economy database: counters back to zero,
-## resources at their (clamped) initial values and every machine healthy.
+## resources at their (clamped) initial values, player stats at their base
+## values and every machine healthy, powered and free of repairs or upgrades.
 func reset_from_economy(economy: EconomyData) -> void:
 	tick = 0
 	resources.clear()
@@ -83,8 +88,13 @@ func reset_from_economy(economy: EconomyData) -> void:
 	max_health = economy.get_value(&"max_health", _FALLBACK_HEALTH)
 	radiation_dose = 0.0
 	peak_radiation = 0.0
-	hunger = economy.get_value(&"initial_hunger", _FALLBACK_HUNGER)
-	thirst = economy.get_value(&"initial_thirst", _FALLBACK_THIRST)
+	player.reset_from_economy(economy)
+	hunger = clampf(
+		economy.get_value(&"initial_hunger", _FALLBACK_HUNGER), 0.0, player.max_hunger
+	)
+	thirst = clampf(
+		economy.get_value(&"initial_thirst", _FALLBACK_THIRST), 0.0, player.max_thirst
+	)
 	suit_reserve_ticks = int(economy.get_value(&"suit_reserve_ticks", 0.0))
 	suit_level = 0
 	is_outside = false
@@ -95,7 +105,14 @@ func reset_from_economy(economy: EconomyData) -> void:
 		machine.health = _machine_initial_health(economy, id)
 		machine.powered = true
 		machine.upgrade_level = 0
+		machine.repair_ticks_total = 0
+		machine.repair_work_done = 0.0
+		machine.applied_upgrades.clear()
+		machine.power_delta = 0.0
+		machine.degradation_delta = 0.0
+		machine.output_deltas.clear()
 		machines[id] = machine
+	blackout_active = false
 	game_over = false
 	death_cause = &""
 
@@ -161,10 +178,15 @@ func set_energy_total(value: float) -> void:
 		resources[ENERGY] = get_energy_total()
 		return
 	var remaining: float = maxf(0.0, value)
-	for battery_id: StringName in get_battery_ids():
+	var ids: Array[StringName] = get_battery_ids()
+	for battery_id: StringName in ids:
 		var stored: float = minf(maxf(0.0, remaining), battery_capacity)
 		batteries[battery_id] = stored
 		remaining -= stored
+	# A direct write may exceed capacity (tests and presets); the excess stays in
+	# the first battery. Production never adds past capacity.
+	if remaining > 0.0 and not ids.is_empty():
+		batteries[ids[0]] = get_battery_charge(ids[0]) + remaining
 	resources[ENERGY] = get_energy_total()
 
 
@@ -173,16 +195,18 @@ func sync_energy_resource() -> void:
 	resources[ENERGY] = get_energy_total()
 
 
-## Charge of one battery, always clamped to [0, battery_capacity].
+## Charge of one battery. Direct writes may exceed the capacity; production and
+## consumption clamp to it.
 func get_battery_charge(battery_id: StringName) -> float:
 	if not batteries.has(battery_id):
 		return 0.0
-	return clampf(batteries[battery_id], 0.0, battery_capacity)
+	return maxf(0.0, batteries[battery_id])
 
 
-## Writes one battery charge, clamped to [0, battery_capacity].
+## Writes one battery charge, never below zero. The grid clamps production to
+## the capacity; a direct write is an explicit override (tests and presets).
 func set_battery_charge(battery_id: StringName, value: float) -> void:
-	batteries[battery_id] = clampf(value, 0.0, battery_capacity)
+	batteries[battery_id] = maxf(0.0, value)
 
 
 ## Registers a battery with no charge (the default one already exists).

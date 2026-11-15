@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://bpx3go7t0qxgp"]
+
+[ext_resource type="Script" uid="uid://1u06ynyjmppe" path="res://resources/common/data_provenance.gd" id="1_q7ivw"]
+[ext_resource type="Script" uid="uid://baqjbonlmftup" path="res://resources/economy/economy_row.gd" id="2_p6bpk"]
+
+[sub_resource type="Resource" id="Resource_c1co7"]
+script = ExtResource("1_q7ivw")
+
+[resource]
+script = ExtResource("2_p6bpk")
+id = &"player_move_speed_multiplier"
+value = 1.0
+min_value = 0.1
+max_value = 10.0
+unit = "x"
+provenance = SubResource("Resource_c1co7")

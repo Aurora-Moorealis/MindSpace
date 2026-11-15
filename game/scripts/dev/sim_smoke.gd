@@ -1,14 +1,15 @@
 extends SceneTree
 
 ## Integration smoke test for the simulation core (tasks 7.1 and 8.2).
-## Loads the real economy database, drives SimTick over fresh states, feeds the
-## facts into a private EventLog instance and asserts the run contract:
-## numerical soundness, determinism, deaths, blackout order, radiation and the
-## evaluation counters.
+## Loads the real economy and machine databases, drives SimTick over fresh
+## states, feeds the facts into a private EventLog instance and asserts the run
+## contract: numerical soundness, determinism, deaths, blackout order, radiation
+## and the evaluation counters.
 ## Run: godot --headless --path game --script res://scripts/dev/sim_smoke.gd
 ## Exit code 0 when every check passes, 1 otherwise.
 
 const ECONOMY_PATH: String = "res://databases/economy.tres"
+const MACHINES_PATH: String = "res://databases/machines.tres"
 const EventLogScript: GDScript = preload("res://scripts/autoloads/event_log.gd")
 
 const RUN_TICKS: int = 300
@@ -33,28 +34,33 @@ func _init() -> void:
 		push_error("sim_smoke: cannot load %s as EconomyData" % ECONOMY_PATH)
 		quit(1)
 		return
+	var machines: MachineDatabase = ResourceLoader.load(MACHINES_PATH) as MachineDatabase
+	if machines == null:
+		push_error("sim_smoke: cannot load %s as MachineDatabase" % MACHINES_PATH)
+		quit(1)
+		return
 
-	_check_300_ticks(economy)
-	_check_determinism(economy)
-	_check_hypoxia_death(economy)
-	_check_blackout_order(economy)
-	_check_radiation(economy)
-	_check_summary_counters(economy)
-	_check_sol_from_economy()
+	_check_300_ticks(economy, machines)
+	_check_determinism(economy, machines)
+	_check_hypoxia_death(economy, machines)
+	_check_blackout_order(economy, machines)
+	_check_radiation(economy, machines)
+	_check_summary_counters(economy, machines)
+	_check_sol_from_economy(machines)
 	_check_economy_fallback()
-	_check_power_grid(economy)
-	_check_suit_shield(economy)
+	_check_power_grid(economy, machines)
+	_check_suit_shield(economy, machines)
 
 	print("sim_smoke: %d checks, %s" % [_checks, "FAIL" if _failures > 0 else "OK"])
 	quit(1 if _failures > 0 else 0)
 
 
 ## (a) 300 ticks leave a numerically sound state, even when the crew dies.
-func _check_300_ticks(economy: EconomyData) -> void:
+func _check_300_ticks(economy: EconomyData, machines: MachineDatabase) -> void:
 	var state: SimState = _fresh_state(economy)
 	var facts: Array[LogEntry] = []
 	for i: int in range(RUN_TICKS):
-		facts.append_array(SimTick.step(state, economy))
+		facts.append_array(SimTick.step(state, economy, machines))
 	_expect(state.tick == RUN_TICKS, "a: tick must be %d (got %d)" % [RUN_TICKS, state.tick])
 	for id: StringName in RESOURCE_IDS:
 		var value: float = state.get_resource(id)
@@ -84,14 +90,14 @@ func _check_300_ticks(economy: EconomyData) -> void:
 
 
 ## (b) Two fresh runs of 300 ticks produce the same state and the same facts.
-func _check_determinism(economy: EconomyData) -> void:
+func _check_determinism(economy: EconomyData, machines: MachineDatabase) -> void:
 	var first: SimState = _fresh_state(economy)
 	var second: SimState = _fresh_state(economy)
 	var first_facts: Array[LogEntry] = []
 	var second_facts: Array[LogEntry] = []
 	for i: int in range(RUN_TICKS):
-		first_facts.append_array(SimTick.step(first, economy))
-		second_facts.append_array(SimTick.step(second, economy))
+		first_facts.append_array(SimTick.step(first, economy, machines))
+		second_facts.append_array(SimTick.step(second, economy, machines))
 
 	_expect(first.tick == second.tick, "b: both runs must end at the same tick")
 	for id: StringName in RESOURCE_IDS:
@@ -160,7 +166,7 @@ func _check_determinism(economy: EconomyData) -> void:
 
 
 ## (c) Zero oxygen spends the suit reserve first, then kills by hypoxia once.
-func _check_hypoxia_death(economy: EconomyData) -> void:
+func _check_hypoxia_death(economy: EconomyData, machines: MachineDatabase) -> void:
 	var state: SimState = _fresh_state(economy)
 	_power_off_all(state)
 	state.set_resource(SimState.OXYGEN, 0.0)
@@ -169,7 +175,7 @@ func _check_hypoxia_death(economy: EconomyData) -> void:
 	_expect(reserve > 0, "c: the fresh run must start with a suit reserve (got %d)" % reserve)
 
 	for i: int in range(reserve):
-		SimTick.step(state, economy)
+		SimTick.step(state, economy, machines)
 	_expect(
 		not state.game_over,
 		"c: the %d-step suit reserve must keep the run alive" % reserve
@@ -183,7 +189,7 @@ func _check_hypoxia_death(economy: EconomyData) -> void:
 	var steps: int = reserve
 	var death_facts: Array[LogEntry] = []
 	while not state.game_over and steps < GUARD_STEPS:
-		var facts: Array[LogEntry] = SimTick.step(state, economy)
+		var facts: Array[LogEntry] = SimTick.step(state, economy, machines)
 		if state.game_over:
 			death_facts = facts
 		steps += 1
@@ -206,7 +212,7 @@ func _check_hypoxia_death(economy: EconomyData) -> void:
 		_count_facts(death_facts, LogEntry.Type.GAME_OVER) == 1,
 		"c: the fatal tick must emit exactly one GAME_OVER"
 	)
-	var extra: Array[LogEntry] = SimTick.step(state, economy)
+	var extra: Array[LogEntry] = SimTick.step(state, economy, machines)
 	_expect(
 		_count_facts(extra, LogEntry.Type.DEATH) == 0,
 		"c: a finished run must not emit a second DEATH"
@@ -218,14 +224,14 @@ func _check_hypoxia_death(economy: EconomyData) -> void:
 
 
 ## (d) With no energy the machinery shuts down one machine per tick, in order.
-func _check_blackout_order(economy: EconomyData) -> void:
+func _check_blackout_order(economy: EconomyData, machines: MachineDatabase) -> void:
 	var state: SimState = _fresh_state(economy)
 	# Night keeps the working solar array from masking the blackout.
 	state.tick = 12
 	state.set_resource(SimState.ENERGY, 0.0)
 	var blackouts: int = 0
 	for index: int in range(BLACKOUT_EXPECTED_ORDER.size()):
-		var facts: Array[LogEntry] = SimTick.step(state, economy)
+		var facts: Array[LogEntry] = SimTick.step(state, economy, machines)
 		blackouts += _count_facts(facts, LogEntry.Type.BLACKOUT)
 		var shut_down_id: StringName = BLACKOUT_EXPECTED_ORDER[index]
 		_expect(
@@ -243,7 +249,7 @@ func _check_blackout_order(economy: EconomyData) -> void:
 	# Hydroponics is off: food drains at the consumption rate, with no output.
 	var food_before: float = state.get_resource(SimState.FOOD)
 	var food_drain: float = economy.get_value(&"food_consumption_per_tick", 0.0)
-	SimTick.step(state, economy)
+	SimTick.step(state, economy, machines)
 	_expect(
 		is_equal_approx(state.get_resource(SimState.FOOD), food_before - food_drain),
 		"d: a shut-down hydroponics must not produce food (%f, expected %f)"
@@ -258,9 +264,10 @@ func _check_blackout_order(economy: EconomyData) -> void:
 	off_state.tick = 12
 	off_state.set_resource(SimState.ENERGY, 5.0)
 	_machine_of(off_state, SimState.MACHINE_LIGHTS).powered = false
-	SimTick.step(powered_state, economy)
-	SimTick.step(off_state, economy)
-	var lights_draw: float = economy.get_value(&"power_lights_per_tick", 0.0)
+	SimTick.step(powered_state, economy, machines)
+	SimTick.step(off_state, economy, machines)
+	# The lights draw lives in the machine sheet since the economy rows moved.
+	var lights_draw: float = _machine_energy_draw(machines, SimState.MACHINE_LIGHTS)
 	_expect(
 		is_equal_approx(
 			off_state.get_resource(SimState.ENERGY) - powered_state.get_resource(SimState.ENERGY),
@@ -276,12 +283,12 @@ func _check_blackout_order(economy: EconomyData) -> void:
 
 
 ## (e) Radiation only accumulates outside, caps max_health and finally kills.
-func _check_radiation(economy: EconomyData) -> void:
+func _check_radiation(economy: EconomyData, machines: MachineDatabase) -> void:
 	var state: SimState = _fresh_state(economy)
 	_power_off_all(state)
 	state.is_outside = false
 	for i: int in range(5):
-		SimTick.step(state, economy)
+		SimTick.step(state, economy, machines)
 	_expect(
 		state.radiation_dose == 0.0,
 		"e: inside the shelter the dose must stay 0 (got %f)" % state.radiation_dose
@@ -289,7 +296,7 @@ func _check_radiation(economy: EconomyData) -> void:
 
 	state.is_outside = true
 	for i: int in range(5):
-		SimTick.step(state, economy)
+		SimTick.step(state, economy, machines)
 	_expect(
 		is_equal_approx(state.radiation_dose, 6.0),
 		"e: 5 exterior steps (1.2 each) must reach 6.0 dose (got %f)" % state.radiation_dose
@@ -297,7 +304,7 @@ func _check_radiation(economy: EconomyData) -> void:
 
 	state.is_outside = false
 	for i: int in range(5):
-		SimTick.step(state, economy)
+		SimTick.step(state, economy, machines)
 	_expect(
 		is_equal_approx(state.radiation_dose, 6.0),
 		"e: the dose must never decay (got %f)" % state.radiation_dose
@@ -306,7 +313,7 @@ func _check_radiation(economy: EconomyData) -> void:
 	state.radiation_dose = 50.0
 	state.max_health = 100.0
 	state.health = 100.0
-	SimTick.step(state, economy)
+	SimTick.step(state, economy, machines)
 	_expect(
 		is_equal_approx(state.max_health, 30.0),
 		"e: above the cap threshold max_health must be 30 (got %f)" % state.max_health
@@ -322,7 +329,7 @@ func _check_radiation(economy: EconomyData) -> void:
 	var guard: int = 0
 	while not state.game_over and guard < GUARD_STEPS:
 		state.health = 100.0
-		SimTick.step(state, economy)
+		SimTick.step(state, economy, machines)
 		guard += 1
 	_expect(state.game_over, "e: staying outside must end the run")
 	_expect(
@@ -340,13 +347,13 @@ func _check_radiation(economy: EconomyData) -> void:
 
 
 ## (f) get_summary() aggregates the facts of a radiation death run.
-func _check_summary_counters(economy: EconomyData) -> void:
+func _check_summary_counters(economy: EconomyData, machines: MachineDatabase) -> void:
 	var state: SimState = _fresh_state(economy)
 	var ledger: EventLogScript = EventLogScript.new()
 	state.is_outside = true
 	var steps: int = 0
 	while not state.game_over and steps < GUARD_STEPS:
-		ledger.log_entries(SimTick.step(state, economy))
+		ledger.log_entries(SimTick.step(state, economy, machines))
 		steps += 1
 	_expect(state.game_over, "f: staying outside must end the run")
 	_expect(
@@ -413,7 +420,7 @@ func _check_summary_counters(economy: EconomyData) -> void:
 
 
 ## (i) Power grid: default single network, panel without battery and a cut cable.
-func _check_power_grid(economy: EconomyData) -> void:
+func _check_power_grid(economy: EconomyData, machines: MachineDatabase) -> void:
 	var state: SimState = _fresh_state(economy)
 	var networks: Array[PowerNetwork] = PowerGrid.build(state)
 	_expect(networks.size() == 1, "i: the default base must be one network (got %d)" % networks.size())
@@ -434,7 +441,7 @@ func _check_power_grid(economy: EconomyData) -> void:
 		PowerLink.new(SimState.MACHINE_SOLAR_ARRAY, SimState.MACHINE_LIGHTS)
 	)
 	no_battery.tick = 0
-	SimTick.step(no_battery, economy)
+	SimTick.step(no_battery, economy, machines)
 	_expect(
 		is_equal_approx(no_battery.get_energy_total(), 0.0),
 		"i: a panel without a battery must store nothing (got %f)"
@@ -457,7 +464,7 @@ func _check_power_grid(economy: EconomyData) -> void:
 		cut_networks.size() >= 2,
 		"i: a cut cable must split the grid (got %d networks)" % cut_networks.size()
 	)
-	SimTick.step(cut, economy)
+	SimTick.step(cut, economy, machines)
 	_expect(
 		not _machine_of(cut, SimState.MACHINE_LIGHTS).powered,
 		"i: the lights on the empty battery network must power off"
@@ -477,7 +484,7 @@ func _check_power_grid(economy: EconomyData) -> void:
 
 
 ## (j) The shielded suit multiplies the exterior radiation gain.
-func _check_suit_shield(economy: EconomyData) -> void:
+func _check_suit_shield(economy: EconomyData, machines: MachineDatabase) -> void:
 	var per_tick: float = economy.get_value(&"radiation_per_tick_exterior", 0.0)
 	var multiplier: float = economy.get_value(&"suit_v2_radiation_multiplier", 1.0)
 	_expect(multiplier < 1.0, "j: the shield row must reduce the dose (got %f)" % multiplier)
@@ -487,7 +494,7 @@ func _check_suit_shield(economy: EconomyData) -> void:
 	basic.is_outside = true
 	basic.suit_level = 0
 	for i: int in range(2):
-		SimTick.step(basic, economy)
+		SimTick.step(basic, economy, machines)
 	_expect(
 		is_equal_approx(basic.radiation_dose, per_tick * 2.0),
 		"j: the basic suit must take the full dose (got %f, expected %f)"
@@ -499,7 +506,7 @@ func _check_suit_shield(economy: EconomyData) -> void:
 	shielded.is_outside = true
 	shielded.suit_level = 1
 	for i: int in range(2):
-		SimTick.step(shielded, economy)
+		SimTick.step(shielded, economy, machines)
 	_expect(
 		is_equal_approx(shielded.radiation_dose, per_tick * 2.0 * multiplier),
 		"j: the shielded suit must take %f (got %f)"
@@ -522,6 +529,18 @@ func _fresh_state(economy: EconomyData) -> SimState:
 func _machine_of(state: SimState, id: StringName) -> MachineState:
 	var machine: MachineState = state.machines[id]
 	return machine
+
+
+## Energy the machine sheet declares per tick; 0 when there is no energy entry.
+func _machine_energy_draw(machines: MachineDatabase, id: StringName) -> float:
+	var data: MachineData = machines.get_machine(id)
+	if data == null:
+		return 0.0
+	var total: float = 0.0
+	for entry: MachineConsumption in data.consumption:
+		if entry != null and entry.resource == SimState.ENERGY:
+			total += entry.amount_per_tick
+	return total
 
 
 func _power_off_all(state: SimState) -> void:
@@ -564,7 +583,7 @@ func _resources_from_payload(payload: Dictionary[Variant, Variant]) -> Dictionar
 
 
 ## (g) The sol length follows the economy rows instead of a hardcoded constant.
-func _check_sol_from_economy() -> void:
+func _check_sol_from_economy(machines: MachineDatabase) -> void:
 	var economy: EconomyData = EconomyData.new()
 	economy.rows.append(_row(&"day_length_ticks", 6.0))
 	economy.rows.append(_row(&"night_length_ticks", 6.0))
@@ -576,13 +595,13 @@ func _check_sol_from_economy() -> void:
 
 	var sols: Array[int] = []
 	for i: int in range(12):
-		for fact: LogEntry in SimTick.step(state, economy):
+		for fact: LogEntry in SimTick.step(state, economy, machines):
 			if fact.type == LogEntry.Type.SOL_COMPLETED:
 				sols.append(int(fact.payload.get(&"sol")))
 	_expect(sols == [1], "g: 12 ticks must close exactly sol 1 (got %s)" % str(sols))
 
 	for i: int in range(12):
-		for fact: LogEntry in SimTick.step(state, economy):
+		for fact: LogEntry in SimTick.step(state, economy, machines):
 			if fact.type == LogEntry.Type.SOL_COMPLETED:
 				sols.append(int(fact.payload.get(&"sol")))
 	_expect(sols == [1, 2], "g: 24 ticks must close sols 1 and 2 (got %s)" % str(sols))

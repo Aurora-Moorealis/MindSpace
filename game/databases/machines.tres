@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MachineDatabase" format=3 uid="uid://bvtbf73wiekrd"]
+
+[ext_resource type="Script" uid="uid://c6qp2kj8q22sr" path="res://resources/machines/machine_data.gd" id="1_machine_data"]
+[ext_resource type="Script" uid="uid://dftipvddfs6sm" path="res://resources/machines/machine_database.gd" id="2_machine_database"]
+[ext_resource type="Resource" uid="uid://jamq6oqww6t2" path="res://content/machines/lights/lights.tres" id="3_lights"]
+[ext_resource type="Resource" uid="uid://dx7bskrqlpfub" path="res://content/machines/hydroponics/hydroponics.tres" id="4_hydroponics"]
+[ext_resource type="Resource" uid="uid://c88ve3f6eff86" path="res://content/machines/water_recycler/water_recycler.tres" id="5_water_recycler"]
+[ext_resource type="Resource" uid="uid://f271ktefrlpe" path="res://content/machines/o2_system/o2_system.tres" id="6_o2_system"]
+[ext_resource type="Resource" uid="uid://xum5tma1iqx4" path="res://content/machines/solar_array/solar_array.tres" id="7_solar_array"]
+[ext_resource type="Resource" uid="uid://3loakjfy3oqn" path="res://content/machines/comms_console/comms_console.tres" id="8_comms_console"]
+[ext_resource type="Resource" uid="uid://cf74v44bdk1x2" path="res://content/machines/repair_bench/repair_bench.tres" id="9_repair_bench"]
+[ext_resource type="Resource" uid="uid://co6oa5dvp7ye0" path="res://content/machines/storm_shelter/storm_shelter.tres" id="10_storm_shelter"]
+
+[resource]
+script = ExtResource("2_machine_database")
+machines = Array[ExtResource("1_machine_data")]([ExtResource("3_lights"), ExtResource("4_hydroponics"), ExtResource("5_water_recycler"), ExtResource("6_o2_system"), ExtResource("7_solar_array"), ExtResource("8_comms_console"), ExtResource("9_repair_bench"), ExtResource("10_storm_shelter")])

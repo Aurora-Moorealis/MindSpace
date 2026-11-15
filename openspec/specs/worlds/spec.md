@@ -9,7 +9,11 @@ persistencia necesaria para que los mundos sobrevivan entre sesiones.
 ### Requirement: Persistencia de mundos
 
 Los mundos SHALL guardarse en el almacenamiento del usuario y SHALL leerse al
-abrir la pantalla de selección, de modo que sobrevivan entre sesiones.
+abrir la pantalla de selección, de modo que sobrevivan entre sesiones. Cada
+guardado SHALL ser atómico: si la escritura se interrumpe a mitad, el archivo
+anterior SHALL quedar intacto y legible. Si el archivo existente no se puede
+interpretar, SHALL conservarse como copia de seguridad y la pantalla SHALL
+avisar del problema en lugar de tratarlo como una lista vacía.
 
 #### Scenario: Primera vez sin mundos
 
@@ -21,11 +25,24 @@ abrir la pantalla de selección, de modo que sobrevivan entre sesiones.
 - **WHEN** se abre la pantalla y hay mundos guardados
 - **THEN** se listan todos, cada uno con su nombre visible
 
+#### Scenario: Escritura interrumpida
+
+- **WHEN** la escritura de un mundo se interrumpe antes de terminar
+- **THEN** el archivo anterior sigue siendo legible y conserva sus mundos
+
+#### Scenario: Archivo dañado
+
+- **WHEN** el archivo de mundos existe pero no se puede interpretar
+- **THEN** se conserva como copia de seguridad, la pantalla avisa y no se
+  sobrescribe con una lista vacía
+
 ### Requirement: Creación de mundo
 
 Un mundo nuevo SHALL tener un nombre no vacío, de 24 caracteres como máximo y
 distinto de los existentes. Si no cumple, la creación SHALL rechazarse con un
-mensaje que explique el motivo y no SHALL guardarse nada.
+mensaje que explique el motivo y no SHALL guardarse nada. La validación SHALL
+aplicarse en la capa de persistencia, no solo en el formulario, de modo que
+ninguna llamada pueda crear un mundo inválido.
 
 #### Scenario: Nombre vacío
 
@@ -41,6 +58,11 @@ mensaje que explique el motivo y no SHALL guardarse nada.
 
 - **WHEN** se crea un mundo con un nombre válido
 - **THEN** el mundo se guarda y queda seleccionado para jugar
+
+#### Scenario: Llamada directa
+
+- **WHEN** se pide crear un mundo con un nombre vacío, demasiado largo o repetido sin pasar por el formulario
+- **THEN** la creación se rechaza y no se guarda nada
 
 ### Requirement: Borrado con confirmación
 
@@ -76,8 +98,21 @@ introducción con ese mundo seleccionado.
 ### Requirement: Vuelta al menú
 
 La pantalla SHALL permitir volver al menú principal sin elegir ningún mundo.
+Cuando el formulario de creación esté abierto y existan mundos guardados,
+cancelar SHALL volver a la lista sin crear nada; cuando no existan, SHALL volver
+al menú principal.
 
 #### Scenario: Volver
 
-- **WHEN** el jugador pulsa la acción de volver o la tecla de cancelar
+- **WHEN** el jugador pulsa la acción de volver o la tecla de cancelar en la lista de mundos
+- **THEN** el juego regresa al menú principal
+
+#### Scenario: Cancelar el formulario
+
+- **WHEN** el formulario está abierto, hay mundos guardados y el jugador pulsa la tecla de cancelar
+- **THEN** se vuelve a la lista, el nombre escrito se descarta y no se crea nada
+
+#### Scenario: Cancelar sin mundos
+
+- **WHEN** el formulario está abierto, no hay mundos guardados y el jugador pulsa la tecla de cancelar
 - **THEN** el juego regresa al menú principal
