@@ -9,9 +9,9 @@ extends CharacterBody2D
 ## free axis. The map is the single source of truth for terrain and bounds.
 ##
 ## The astronaut also owns the player-side view of the run: it reports the suit
-## and the interior/exterior zone to [GameSim], picks the nearest interactable in
-## range and publishes the vitals the HUD reads. Survival rules stay in SimState
-## and the tick.
+## and the interior/exterior state (surface, exterior zones and shelters) to
+## [GameSim], picks the nearest interactable in range and publishes the vitals
+## the HUD reads. Survival rules stay in SimState and the tick.
 
 signal vitals_changed()
 signal interaction_target_changed(target: Node)
@@ -23,8 +23,9 @@ enum Suit { BASIC, SHIELDED }
 @export var base_speed: float = 160.0
 ## Suit the astronaut starts the run with.
 @export var suit: Suit = Suit.BASIC
-## Only used before the astronaut enters any exterior zone, for test scenes.
-@export var starts_outside: bool = false
+## Whether the spawn point counts as exterior. The surface is exterior by
+## default; a shelter zone still wins over it while the astronaut is inside one.
+@export var starts_outside: bool = true
 
 ## Side of the square collision box, in world pixels.
 const COLLISION_SIZE: float = 12.0
@@ -50,7 +51,10 @@ var _facing_frame: int = FRAME_DOWN
 var _targets: Array[Node] = []
 var _current_target: Node = null
 var _exterior_areas: Dictionary[Area2D, bool] = {}
+var _shelter_areas: Dictionary[Area2D, bool] = {}
 var _alive: bool = true
+## Set while a modal UI panel owns the input; movement and interaction stop.
+var _input_locked: bool = false
 
 
 func _ready() -> void:
@@ -101,7 +105,7 @@ func move(direction: Vector2, delta: float) -> void:
 
 ## Reads the movement actions and walks while the simulation clock is running.
 func _physics_process(delta: float) -> void:
-	if not _alive or GameSim.is_paused() or _map == null:
+	if not _alive or _input_locked or GameSim.is_paused() or _map == null:
 		return
 	var direction: Vector2 = Input.get_vector(
 		&"move_left", &"move_right", &"move_up", &"move_down"
@@ -112,7 +116,7 @@ func _physics_process(delta: float) -> void:
 
 ## Calls interact on the current target while the game is being played.
 func _unhandled_input(event: InputEvent) -> void:
-	if not _alive or GameSim.is_paused():
+	if not _alive or _input_locked or GameSim.is_paused():
 		return
 	if event.is_action_pressed(&"interact"):
 		_interact()
@@ -140,6 +144,16 @@ func set_suit(value: Suit) -> void:
 ## Marks the astronaut as outside; used by the zone areas and by test scenes.
 func set_outside(value: bool) -> void:
 	GameSim.set_outside(value)
+
+
+## Suspends or restores movement and interaction input, for example while a
+## modal panel is open.
+func set_input_locked(value: bool) -> void:
+	_input_locked = value
+
+
+func is_input_locked() -> bool:
+	return _input_locked
 
 
 func get_health() -> float:
@@ -255,17 +269,40 @@ func _refresh_target() -> void:
 
 
 func _on_zone_entered(area: Area2D) -> void:
-	if not area.is_in_group(&"exterior_zones"):
+	var tracked: bool = false
+	if area.is_in_group(&"exterior_zones"):
+		_exterior_areas[area] = true
+		tracked = true
+	if area.is_in_group(&"shelter_zones"):
+		_shelter_areas[area] = true
+		tracked = true
+	if not tracked:
 		return
-	_exterior_areas[area] = true
-	GameSim.set_outside(true)
+	_apply_zone_state()
 
 
 func _on_zone_exited(area: Area2D) -> void:
-	if not area.is_in_group(&"exterior_zones"):
+	var tracked: bool = false
+	if area.is_in_group(&"exterior_zones"):
+		_exterior_areas.erase(area)
+		tracked = true
+	if area.is_in_group(&"shelter_zones"):
+		_shelter_areas.erase(area)
+		tracked = true
+	if not tracked:
 		return
-	_exterior_areas.erase(area)
-	GameSim.set_outside(not _exterior_areas.is_empty())
+	_apply_zone_state()
+
+
+## Publishes whether the astronaut is outside to [GameSim].
+##
+## The surface counts as exterior by default ([member starts_outside]) or while
+## any exterior zone is overlapped. A shelter always wins: overlapping a shelter
+## zone makes the astronaut interior even inside an exterior zone.
+func _apply_zone_state() -> void:
+	var inside: bool = not _shelter_areas.is_empty()
+	var outside: bool = starts_outside or not _exterior_areas.is_empty()
+	GameSim.set_outside(outside and not inside)
 
 
 func _on_tick_advanced(_tick: int) -> void:
@@ -280,7 +317,8 @@ func _on_game_over(_cause: StringName) -> void:
 func _on_game_reset() -> void:
 	_alive = true
 	_apply_suit()
-	GameSim.set_outside(starts_outside or not _exterior_areas.is_empty())
+	_input_locked = false
+	_apply_zone_state()
 
 
 func _apply_suit() -> void:

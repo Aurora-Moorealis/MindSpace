@@ -72,12 +72,12 @@ El panel solar y la batería conservan sus escenas y su arte. La hidroponía tie
 su propia escena porque añade el estado de cultivo (D8).
 
 **Textura de reemplazo.** Cada estación lleva un `Sprite2D` con
-`PlaceholderTexture2D` para reservar el hueco del arte, pero
-`PlaceholderTexture2D` no dibuja nada en ejecución. Por eso la estación se pinta
-además con `_draw()`: un cuerpo rectangular con el color de acento de su tipo,
-un contorno oscuro y el nombre en inglés debajo. Los colores salen de la paleta
-de `art-style`; no se commitea ningún PNG nuevo y no hace falta auditoría de
-arte.
+`PlaceholderTexture2D` para reservar el hueco del arte. En Godot 4.7 ese recurso
+dibuja un rectángulo magenta en ejecución, así que el sprite se configura con
+`show_behind_parent = true` (o `visible = false`) y la estación se pinta además
+con `_draw()`: un cuerpo rectangular con el color de acento de su tipo, un
+contorno oscuro y el nombre en inglés debajo. Los colores salen de la paleta de
+`art-style`; no se commitea ningún PNG nuevo y no hace falta auditoría de arte.
 
 ### D3. El refugio vive en el astronauta, no en `base.gd`
 
@@ -113,12 +113,13 @@ máquina y se construyen con `GameSim.get_machine_data()` y
 `can_apply_upgrade()`, de modo que el panel no duplica reglas.
 
 Los motivos de una acción deshabilitada se calculan en un helper estático
-`game/scripts/ui/machine_text.gd` a partir del mismo estado, en este orden:
-partida terminada, datos ausentes, reparación en curso, salud completa, energía
-insuficiente, mejora ya aplicada. El nombre visible se obtiene humanizando
-`display_name_key` (`water_recycler` → `Water recycler`) porque el proyecto
-todavía no tiene catálogo de traducciones; cuando lo tenga, el helper es el
-único sitio que cambia.
+`game/scripts/ui/ui_text.gd` (`class_name UiText`) a partir del mismo estado, en
+este orden: partida terminada, datos ausentes, reparación en curso, salud
+completa, energía insuficiente, mejora ya aplicada. El nombre visible se obtiene
+humanizando `display_name_key` (`water_recycler` → `Water recycler`) porque el
+proyecto todavía no tiene catálogo de traducciones; cuando lo tenga, el helper es
+el único sitio que cambia. El mismo helper concentra las etiquetas de arquetipo
+de evento y de causa del fin que usan el HUD y la evaluación.
 
 Se descarta un modelo de vista propio con señales por acción: el panel es el
 único consumidor y ya se refresca por tick.
@@ -226,8 +227,8 @@ panel capture el movimiento sin desactivar su física ni su sensor.
   falla, se mueve la estación en `outpost.tscn`; el diseño no cambia.
 - **Áreas de interacción solapadas** → el astronauta ya elige el objetivo más
   cercano; el humo comprueba que cada estación gana en su propio puerto.
-- **Textura de reemplazo invisible** → el `PlaceholderTexture2D` se acompaña
-  siempre de la silueta dibujada; la spec exige que se vea.
+- **Textura de reemplazo invisible** → el `PlaceholderTexture2D` se oculta o se
+  dibuja detrás de la silueta, y la spec exige que la estación se vea.
 - **Doble producción de comida** (salida pasiva del tick más cosecha manual) →
   la fila de cosecha se mantiene pequeña y editable; si descompensa, se ajusta
   sin tocar código. Es una decisión de balance, no un defecto.

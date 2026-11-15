@@ -1,61 +1,147 @@
 class_name HydroponicsState
 extends RefCounted
 
+## Cultivation state of the hydroponics machine: twelve cells that grow one stage
+## every few ticks. It is a plain value object, so the machine station owns one
+## and the visual demos own their own copy.
+##
+## Nothing here reads the wall clock or the global RNG: the run seed, the cell
+## index and the tick the cell was sown decide every interval, so two runs with
+## the same seed and the same actions grow identical plants.
+
 const CELL_COUNT: int = 12
-const BASE_INTERVAL: float = 4.0
-const MIN_INTERVAL: float = 3.0
-const MAX_INTERVAL: float = 6.0
-const VARIATION_CHANCE: float = 0.5
+const ROWS: int = 3
+const COLUMNS: int = 4
+const STAGE_COUNT: int = 4
+const MIN_INTERVAL_TICKS: int = 3
+const MAX_INTERVAL_TICKS: int = 6
 
-static var planted: Array[bool] = []
-static var planted_at: Array[float] = []
-static var intervals: Array[float] = []
-static var harvested: int = 0
+## Ticks elapsed since this state was created or reset.
+var tick: int = 0
+## Plants collected with harvest() since this state was created or reset.
+var harvested: int = 0
 
-
-static func ensure_initialized() -> void:
-	if planted.size() == CELL_COUNT:
-		return
-	planted.clear()
-	planted_at.clear()
-	intervals.clear()
-	for _i: int in range(CELL_COUNT):
-		planted.append(false)
-		planted_at.append(0.0)
-		intervals.append(BASE_INTERVAL)
+var _run_seed: int = 0
+var _planted: Array[bool] = []
+var _stages: Array[int] = []
+## Ticks accumulated in the current stage of each cell.
+var _progress: Array[int] = []
+## Ticks every stage of each cell takes, fixed when the cell is sown.
+var _intervals: Array[int] = []
 
 
-static func now() -> float:
-	return float(Time.get_ticks_msec()) / 1000.0
+func _init(run_seed: int = 0) -> void:
+	_run_seed = run_seed
+	reset()
 
 
-static func _roll_interval() -> float:
-	if randf() < VARIATION_CHANCE:
-		return randf_range(MIN_INTERVAL, MAX_INTERVAL)
-	return BASE_INTERVAL
+## Empties every cell and rewinds the counters. The run seed is kept.
+func reset() -> void:
+	tick = 0
+	harvested = 0
+	_planted.clear()
+	_stages.clear()
+	_progress.clear()
+	_intervals.clear()
+	for _index: int in range(CELL_COUNT):
+		_planted.append(false)
+		_stages.append(0)
+		_progress.append(0)
+		_intervals.append(MIN_INTERVAL_TICKS)
 
 
-static func plant(index: int) -> void:
-	ensure_initialized()
-	planted[index] = true
-	planted_at[index] = now()
-	intervals[index] = _roll_interval()
+## Advances the state one tick and stores one tick of growth in every planted
+## cell that is not mature yet. Returns true when at least one cell reached a
+## new stage, so the caller knows it must redraw.
+func advance_tick() -> bool:
+	tick += 1
+	var changed: bool = false
+	for index: int in range(CELL_COUNT):
+		if not _planted[index]:
+			continue
+		if _stages[index] >= STAGE_COUNT:
+			continue
+		_progress[index] += 1
+		if _progress[index] < _intervals[index]:
+			continue
+		_progress[index] -= _intervals[index]
+		_stages[index] += 1
+		changed = true
+	return changed
 
 
-static func clear(index: int) -> void:
-	ensure_initialized()
-	planted[index] = false
-	planted_at[index] = 0.0
-	intervals[index] = BASE_INTERVAL
+## Sows an empty cell at stage 1 with its deterministic interval. Returns false
+## for a cell that is out of range or already planted.
+func plant(index: int) -> bool:
+	if not _is_valid(index) or _planted[index]:
+		return false
+	_planted[index] = true
+	_stages[index] = 1
+	_progress[index] = 0
+	_intervals[index] = _roll_interval(index)
+	return true
 
 
-static func harvest(index: int) -> void:
-	clear(index)
+## Pulls out a plant that is still growing: the cell ends up empty. Returns false
+## when the cell is empty, out of range or mature, because a mature plant is
+## harvested instead of removed.
+func remove(index: int) -> bool:
+	if not _is_valid(index) or not _planted[index]:
+		return false
+	if _stages[index] >= STAGE_COUNT:
+		return false
+	_clear(index)
+	return true
+
+
+## Collects a mature plant: counts one harvested unit and empties the cell.
+## Returns false unless the cell is exactly at the last stage.
+func harvest(index: int) -> bool:
+	if not _is_valid(index) or _stages[index] != STAGE_COUNT:
+		return false
+	_clear(index)
 	harvested += 1
+	return true
 
 
-static func stage_of(index: int) -> int:
-	ensure_initialized()
-	if not planted[index]:
+## True when the cell holds a plant, at any stage.
+func is_planted(index: int) -> bool:
+	if not _is_valid(index):
+		return false
+	return _planted[index]
+
+
+## Growth stage of one cell: 0 when empty, 1..4 while it grows.
+func stage_of(index: int) -> int:
+	if not _is_valid(index):
 		return 0
-	return clampi(int((now() - planted_at[index]) / intervals[index]) + 1, 1, 4)
+	return _stages[index]
+
+
+## Ticks every stage takes in one cell, or 0 when the cell is empty or out of
+## range (an empty cell has no interval to show).
+func interval_of(index: int) -> int:
+	if not _is_valid(index) or not _planted[index]:
+		return 0
+	return _intervals[index]
+
+
+## Interval of one sowing, in 3..MAX_INTERVAL_TICKS ticks. It mixes the run
+## seed, the cell index and the planting tick with integer arithmetic only, so
+## it is stable across runs and machines.
+func _roll_interval(index: int) -> int:
+	var mixed: int = _run_seed
+	mixed = (mixed * 73856093) ^ (index * 19349663) ^ (tick * 83492791)
+	mixed = absi(mixed)
+	return MIN_INTERVAL_TICKS + mixed % (MAX_INTERVAL_TICKS - MIN_INTERVAL_TICKS + 1)
+
+
+func _is_valid(index: int) -> bool:
+	return index >= 0 and index < CELL_COUNT
+
+
+func _clear(index: int) -> void:
+	_planted[index] = false
+	_stages[index] = 0
+	_progress[index] = 0
+	_intervals[index] = MIN_INTERVAL_TICKS

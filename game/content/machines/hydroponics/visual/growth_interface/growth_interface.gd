@@ -15,6 +15,11 @@ const SMALL_SCENE: String = "res://content/machines/hydroponics/visual/growth_de
 const CELL_W: float = 36.0
 const CELL_H: float = 34.0
 
+## Real seconds per simulation tick of the demo. The state never reads the wall
+## clock: this panel only feeds it ticks from its own accumulator.
+const TICK_SECONDS: float = 0.5
+const DEMO_RUN_SEED: int = 1
+
 const COL_X: Array[float] = [83.0, 129.0, 175.0, 219.0]
 const ROW_Y: Array[float] = [36.0, 82.0, 128.0]
 const ROW_LETTERS: Array[String] = ["A", "B", "C"]
@@ -38,6 +43,11 @@ var zoom_cells: Array[Sprite2D] = []
 var status_label: Label
 var hover: Sprite2D
 
+## Own cultivation state of the demo. Each visual scene keeps its own copy, so
+## opening the demo never mutates a running game.
+var _state: HydroponicsState = HydroponicsState.new(DEMO_RUN_SEED)
+var _tick_accumulator: float = 0.0
+
 var popup_index: int = -1
 var popup_stage: int = -1
 var popup_nodes: Array[Node] = []
@@ -47,7 +57,7 @@ var popup_close_rect: Rect2 = Rect2()
 
 
 func _ready() -> void:
-	HydroponicsState.ensure_initialized()
+	_state.reset()
 	stages = [TEX_STAGE_1, TEX_STAGE_2, TEX_STAGE_3, TEX_STAGE_4]
 	_build_background()
 	vitrine = Node2D.new()
@@ -149,20 +159,20 @@ func _build_sidebar() -> void:
 
 func _sync_cells() -> void:
 	for i: int in range(zoom_cells.size()):
-		var stage: int = HydroponicsState.stage_of(i)
+		var stage: int = _state.stage_of(i)
 		zoom_cells[i].visible = stage > 0
 		if stage > 0:
 			zoom_cells[i].texture = stages[stage - 1]
 
 
 func _plant(index: int) -> void:
-	HydroponicsState.plant(index)
+	_state.plant(index)
 	zoom_cells[index].texture = stages[0]
 	zoom_cells[index].visible = true
 
 
 func _clear(index: int) -> void:
-	HydroponicsState.clear(index)
+	_state.remove(index)
 	zoom_cells[index].visible = false
 
 
@@ -186,7 +196,7 @@ func _clear_popup() -> void:
 func _open_popup(index: int) -> void:
 	_clear_popup()
 	popup_index = index
-	popup_stage = HydroponicsState.stage_of(index)
+	popup_stage = _state.stage_of(index)
 	var row: int = int(index / 4)
 	var col: int = index % 4
 	var cell_pos: Vector2 = Vector2(20.0 + COL_X[col] * 2.0, 60.0 + ROW_Y[row] * 2.0)
@@ -246,11 +256,21 @@ func _hit_zoom(local: Vector2) -> int:
 	return -1
 
 
-func _process(_delta: float) -> void:
+## Converts real time into simulation ticks for the demo. The state has no clock
+## of its own, so this accumulator is the only place that measures time.
+func _advance_ticks(delta: float) -> void:
+	_tick_accumulator += delta
+	while _tick_accumulator >= TICK_SECONDS:
+		_tick_accumulator -= TICK_SECONDS
+		_state.advance_tick()
+
+
+func _process(delta: float) -> void:
+	_advance_ticks(delta)
 	var sown: int = 0
 	var mature: int = 0
 	for i: int in range(zoom_cells.size()):
-		var stage: int = HydroponicsState.stage_of(i)
+		var stage: int = _state.stage_of(i)
 		if stage > 0:
 			sown += 1
 			zoom_cells[i].visible = true
@@ -260,11 +280,11 @@ func _process(_delta: float) -> void:
 		if stage == 4:
 			mature += 1
 	status_label.text = "SEMBRADAS %d/12\nMADURAS %d/12\nCOSECHADAS %d" % [
-		sown, mature, HydroponicsState.harvested
+		sown, mature, _state.harvested
 	]
 
 	if popup_index >= 0:
-		var current: int = HydroponicsState.stage_of(popup_index)
+		var current: int = _state.stage_of(popup_index)
 		if current == 0:
 			_clear_popup()
 		elif current != popup_stage:
@@ -272,7 +292,7 @@ func _process(_delta: float) -> void:
 
 	var local: Vector2 = vitrine.to_local(get_viewport().get_mouse_position())
 	var index: int = _hit_zoom(local)
-	var stage_hover: int = HydroponicsState.stage_of(index) if index >= 0 else -1
+	var stage_hover: int = _state.stage_of(index) if index >= 0 else -1
 	var can_click: bool = popup_index < 0 and stage_hover >= 0
 	hover.visible = can_click
 	if can_click:
@@ -292,7 +312,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_clear_popup()
 			return
 		if popup_harvest_rect.has_point(click.position):
-			HydroponicsState.harvest(popup_index)
+			_state.harvest(popup_index)
 			zoom_cells[popup_index].visible = false
 			_clear_popup()
 			return
@@ -305,7 +325,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var index: int = _hit_zoom(vitrine.to_local(click.position))
 	if index >= 0:
-		if HydroponicsState.stage_of(index) == 0:
+		if _state.stage_of(index) == 0:
 			_plant(index)
 		else:
 			_open_popup(index)

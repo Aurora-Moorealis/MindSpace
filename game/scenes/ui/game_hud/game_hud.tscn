@@ -1,0 +1,431 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Theme" path="res://themes/pixel_theme.tres" id="1_theme"]
+[ext_resource type="Script" path="res://scenes/ui/game_hud/game_hud.gd" id="2_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.058824, 0.090196, 0.121569, 0.72)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.290196, 0.658824, 0.705882, 0.45)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 6.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+bg_color = Color(0.058824, 0.090196, 0.121569, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.290196, 0.658824, 0.705882, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+content_margin_left = 6.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+bg_color = Color(0.290196, 0.658824, 0.705882, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.560784, 0.85098, 0.878431, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+content_margin_left = 6.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+bg_color = Color(0.156863, 0.360784, 0.403922, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.290196, 0.658824, 0.705882, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+content_margin_left = 6.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+bg_color = Color(0.117647, 0.137255, 0.156863, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34902, 0.4, 0.447059, 0.4)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="GameHud" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="Stats" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 158.0
+offset_bottom = 8.0
+grow_horizontal = 1
+grow_vertical = 1
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Rows" type="VBoxContainer" parent="Stats"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 1
+
+[node name="EnergyRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="EnergyTitle" type="Label" parent="Stats/Rows/EnergyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Energy"
+
+[node name="EnergyValue" type="Label" parent="Stats/Rows/EnergyRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="OxygenRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="OxygenTitle" type="Label" parent="Stats/Rows/OxygenRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Oxygen"
+
+[node name="OxygenValue" type="Label" parent="Stats/Rows/OxygenRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="WaterRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="WaterTitle" type="Label" parent="Stats/Rows/WaterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Water"
+
+[node name="WaterValue" type="Label" parent="Stats/Rows/WaterRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="FoodRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="FoodTitle" type="Label" parent="Stats/Rows/FoodRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Food"
+
+[node name="FoodValue" type="Label" parent="Stats/Rows/FoodRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="HealthRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="HealthTitle" type="Label" parent="Stats/Rows/HealthRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Health"
+
+[node name="HealthValue" type="Label" parent="Stats/Rows/HealthRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "100 / 100"
+horizontal_alignment = 2
+
+[node name="RadiationRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="RadiationTitle" type="Label" parent="Stats/Rows/RadiationRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Radiation"
+
+[node name="RadiationValue" type="Label" parent="Stats/Rows/RadiationRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="HungerRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="HungerTitle" type="Label" parent="Stats/Rows/HungerRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Hunger"
+
+[node name="HungerValue" type="Label" parent="Stats/Rows/HungerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="ThirstRow" type="HBoxContainer" parent="Stats/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="ThirstTitle" type="Label" parent="Stats/Rows/ThirstRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 8
+text = "Thirst"
+
+[node name="ThirstValue" type="Label" parent="Stats/Rows/ThirstRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="TopRight" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -244.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 8.0
+grow_horizontal = 0
+grow_vertical = 1
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Column" type="VBoxContainer" parent="TopRight"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="ClockLabel" type="Label" parent="TopRight/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "Sol 1 - Day - tick 0"
+
+[node name="SpeedRow" type="HBoxContainer" parent="TopRight/Column"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="SpeedDownButton" type="Button" parent="TopRight/Column/SpeedRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(18, 17)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_colors/font_disabled_color = Color(0.5, 0.55, 0.6, 1)
+theme_override_colors/font_hover_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_colors/font_pressed_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "-"
+
+[node name="SpeedValue" type="Label" parent="TopRight/Column/SpeedRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(26, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = "x1"
+horizontal_alignment = 1
+
+[node name="SpeedUpButton" type="Button" parent="TopRight/Column/SpeedRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(18, 17)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_colors/font_disabled_color = Color(0.5, 0.55, 0.6, 1)
+theme_override_colors/font_hover_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_colors/font_pressed_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "+"
+
+[node name="PauseButton" type="Button" parent="TopRight/Column/SpeedRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 17)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_colors/font_disabled_color = Color(0.5, 0.55, 0.6, 1)
+theme_override_colors/font_hover_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_colors/font_pressed_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "Pause"
+
+[node name="CommsLabel" type="Label" parent="TopRight/Column"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 8
+text = "Communications blackout"
+autowrap_mode = 3
+
+[node name="Banners" type="VBoxContainer" parent="TopRight/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="Prompt" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -34.0
+offset_right = 120.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="PromptLabel" type="Label" parent="Prompt"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_font_sizes/font_size = 8
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
