@@ -5,6 +5,9 @@ extends Resource
 ## Data only: it validates rows and answers overlap queries; it does not run
 ## events or mutate the simulation.
 
+## Every event window has to finish inside the 300-tick mission.
+const MISSION_TICKS: int = 300
+
 @export var rows: Array[EventRow] = []
 
 
@@ -84,6 +87,15 @@ func _validate_schedule(
 		messages.append("row %d ('%s'): onset_tick must be >= 0" % [index, row_id])
 	if row.duration_ticks < 1:
 		messages.append("row %d ('%s'): duration_ticks must be >= 1" % [index, row_id])
+	if (
+		row.onset_tick >= 0
+		and row.duration_ticks >= 1
+		and row.end_tick() > MISSION_TICKS
+	):
+		messages.append(
+			"row %d ('%s'): window must end within the 300-tick mission"
+			% [index, row_id]
+		)
 	if row.delay_min_ticks < 0:
 		messages.append("row %d ('%s'): delay_min_ticks must be >= 0" % [index, row_id])
 	if row.delay_max_ticks < row.delay_min_ticks:

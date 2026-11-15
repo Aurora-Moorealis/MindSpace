@@ -1,6 +1,6 @@
 extends SceneTree
 
-## Data-only validator for the events registry.
+## Headless validator for the events registry and its schedule data.
 ## Run: godot --headless --path game --script res://scripts/dev/events_check.gd
 ## Exit code 0 when every check passes, 1 otherwise.
 
@@ -33,6 +33,7 @@ func _init() -> void:
 	_check_intensity(events)
 	_check_provenance(events)
 	_check_rejects_invalid_rows()
+	_check_rejects_late_window()
 
 	print(
 		"events_check: %d checks, %s"
@@ -384,6 +385,33 @@ func _check_rejects_invalid_rows() -> void:
 	_expect(
 		not problems.is_empty(),
 		"validator must reject a row with a wrong target, a positive breakdown delta and no provenance"
+	)
+
+
+func _check_rejects_late_window() -> void:
+	var late: EventRow = EventRow.new()
+	late.id = &"late_window"
+	late.archetype = EventRow.Archetype.MACHINE_BREAKDOWN
+	late.target_type = EventRow.TargetType.MACHINE
+	late.target_id = &"water_recycler"
+	late.onset_tick = EventData.MISSION_TICKS
+	late.duration_ticks = 1
+	late.intensity_start = -1.0
+	late.intensity_peak = -1.0
+	late.intensity_end = -1.0
+	late.provenance = DataProvenance.new()
+
+	var late_data: EventData = EventData.new()
+	late_data.rows = [late]
+	var problems: Array[String] = late_data.validate_rows()
+	var mentions_mission_limit: bool = false
+	for message: String in problems:
+		if message.contains("300-tick mission"):
+			mentions_mission_limit = true
+			break
+	_expect(
+		mentions_mission_limit,
+		"validator must reject a window that ends after the 300-tick mission"
 	)
 
 
