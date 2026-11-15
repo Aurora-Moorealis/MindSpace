@@ -76,6 +76,7 @@ func open(machine_id: StringName, station: Node) -> void:
 	_station = station
 	_extra_scene = _resolve_extra_scene()
 	visible = true
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	_rebuild_upgrades()
 	_refresh()
 
@@ -88,6 +89,7 @@ func close() -> void:
 		return
 	_release_extra()
 	visible = false
+	AudioManager.play(AudioManager.Sfx.UI_CLOSE)
 	_machine_id = &""
 	_station = null
 	_extra_scene = null
@@ -277,12 +279,18 @@ func _on_close_pressed() -> void:
 
 
 func _on_repair_pressed() -> void:
-	GameSim.start_repair(_machine_id)
+	if GameSim.start_repair(_machine_id):
+		AudioManager.play(AudioManager.Sfx.REPAIR)
+	else:
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 	_refresh()
 
 
 func _on_upgrade_pressed(upgrade_id: StringName) -> void:
-	GameSim.apply_upgrade(_machine_id, upgrade_id)
+	if GameSim.apply_upgrade(_machine_id, upgrade_id):
+		AudioManager.play(AudioManager.Sfx.EVENT)
+	else:
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 	_refresh()
 
 
@@ -309,9 +317,11 @@ func _on_extra_pressed() -> void:
 		_extra.connect(&"closed", _on_extra_closed)
 	_frame.visible = false
 	_extra_button.visible = false
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 
 
 func _on_extra_closed() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_CLOSE)
 	_release_extra()
 	_frame.visible = true
 	_refresh()

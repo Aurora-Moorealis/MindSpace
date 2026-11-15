@@ -23,6 +23,8 @@ func _ready() -> void:
 	_panel.visibility_changed.connect(_on_panel_visibility_changed)
 	_evaluation.restart_requested.connect(_on_restart_requested)
 	_evaluation.menu_requested.connect(_on_menu_requested)
+	if not EventLog.fact_logged.is_connected(_on_fact_logged):
+		EventLog.fact_logged.connect(_on_fact_logged)
 	# The forced end of the run is a developer tool: it stays hidden outside
 	# debug builds and never takes focus from the game.
 	_debug_button.visible = OS.is_debug_build()
@@ -62,13 +64,26 @@ func _on_game_reset() -> void:
 
 ## Starts a clean run and rebuilds the playable scene from scratch.
 func _on_restart_requested() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	GameSim.new_game()
 	get_tree().reload_current_scene()
 
 
 ## Leaves the run and returns to the main menu.
 func _on_menu_requested() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_CLOSE)
 	get_tree().change_scene_to_file("res://scenes/welcome/welcome.tscn")
+
+
+## Plays the sound owned by an important run fact.
+func _on_fact_logged(entry: LogEntry) -> void:
+	if entry == null:
+		return
+	match entry.type:
+		LogEntry.Type.REPORT_SENT:
+			AudioManager.play(AudioManager.Sfx.REPORT)
+		LogEntry.Type.EVENT_STARTED:
+			AudioManager.play(AudioManager.Sfx.EVENT)
 
 
 ## Ends the run with the debug action, exactly like the debug button.
