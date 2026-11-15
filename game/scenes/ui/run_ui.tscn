@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/run_ui.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/machine_panel/machine_panel.tscn" id="3_panel"]
+[ext_resource type="Script" path="res://scenes/ui/machine_panel/machine_panel_controller.gd" id="4_controller"]
+[ext_resource type="PackedScene" path="res://scenes/evaluation/evaluation.tscn" id="5_evaluation"]
+[ext_resource type="Theme" path="res://themes/pixel_theme.tres" id="6_theme"]
+
+[node name="RunUi" type="CanvasLayer"]
+script = ExtResource("1_script")
+
+[node name="Hud" parent="." instance=ExtResource("2_hud")]
+
+[node name="DebugEndButton" type="Button" parent="."]
+visible = false
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.0
+offset_top = -8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+focus_mode = 0
+theme = ExtResource("6_theme")
+theme_override_font_sizes/font_size = 10
+text = "End mission (debug)"
+
+[node name="MachinePanel" parent="." instance=ExtResource("3_panel")]
+
+[node name="MachinePanelController" type="Node" parent="."]
+script = ExtResource("4_controller")
+panel_path = NodePath("../MachinePanel")
+
+[node name="Evaluation" parent="." instance=ExtResource("5_evaluation")]

@@ -31,7 +31,6 @@ func _ready() -> void:
 	_camera.make_current()
 
 	GameSim.start_run()
-	GameSim.state.is_outside = true
 
 
 ## Freezes the clock and clears the exterior flag when the playable scene is

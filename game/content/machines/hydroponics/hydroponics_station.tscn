@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://content/machines/hydroponics/hydroponics_station.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://content/machines/hydroponics/panel/hydroponics_panel.tscn" id="2_panel"]
+[ext_resource type="Texture2D" uid="uid://c2ar17afjmwm0" path="res://content/machines/hydroponics/art/sprites/hydroponics_rack.png" id="3_rack"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hydroponics"]
+size = Vector2(112, 72)
+
+[node name="Hydroponics" type="Node2D"]
+script = ExtResource("1_script")
+machine_id = &"hydroponics"
+port_offset = Vector2(40, 24)
+extra_panel_scene = ExtResource("2_panel")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+visible = true
+texture = ExtResource("3_rack")
+centered = true
+offset = Vector2(0, 0)
+scale = Vector2(1, 1)
+
+[node name="Body" type="StaticBody2D" parent="."]
+
+[node name="Collision" type="CollisionShape2D" parent="Body"]
+shape = SubResource("RectangleShape2D_hydroponics")
