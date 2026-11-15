@@ -37,6 +37,7 @@ const INTERACT_FALLBACK: String = "Interact"
 @onready var _food_value: Label = %FoodValue
 @onready var _energy_value: Label = %EnergyValue
 @onready var _clock_label: Label = %ClockLabel
+@onready var _objective_label: Label = %ObjectiveLabel
 @onready var _prompt_panel: PanelContainer = %Prompt
 @onready var _prompt_label: Label = %PromptLabel
 @onready var _speed_down_button: Button = %SpeedDownButton
@@ -325,6 +326,10 @@ func _refresh_stats() -> void:
 		economy.get_value(&"capacity_energy", CAPACITY_FALLBACK)
 	)
 	_refresh_clock(state, economy)
+	_objective_label.text = UiText.mission_objective_label(
+		state.mission_length_ticks,
+		state.get_mission_ticks_left()
+	)
 
 
 func _update_bar(
@@ -362,6 +367,12 @@ func _speed_text() -> String:
 			return "x5"
 		GameSim.Speed.X10:
 			return "x10"
+		GameSim.Speed.X100:
+			return "x100"
+		GameSim.Speed.X1000:
+			return "x1000"
+		GameSim.Speed.X10000:
+			return "x10000"
 	return "x1"
 
 
@@ -375,7 +386,7 @@ func _refresh_time_controls() -> void:
 	_pause_button.disabled = ended
 
 
-## Moves the speed one step inside X1..X10; a step past an end is ignored.
+## Moves the speed one step inside X1..X10000; a step past an end is ignored.
 func _step_speed(step: int) -> void:
 	if GameSim.state.game_over:
 		return
@@ -393,8 +404,29 @@ func _step_speed(step: int) -> void:
 				GameSim.set_speed(GameSim.Speed.X1)
 				changed = true
 		GameSim.Speed.X10:
-			if step < 0:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X100)
+				changed = true
+			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X5)
+				changed = true
+		GameSim.Speed.X100:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X1000)
+				changed = true
+			elif step < 0:
+				GameSim.set_speed(GameSim.Speed.X10)
+				changed = true
+		GameSim.Speed.X1000:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X10000)
+				changed = true
+			elif step < 0:
+				GameSim.set_speed(GameSim.Speed.X100)
+				changed = true
+		GameSim.Speed.X10000:
+			if step < 0:
+				GameSim.set_speed(GameSim.Speed.X1000)
 				changed = true
 	if changed:
 		AudioManager.play(AudioManager.Sfx.UI_CLICK)

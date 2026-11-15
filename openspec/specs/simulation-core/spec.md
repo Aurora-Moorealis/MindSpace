@@ -7,7 +7,7 @@ Define el comportamiento observable del núcleo que hace avanzar la partida: el 
 
 ### Requirement: Reloj determinista por ticks
 
-El núcleo SHALL avanzar el estado del juego únicamente mediante ticks discretos. Un tick representa 1 hora de juego y ocurre cada 60 segundos reales a ×1. Los multiplicadores ×1/×5/×10 SHALL modificar solo la frecuencia del tick, nunca la escala temporal del motor. La pausa SHALL detener los ticks sin detener la interfaz.
+El núcleo SHALL avanzar el estado del juego únicamente mediante ticks discretos. Un tick representa 1 hora de juego y ocurre cada 60 segundos reales a ×1. Los multiplicadores ×1/×5/×10/×100/×1000/×10000 SHALL modificar solo la frecuencia del tick, nunca la escala temporal del motor. La pausa SHALL detener los ticks sin detener la interfaz.
 
 #### Scenario: Avance a velocidad base
 
@@ -19,6 +19,12 @@ El núcleo SHALL avanzar el estado del juego únicamente mediante ticks discreto
 - **WHEN** el reloj está a ×5 y transcurren 12 segundos reales
 - **THEN** el contador de ticks avanza exactamente 1
 - **WHEN** el reloj está a ×10 y transcurren 6 segundos reales
+- **THEN** el contador de ticks avanza exactamente 1
+- **WHEN** el reloj está a ×100 y transcurren 0,6 segundos reales
+- **THEN** el contador de ticks avanza exactamente 1
+- **WHEN** el reloj está a ×1000 y transcurren 0,06 segundos reales
+- **THEN** el contador de ticks avanza exactamente 1
+- **WHEN** el reloj está a ×10000 y transcurren 0,006 segundos reales
 - **THEN** el contador de ticks avanza exactamente 1
 
 #### Scenario: Pausa
@@ -223,3 +229,59 @@ El núcleo SHALL inicializar una partida nueva desde los stocks y estados inicia
 
 - **WHEN** se reinicia una partida en curso
 - **THEN** el estado y el ledger quedan como en una partida nueva, sin mejoras ni reparaciones pendientes y con las estadísticas del jugador en sus valores base
+
+### Requirement: Reloj de misión y desenlace
+
+El núcleo SHALL declarar el final de la partida cuando el contador de ticks
+alcance la duración de misión configurada. Si el astronauta sigue vivo en ese
+momento, la partida SHALL terminar en victoria; si la salud llegó a 0 antes,
+SHALL terminar en derrota. El desenlace SHALL registrarse una sola vez y, tras
+declarado, el reloj de partida SHALL quedar detenido y NO SHALL registrarse
+hechos de juego nuevos.
+
+#### Scenario: Supervivencia completa
+
+- **WHEN** transcurre el tick que alcanza la duración de misión con la salud por encima de 0
+- **THEN** la partida termina en victoria y el desenlace queda registrado una sola vez
+
+#### Scenario: Muerte antes del final
+
+- **WHEN** la salud llega a 0 antes de alcanzar la duración de misión
+- **THEN** la partida termina en derrota y el resultado no cambia después
+
+#### Scenario: Muerte en el último tick
+
+- **WHEN** el tick que alcanza la duración de misión deja la salud en 0
+- **THEN** la partida termina en derrota, porque la muerte tiene prioridad sobre la victoria
+
+#### Scenario: Sin ticks posteriores
+
+- **WHEN** la partida ya terminó por reloj de misión o por muerte
+- **THEN** los ticks posteriores no consumen recursos ni registran hechos de juego
+
+### Requirement: Recuperación tras el apagón
+
+Cuando una red vuelva a tener carga, el núcleo SHALL volver a encender las
+máquinas que el apagón dejó apagadas, empezando por el sistema de O₂ y siguiendo
+el orden inverso al apagado, como máximo `blackout_steps_per_tick` por tick. Una
+máquina averiada NO SHALL encenderse hasta ser reparada.
+
+#### Scenario: Recuperación gradual
+
+- **WHEN** una red recupera carga después de un apagón
+- **THEN** el sistema de O₂ se enciende primero, después el reciclador, la hidropónica y las luces, una máquina por tick
+
+#### Scenario: Red sin carga
+
+- **WHEN** la red sigue con carga 0
+- **THEN** no se enciende ninguna máquina apagada
+
+#### Scenario: Máquina averiada
+
+- **WHEN** una máquina apagada está averiada
+- **THEN** no se enciende hasta que se repare
+
+#### Scenario: Determinismo
+
+- **WHEN** dos partidas llegan al mismo estado de red y máquinas
+- **THEN** la recuperación enciende las mismas máquinas en el mismo orden

@@ -14,6 +14,7 @@ signal menu_requested()
 ## Shown when the recorded snapshot has no value for a resource.
 const MISSING_RESOURCE: String = "--"
 
+@onready var _result_value: Label = %ResultLabel
 @onready var _reports_value: Label = %ReportsValue
 @onready var _submissions_value: Label = %SubmissionsValue
 @onready var _radiation_value: Label = %RadiationValue
@@ -40,6 +41,7 @@ func present() -> void:
 	_water_value.text = _resource_text(SimState.WATER)
 	_food_value.text = _resource_text(SimState.FOOD)
 	_cause_value.text = UiText.end_cause_label(GameSim.state.death_cause)
+	_result_value.text = UiText.result_label(GameSim.state.run_result)
 	visible = true
 
 

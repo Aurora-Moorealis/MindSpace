@@ -116,6 +116,21 @@ max_value = 100.0
 value = 100.0
 texture_progress = ExtResource("3_fill")
 
+[node name="ObjectiveLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 638.0
+offset_top = 52.0
+offset_right = 838.0
+offset_bottom = 68.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)
+theme_override_colors/font_outline_color = Color(0.058824, 0.090196, 0.121569, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 8
+text = ""
+horizontal_alignment = 2
+
 [node name="ResourcesStrip" type="TextureRect" parent="Root"]
 layout_mode = 0
 offset_left = 8.0
@@ -246,7 +261,7 @@ vertical_alignment = 1
 [node name="ClockLabel" type="Label" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 718.0
+offset_left = 690.0
 offset_top = 8.0
 offset_right = 838.0
 offset_bottom = 24.0
@@ -291,7 +306,7 @@ text = "-"
 
 [node name="SpeedValue" type="Label" parent="Root/TimeControls"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(26, 0)
+custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.87451, 0.909804, 0.941176, 1)

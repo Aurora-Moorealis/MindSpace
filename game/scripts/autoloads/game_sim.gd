@@ -14,9 +14,9 @@ const ECONOMY_PATH: String = "res://databases/economy.tres"
 const MACHINES_PATH: String = "res://databases/machines.tres"
 const EVENTS_PATH: String = "res://databases/events.tres"
 const SECONDS_PER_TICK: float = 60.0
-const MAX_TICKS_PER_FRAME: int = 10
+const MAX_TICKS_PER_FRAME: int = 400
 
-enum Speed { X1, X5, X10 }
+enum Speed { X1, X5, X10, X100, X1000, X10000 }
 
 var state: SimState = SimState.new()
 var speed: Speed = Speed.X1
@@ -105,16 +105,20 @@ func reset_game() -> void:
 
 
 ## Ends the run from a debug control, exactly like a fatal tick would: the state
-## is marked over with cause "debug", one GAME_OVER fact with the final resources
-## is recorded, the clock freezes and game_over is emitted.
+## is marked over as a defeat with cause "debug", one GAME_OVER fact with the
+## final resources, cause and result is recorded, the clock freezes and
+## game_over is emitted.
 ## Returns false and writes nothing when the run already ended.
 func force_end_run() -> bool:
 	if state.game_over:
 		return false
 	state.game_over = true
 	state.death_cause = &"debug"
+	state.run_result = SimState.RunResult.DEFEAT
 	var payload: Dictionary[Variant, Variant] = {}
 	payload[&"resources"] = state.resources.duplicate()
+	payload[&"cause"] = &"debug"
+	payload[&"result"] = &"defeat"
 	EventLog.log_entry(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, payload))
 	paused = true
 	game_over.emit(state.death_cause)
@@ -140,6 +144,12 @@ func get_rate() -> float:
 			return 5.0
 		Speed.X10:
 			return 10.0
+		Speed.X100:
+			return 100.0
+		Speed.X1000:
+			return 1000.0
+		Speed.X10000:
+			return 10000.0
 		_:
 			return 1.0
 
