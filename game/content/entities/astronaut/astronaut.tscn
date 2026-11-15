@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://content/entities/astronaut/astronaut.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://content/entities/astronaut/astronaut_4dir@2x.png" id="2_sheet"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(34, 18)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
+radius = 44.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_zone"]
+radius = 30.0
+
+[node name="Astronaut" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_sheet")
+offset = Vector2(-3, -28)
+hframes = 4
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+position = Vector2(0, -9)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="InteractSensor" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="InteractSensor"]
+position = Vector2(0, -22)
+shape = SubResource("CircleShape2D_interact")
+
+[node name="ZoneSensor" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="ZoneSensor"]
+position = Vector2(0, -14)
+shape = SubResource("CircleShape2D_zone")

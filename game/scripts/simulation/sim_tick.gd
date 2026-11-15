@@ -13,6 +13,7 @@ const _FALLBACK_RADIATION_CAP: float = 30.0
 const _FALLBACK_RADIATION_DEATH: float = 100.0
 const _FALLBACK_SOLAR_OUTPUT: float = 1.5
 const _FALLBACK_BLACKOUT_STEPS: float = 1.0
+const _FALLBACK_SUIT_MULTIPLIER: float = 1.0
 
 
 ## Advances p_state one tick and returns the facts emitted by that tick.
@@ -278,7 +279,14 @@ static func _apply_radiation(
 	facts: Array[LogEntry]
 ) -> bool:
 	if state.is_outside:
-		state.radiation_dose += economy.get_value(&"radiation_per_tick_exterior", 0.0)
+		var suit_multiplier: float = 1.0
+		if state.suit_level >= 1:
+			suit_multiplier = economy.get_value(
+				&"suit_v2_radiation_multiplier", _FALLBACK_SUIT_MULTIPLIER
+			)
+		state.radiation_dose += economy.get_value(
+			&"radiation_per_tick_exterior", 0.0
+		) * suit_multiplier
 		if state.radiation_dose > state.peak_radiation:
 			state.peak_radiation = state.radiation_dose
 			var payload: Dictionary[Variant, Variant] = {}

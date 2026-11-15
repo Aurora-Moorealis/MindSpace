@@ -53,6 +53,7 @@ var peak_radiation: float = 0.0
 var hunger: float = 0.0
 var thirst: float = 0.0
 var suit_reserve_ticks: int = 0
+var suit_level: int = 0
 var is_outside: bool = false
 var machines: Dictionary[StringName, MachineState] = {}
 ## Player statistics and their upgrade-driven multipliers.
@@ -95,6 +96,7 @@ func reset_from_economy(economy: EconomyData) -> void:
 		economy.get_value(&"initial_thirst", _FALLBACK_THIRST), 0.0, player.max_thirst
 	)
 	suit_reserve_ticks = int(economy.get_value(&"suit_reserve_ticks", 0.0))
+	suit_level = 0
 	is_outside = false
 	machines.clear()
 	for id: StringName in MACHINE_IDS:
