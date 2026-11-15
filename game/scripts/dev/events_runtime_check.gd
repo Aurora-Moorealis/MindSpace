@@ -5,16 +5,23 @@ extends SceneTree
 ## Exit code 0 when every check passes, 1 otherwise.
 
 const ECONOMY_PATH: String = "res://databases/economy.tres"
+const MACHINES_PATH: String = "res://databases/machines.tres"
 const EVENTS_PATH: String = "res://databases/events.tres"
 
 var _checks: int = 0
 var _failures: int = 0
+var _machines: MachineDatabase = null
 
 
 func _init() -> void:
 	var economy: EconomyData = ResourceLoader.load(ECONOMY_PATH) as EconomyData
 	if economy == null:
 		push_error("events_runtime_check: cannot load %s" % ECONOMY_PATH)
+		quit(1)
+		return
+	_machines = ResourceLoader.load(MACHINES_PATH) as MachineDatabase
+	if _machines == null:
+		push_error("events_runtime_check: cannot load %s" % MACHINES_PATH)
 		quit(1)
 		return
 	var events: EventData = ResourceLoader.load(EVENTS_PATH) as EventData
@@ -205,7 +212,7 @@ func _step_n(
 ) -> Array[LogEntry]:
 	var facts: Array[LogEntry] = []
 	for step_index: int in range(count):
-		facts.append_array(SimTick.step(state, economy, events))
+		facts.append_array(SimTick.step(state, economy, _machines, events))
 	return facts
 
 
