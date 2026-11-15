@@ -29,6 +29,12 @@
 - [x] 5.2 Revisar un mapa con cráteres, crestas y rocas y comprobar que se distinguen sin convertir el suelo en un mosaico de colores; guardar una captura de revisión en `game/tests/` (no versionada) y anotar el resultado en el commit.
 - [x] 5.3 Repetir el harness de `lunar_map_render_smoke.gd` y el checker estricto tras los ajustes y dejar ambos en verde.
 
+## 6. Escena de revisión con cámara WASD
+
+- [x] 6.1 Crear `game/content/map/lunar/lunar_map_camera_debug.gd` y `lunar_map_camera_debug.tscn`: instanciar `lunar_map_world.tscn`, mover la `Camera2D` con W/A/S/D y limitarla a los bordes del mapa; verificar con un script temporal en `game/tests/` que la escena carga, `pan_camera()` mueve y el clamp detiene.
+- [x] 6.2 Ampliar `game/content/map/lunar/lunar_map_render_smoke.gd` para cargar `lunar_map_camera_debug.tscn` y comprobar movimiento y clamp; ejecutar el harness con código de salida 0.
+- [ ] 6.3 Ejecutar `check-gdscript.sh -p game --strict` y `godot --headless --path game --quit`; abrir la escena en Godot y confirmar manualmente W, A, S y D.
+
 ## Workflow follow-up
 
 - Ejecutar `openspec validate add-lunar-map-tile-render --strict` antes de commitear.

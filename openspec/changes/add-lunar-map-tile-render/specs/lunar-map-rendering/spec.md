@@ -112,6 +112,28 @@ headless.
 - **WHEN** la escena termina de generar el mapa
 - **THEN** la cámara está centrada en la celda de spawn y mantiene la escala 1:1 del mundo
 
+### Requirement: Escena de revisión con cámara libre
+
+El cambio SHALL incluir una escena de revisión que muestre el mapa generado con
+las tres capas reales y permita mover la cámara con W, A, S y D a escala de
+juego. La cámara SHALL permanecer dentro de los límites del mapa. La escena SHALL
+cargar sin errores en modo headless.
+
+#### Scenario: Desplazamiento con WASD
+
+- **WHEN** se pulsa W, A, S o D
+- **THEN** la cámara se desplaza en esa dirección a escala 1:1
+
+#### Scenario: Límites del mapa
+
+- **WHEN** la cámara intenta salir del mapa
+- **THEN** se detiene en el borde del mapa
+
+#### Scenario: Carga de la escena
+
+- **WHEN** se carga la escena de revisión en headless
+- **THEN** se instancia sin errores y contiene el mapa generado
+
 ### Requirement: Aislamiento y verificación
 
 La representación SHALL consumir el generador sin modificarlo y no SHALL tocar

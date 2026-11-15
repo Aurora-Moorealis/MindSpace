@@ -4,8 +4,8 @@ extends SceneTree
 ## Paints generated maps into throwaway [TileMapLayer] nodes and checks the
 ## observable contract of the mapper, the renderer and the playable world scene:
 ## full grid coverage, terrain mapping, landing pad platform, solid props,
-## determinism, repainting and scene wiring. It needs no editor, display or
-## input, and it never modifies the tested modules.
+## determinism, repainting, scene wiring and the debug review camera. It needs no
+## editor, display or input, and it never modifies the tested modules.
 ##
 ## Run with:
 ##   godot --headless --path game --script res://content/map/lunar/lunar_map_render_smoke.gd
@@ -13,6 +13,7 @@ extends SceneTree
 ## Exits with code 0 when every check passes and 1 otherwise.
 
 const WORLD_SCENE: PackedScene = preload("res://content/map/lunar/lunar_map_world.tscn")
+const CAMERA_DEBUG_SCENE_PATH: String = "res://content/map/lunar/lunar_map_camera_debug.tscn"
 const GROUND_TILESET: TileSet = preload("res://content/map/tiles/ground_tileset.tres")
 const BASE_TILESET: TileSet = preload("res://content/map/tiles/base_tileset.tres")
 const PROPS_TILESET: TileSet = preload("res://content/map/props/props_tileset.tres")
@@ -35,6 +36,12 @@ const WIDE_HEIGHT: int = 80
 const UNKNOWN_TERRAIN: int = 99
 const SAFE_GROUND_ATLAS: Vector2i = Vector2i(0, 0)
 const CAMERA_ZOOM: Vector2 = Vector2(1.0, 1.0)
+## Frames awaited while the debug camera scene finishes its deferred setup.
+const CAMERA_DEBUG_SETTLE_FRAMES: int = 10
+## Simulated pan used to check that the camera moves in a direction.
+const PAN_STEP_SECONDS: float = 0.5
+## Large simulated pan that pushes the camera against the map border.
+const PAN_OVERSHOOT_SECONDS: float = 10000.0
 ## Atlas coordinates of the mineral row that this capability must never paint.
 const MINERAL_ATLAS_COORDS: Array[Vector2i] = [
 	Vector2i(1, 1),
@@ -76,6 +83,7 @@ func _initialize() -> void:
 	_check_determinism()
 	_check_repaint()
 	await _check_world_scene()
+	await _check_debug_camera_scene()
 
 	print("lunar_map_render_smoke: %d checks, %d failure(s)" % [_checks, _failures])
 	if _failures == 0:
@@ -377,6 +385,81 @@ func _check_world_scene() -> void:
 		_check(camera.zoom == CAMERA_ZOOM, "the camera keeps a 1:1 zoom")
 
 	world.free()
+
+
+# ---------------------------------------------------------------------------
+# Check 8: the debug review scene pans and clamps its camera
+# ---------------------------------------------------------------------------
+
+
+func _check_debug_camera_scene() -> void:
+	var packed: PackedScene = load(CAMERA_DEBUG_SCENE_PATH) as PackedScene
+	_check(packed != null, "the debug camera scene loads")
+	if packed == null:
+		return
+
+	var viewer: LunarMapCameraDebug = packed.instantiate() as LunarMapCameraDebug
+	_check(viewer != null, "the debug camera scene instantiates as LunarMapCameraDebug")
+	if viewer == null:
+		return
+
+	root.add_child(viewer)
+	# The viewer waits one frame in _ready before reading the world map, so the
+	# harness polls for a few frames instead of assuming a single one.
+	var map: LunarMap = null
+	for _frame: int in range(CAMERA_DEBUG_SETTLE_FRAMES):
+		await process_frame
+		map = viewer.get_map()
+		if map != null:
+			break
+	_check(map != null, "the debug camera scene exposes the generated map")
+	var camera: Camera2D = viewer.get_camera()
+	_check(camera != null, "the debug camera scene exposes the world Camera2D")
+	if map == null or camera == null:
+		viewer.free()
+		return
+
+	var tile_extent: Vector2 = Vector2(float(map.tile_size), float(map.tile_size))
+	var spawn_center: Vector2 = map.tile_to_world(map.spawn_tile) + tile_extent * 0.5
+	_check(
+		camera.position.is_equal_approx(spawn_center),
+		"the debug camera starts centred on the spawn tile",
+	)
+
+	var before_pan: Vector2 = camera.position
+	viewer.pan_camera(Vector2.ZERO, PAN_STEP_SECONDS)
+	_check(
+		camera.position.is_equal_approx(before_pan),
+		"panning with a zero direction leaves the camera untouched",
+	)
+
+	viewer.pan_camera(Vector2.RIGHT, PAN_STEP_SECONDS)
+	_check(
+		camera.position.x > before_pan.x and is_equal_approx(camera.position.y, before_pan.y),
+		"pan_camera moves the camera to the right at constant pan_speed",
+	)
+
+	viewer.pan_camera(Vector2.LEFT, PAN_OVERSHOOT_SECONDS)
+	var left_border: Vector2 = camera.position
+	_check(
+		left_border.x < before_pan.x,
+		"pan_camera moves the camera back to the left of the spawn",
+	)
+	viewer.pan_camera(Vector2.LEFT, PAN_OVERSHOOT_SECONDS)
+	var world_size: Vector2i = map.get_world_size()
+	_check(
+		camera.position.is_equal_approx(left_border),
+		"the camera stops at the left map border instead of scrolling past it",
+	)
+	_check(
+		left_border.x >= 0.0
+		and left_border.x <= float(world_size.x) * 0.5
+		and left_border.y >= 0.0
+		and left_border.y <= float(world_size.y),
+		"the clamped camera stays inside the left half of the map",
+	)
+
+	viewer.free()
 
 
 # ---------------------------------------------------------------------------

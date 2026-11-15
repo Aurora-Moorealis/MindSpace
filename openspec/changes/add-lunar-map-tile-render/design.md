@@ -26,9 +26,8 @@ Restricciones que condicionan la implementación:
   escena de depuración.
 - No se toca el generador, el arte, `project.godot`, autoloads ni escenas
   compartidas.
-- El trabajo vive en la rama `map-render`, en el worktree
-  `../MindSpace-worktrees/map-render`, creado desde `features` (`b440f43`), y se
-  integra por Pull Request.
+- El trabajo vive en la rama `map-render`, creada desde `features` (`b440f43`) y
+  actualmente activa en el checkout principal; se integra por Pull Request.
 
 ## Goals / Non-Goals
 
@@ -42,7 +41,7 @@ Restricciones que condicionan la implementación:
 
 **Non-Goals:**
 
-- Jugador, cámara que sigue al astronauta, colisiones o pathfinding.
+- Jugador, cámara de juego que sigue al astronauta, colisiones o pathfinding.
 - Minerales, depósitos o semántica de POIs.
 - Salas interiores, airlock o mapa de la base.
 - Cambiar el tamaño por defecto del mapa o el arte existente.
@@ -61,6 +60,8 @@ Restricciones que condicionan la implementación:
 | `lunar_map_tile_renderer.gd` | `RefCounted` con `class_name LunarMapTileRenderer` | Limpiar las tres capas y volcar la rejilla usando el mapper. |
 | `lunar_map_world.gd` | `Node2D` con `class_name LunarMapWorld` | Controlador de escena: genera, pinta y centra la cámara. |
 | `lunar_map_world.tscn` | Escena | Tres `TileMapLayer` con los TileSets reales, cámara y script. |
+| `lunar_map_camera_debug.gd` | `Node2D` con `class_name LunarMapCameraDebug` | Escena de revisión: instancia el mundo y mueve su cámara con WASD. |
+| `lunar_map_camera_debug.tscn` | Escena | Escena de revisión con cámara libre. |
 | `lunar_map_render_smoke.gd` | `SceneTree` | Harness headless de la representación. |
 
 El mapper no conoce `TileMapLayer`; el renderer no conoce la escena; el
@@ -204,6 +205,8 @@ Comprueba, sobre mapas generados de 16×16 y 64×64:
    pequeño.
 7. La escena `lunar_map_world.tscn` se instancia en headless, genera un mapa,
    tiene las tres capas con celdas y deja la cámara en el spawn con zoom 1:1.
+8. La escena `lunar_map_camera_debug.tscn` se instancia en headless, obtiene el
+   mapa, `pan_camera()` mueve la cámara y el clamp la detiene en los bordes.
 
 Comandos de cierre:
 
@@ -219,10 +222,26 @@ la escena de depuración, porque son parte del contenido del mapa y no una
 pantalla de flujo. No se crea una carpeta en `game/scenes/` hasta que exista la
 composición del nivel (base + exterior + airlock), que es otro cambio.
 
-El trabajo se hace en la rama `map-render` del worktree
-`../MindSpace-worktrees/map-render`, creado desde `features` (`b440f43`). No se
-tocan `main` ni `features` directamente; la integración es un Pull Request de
-`map-render` a `features`.
+El trabajo se hace en la rama `map-render`, creada desde `features` (`b440f43`)
+y actualmente activa en el checkout principal. No se tocan `main` ni `features`
+directamente; la integración es un Pull Request de `map-render` a `features`.
+
+### 9. Escena de revisión que reutiliza el mundo
+
+`lunar_map_camera_debug.tscn` es una escena de desarrollo. Su script
+`LunarMapCameraDebug` instancia `lunar_map_world.tscn`, espera un frame, obtiene
+la `Camera2D` del mundo y la mueve con W, A, S y D. No duplica capas ni lógica de
+render: la revisión usa exactamente el mismo mapa que la escena de juego.
+
+La cámara se limita a los bordes del mapa usando el tamaño del viewport y el
+zoom, con un viewport de respaldo de 850×480 para headless. El movimiento se
+expone en `pan_camera(direction: Vector2, delta: float)`, de modo que el harness
+puede probarlo sin teclado; el input real se lee con
+`Input.is_physical_key_pressed()`.
+
+**Alternativas descartadas:** añadir el movimiento a `lunar_map_world.tscn` (la
+escena de juego no debe depender de input de depuración) y crear otra escena con
+sus propias capas (duplica TileSets, wiring y el riesgo de divergencia).
 
 ## Risks / Trade-offs
 
@@ -233,18 +252,19 @@ tocan `main` ni `features` directamente; la integración es un Pull Request de
 | La cámara a escala 1:1 solo muestra una parte del mapa de 64×64 | Es la escala real del juego; `lunar_map_debug.tscn` sigue siendo la vista general. |
 | 65 536 celdas × 3 capas pueden tardar en mapas de 256×256 | El caso normal es 64×64 (4096 celdas); se mide en el harness y no se optimiza antes de necesitarlo. |
 | El renderer pinta props sólidos pero no añade colisión | La capa `solid` ya describe el bloqueo; las colisiones se añaden en el cambio de jugador/movimiento. |
+| El input WASD no se puede simular de forma fiable en headless | La lógica de movimiento se expone en `pan_camera()` y se prueba sin teclado; WASD se confirma manualmente al abrir la escena. |
 | El mapa por defecto sigue por encima de las ≤2 pantallas del diseño padre | No se cambia aquí; la decisión de tamaño se toma con el mapa jugable y el tiempo de recorrido. |
 | Repintar sin limpiar deja celdas huérfanas | El renderer siempre llama a `clear()` y el harness lo verifica. |
 
 ## Migration Plan
 
-1. Implementar en el worktree `../MindSpace-worktrees/map-render`, rama
-   `map-render`, sin tocar `features`.
+1. Implementar en la rama `map-render` del checkout principal, sin tocar
+   `features`.
 2. Validar con el harness, el checker estricto y el arranque headless.
-3. Revisar visualmente `lunar_map_world.tscn` y, si hace falta, ajustar el mapeo
-   antes del commit.
+3. Revisar visualmente `lunar_map_world.tscn` y `lunar_map_camera_debug.tscn` y,
+   si hace falta, ajustar el mapeo antes del commit.
 4. Commit en `map-render`, push y Pull Request a `features`.
-5. Tras el merge, eliminar el worktree y la rama de módulo.
+5. Tras el merge, eliminar cualquier worktree temporal y la rama de módulo.
 
 Rollback: revertir el commit del módulo. No hay persistencia, migración de datos
 ni cambios de configuración que deshacer.
