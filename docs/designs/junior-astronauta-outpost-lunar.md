@@ -395,7 +395,7 @@ Orden de construcción por bloques (H0–4 autoloads y schema; H4–8 tick y má
 #### 18. `game/content/machines/` — base + 8 máquinas (Crear)
 
 - **Tipo / alcance:** Interactuables con panel de estado/reparación/mejora.
-- **Archivos:** `machine_base.gd` (interacción común: panel con estado, botón reparar con progreso de 1–2 ticks, aplicar mejora con texto de efecto, emitir `hint_text`) y una carpeta por máquina con `.tscn` + `.gd` + `*.tres` local: `o2_system/`, `water_recycler/`, `power_distributor/` (con entidad batería), `solar_array/` (exterior, limpiable con coste de dosis), `hydroponics/` (2 mejoras), `repair_bench/` (repara traje, fabrica mejora de traje), `comms_console/` (informes, submisiones, pedido, previsión, data sources), `storm_shelter/` (cerrojo + mejora de blindaje).
+- **Archivos:** `machine_base.gd` (interacción común: panel con estado, botón reparar con progreso de 1–2 ticks, aplicar mejora con texto de efecto, emitir `hint_text`) y una carpeta por máquina con `.tscn` + `.gd` + `*.tres` local: `o2_system/`, `water_recycler/`, `power_distributor/` (reparto), `solar_array/` (exterior, limpiable con coste de dosis), `battery/` (almacenamiento con carga propia) y `power_cable/` (cable que une panel, batería y máquinas en redes; sin cable no hay suministro, ver el cambio OpenSpec `energy-grid`), `hydroponics/` (2 mejoras), `repair_bench/` (repara traje, fabrica mejora de traje), `comms_console/` (informes, submisiones, pedido, previsión, data sources), `storm_shelter/` (cerrojo + mejora de blindaje).
 - **Por qué:** una máquina más de la lista congelada cuesta ~2–4 h; la base común garantiza que ninguna se convierta en código bespoke.
 
 #### 19. `game/content/map/` — tiles interiores/exteriores y salas (Crear)
