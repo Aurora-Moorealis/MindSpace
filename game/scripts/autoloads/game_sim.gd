@@ -8,6 +8,7 @@ extends Node
 signal tick_advanced(tick: int)
 signal game_over(cause: StringName)
 signal game_reset()
+signal power_grid_changed()
 
 const ECONOMY_PATH: String = "res://databases/economy.tres"
 const SECONDS_PER_TICK: float = 60.0
@@ -103,6 +104,63 @@ func get_rate() -> float:
 
 func get_economy() -> EconomyData:
 	return _economy
+
+
+## Current astronaut health of the run. The HUD reads it without touching the
+## simulation state directly.
+func get_health() -> float:
+	return state.health
+
+
+## Maximum health of the run, as loaded from the economy rows.
+func get_max_health() -> float:
+	return state.max_health
+
+
+## Replaces the cable layout of the run. The argument is copied, so callers can
+## rebuild their list without mutating the simulation.
+func set_power_links(links: Array[PowerLink]) -> void:
+	state.power_links.clear()
+	for link: PowerLink in links:
+		if link == null or not link.is_valid():
+			continue
+		state.power_links.append(PowerLink.new(link.a, link.b))
+	power_grid_changed.emit()
+
+
+## Copy of the current cable layout.
+func get_power_links() -> Array[PowerLink]:
+	var result: Array[PowerLink] = []
+	for link: PowerLink in state.power_links:
+		result.append(PowerLink.new(link.a, link.b))
+	return result
+
+
+## Registers an extra battery in the run, seeded from the economy capacity.
+func register_battery(battery_id: StringName) -> void:
+	if battery_id == &"":
+		return
+	state.add_battery(battery_id)
+
+
+## Marks the astronaut as inside or outside. The tick reads this to decide
+## whether the exterior radiation row applies.
+func set_outside(value: bool) -> void:
+	state.is_outside = value
+
+
+func is_outside() -> bool:
+	return state.is_outside
+
+
+## Sets the equipped suit (0 basic, 1 shielded). The tick uses it to scale the
+## exterior radiation gain.
+func set_suit_level(level: int) -> void:
+	state.suit_level = clampi(level, 0, 1)
+
+
+func get_suit_level() -> int:
+	return state.suit_level
 
 
 ## Loads and validates the economy database. A missing or wrongly typed resource

@@ -12,6 +12,7 @@ const _FALLBACK_RADIATION_CAP: float = 30.0
 const _FALLBACK_RADIATION_DEATH: float = 100.0
 const _FALLBACK_SOLAR_OUTPUT: float = 1.5
 const _FALLBACK_BLACKOUT_STEPS: float = 1.0
+const _FALLBACK_SUIT_MULTIPLIER: float = 1.0
 
 
 ## Advances p_state one tick and returns the facts emitted by that tick.
@@ -22,11 +23,13 @@ static func step(state: SimState, economy: EconomyData) -> Array[LogEntry]:
 		state.tick += 1
 		return facts
 
-	_apply_production(state, economy)
-	_apply_consumption(state, economy)
+	var networks: Array[PowerNetwork] = PowerGrid.build(state)
+	_apply_production(state, economy, networks)
+	_apply_consumption(state, economy, networks)
+	state.sync_energy_resource()
 	_apply_degradation(state, economy, facts)
 	# Events: no-op in this version.
-	var radiation_damage_applied: bool = _apply_consequences(state, economy, facts)
+	var radiation_damage_applied: bool = _apply_consequences(state, economy, networks, facts)
 	_apply_death(state, economy, facts, radiation_damage_applied)
 	_apply_sol_facts(state, economy, facts)
 	state.tick += 1
@@ -34,11 +37,17 @@ static func step(state: SimState, economy: EconomyData) -> Array[LogEntry]:
 
 
 ## Step 2: machines that are powered and healthy produce during the day.
-static func _apply_production(state: SimState, economy: EconomyData) -> void:
+static func _apply_production(
+	state: SimState,
+	economy: EconomyData,
+	networks: Array[PowerNetwork]
+) -> void:
 	var is_day: bool = state.get_phase(economy) == SimState.DayPhase.DAY
 	if is_day and _is_operational(_machine(state, SimState.MACHINE_SOLAR_ARRAY)):
 		var solar_output: float = economy.get_value(&"solar_output_per_tick", _FALLBACK_SOLAR_OUTPUT)
-		_add_resource(state, SimState.ENERGY, solar_output, economy)
+		for network: PowerNetwork in networks:
+			if network.has_node(SimState.MACHINE_SOLAR_ARRAY):
+				network.add_charge(state, economy, solar_output)
 	if _is_operational(_machine(state, SimState.MACHINE_HYDROPONICS)):
 		_add_resource(
 			state,
@@ -61,8 +70,12 @@ static func _apply_production(state: SimState, economy: EconomyData) -> void:
 		)
 
 
-## Step 3: crew upkeep and the power draw of every powered, healthy machine.
-static func _apply_consumption(state: SimState, economy: EconomyData) -> void:
+## Step 3: crew upkeep and the power draw of every network.
+static func _apply_consumption(
+	state: SimState,
+	economy: EconomyData,
+	networks: Array[PowerNetwork]
+) -> void:
 	_subtract_resource(
 		state, SimState.OXYGEN, economy.get_value(&"oxygen_consumption_per_tick", 0.0)
 	)
@@ -74,13 +87,10 @@ static func _apply_consumption(state: SimState, economy: EconomyData) -> void:
 	)
 	state.hunger = maxf(0.0, state.hunger - economy.get_value(&"hunger_drain_per_tick", 0.0))
 	state.thirst = maxf(0.0, state.thirst - economy.get_value(&"thirst_drain_per_tick", 0.0))
-	var power_drain: float = 0.0
-	for id: StringName in SimState.MACHINE_IDS:
-		if not _is_operational(_machine(state, id)):
+	for network: PowerNetwork in networks:
+		if not network.has_charge(state):
 			continue
-		var row_id: StringName = StringName("power_" + String(id) + "_per_tick")
-		power_drain += economy.get_value(row_id, 0.0)
-	_subtract_resource(state, SimState.ENERGY, power_drain)
+		network.spend_charge(state, network.demand(state, economy))
 
 
 ## Step 4: wear each machine down; crossing from health to zero is a breakdown.
@@ -111,9 +121,10 @@ static func _apply_degradation(
 static func _apply_consequences(
 	state: SimState,
 	economy: EconomyData,
+	networks: Array[PowerNetwork],
 	facts: Array[LogEntry]
 ) -> bool:
-	_apply_energy_consequences(state, economy, facts)
+	_apply_energy_consequences(state, economy, networks, facts)
 	if state.get_resource(SimState.OXYGEN) <= 0.0:
 		if state.suit_reserve_ticks > 0:
 			state.suit_reserve_ticks -= 1
@@ -126,30 +137,44 @@ static func _apply_consequences(
 	return _apply_radiation(state, economy, facts)
 
 
-## Blackout bookkeeping: one BLACKOUT fact per episode plus the shutdown order.
+## Blackout bookkeeping per network: one BLACKOUT fact per episode and network,
+## plus the shutdown order applied only inside the depleted network.
 static func _apply_energy_consequences(
 	state: SimState,
 	economy: EconomyData,
+	networks: Array[PowerNetwork],
 	facts: Array[LogEntry]
 ) -> void:
-	if state.get_resource(SimState.ENERGY) <= 0.0:
-		if not state.blackout_active:
-			state.blackout_active = true
+	for network: PowerNetwork in networks:
+		if not network.has_load(state):
+			state.blackout_networks[network.id] = false
+			continue
+		if network.total_charge(state) > 0.0:
+			state.blackout_networks[network.id] = false
+			continue
+		if not bool(state.blackout_networks.get(network.id, false)):
+			state.blackout_networks[network.id] = true
 			var payload: Dictionary[Variant, Variant] = {}
+			payload[&"network"] = network.id
 			facts.append(LogEntry.new(LogEntry.Type.BLACKOUT, state.tick, payload))
-		_shut_down_machines(state, economy)
-	else:
-		state.blackout_active = false
+		_shut_down_machines(state, economy, network)
 
 
-## Powers off up to blackout_steps_per_tick machines of the priority list.
-static func _shut_down_machines(state: SimState, economy: EconomyData) -> void:
+## Powers off up to blackout_steps_per_tick machines of the priority list,
+## restricted to the machines that belong to the depleted network.
+static func _shut_down_machines(
+	state: SimState,
+	economy: EconomyData,
+	network: PowerNetwork
+) -> void:
 	var raw_steps: float = economy.get_value(&"blackout_steps_per_tick", _FALLBACK_BLACKOUT_STEPS)
 	var steps: int = int(maxf(1.0, raw_steps))
 	var turned_off: int = 0
 	for id: StringName in SimState.BLACKOUT_ORDER:
 		if turned_off >= steps:
 			break
+		if not network.has_node(id):
+			continue
 		var machine: MachineState = _machine(state, id)
 		if not _is_operational(machine):
 			continue
@@ -165,7 +190,14 @@ static func _apply_radiation(
 	facts: Array[LogEntry]
 ) -> bool:
 	if state.is_outside:
-		state.radiation_dose += economy.get_value(&"radiation_per_tick_exterior", 0.0)
+		var suit_multiplier: float = 1.0
+		if state.suit_level >= 1:
+			suit_multiplier = economy.get_value(
+				&"suit_v2_radiation_multiplier", _FALLBACK_SUIT_MULTIPLIER
+			)
+		state.radiation_dose += economy.get_value(
+			&"radiation_per_tick_exterior", 0.0
+		) * suit_multiplier
 		if state.radiation_dose > state.peak_radiation:
 			state.peak_radiation = state.radiation_dose
 			var payload: Dictionary[Variant, Variant] = {}

@@ -42,6 +42,8 @@ func _init() -> void:
 	_check_summary_counters(economy)
 	_check_sol_from_economy()
 	_check_economy_fallback()
+	_check_power_grid(economy)
+	_check_suit_shield(economy)
 
 	print("sim_smoke: %d checks, %s" % [_checks, "FAIL" if _failures > 0 else "OK"])
 	quit(1 if _failures > 0 else 0)
@@ -408,6 +410,105 @@ func _check_summary_counters(economy: EconomyData) -> void:
 		% [steps, summary.sols_elapsed, summary.peak_radiation, ledger.get_entries().size()]
 	)
 	ledger.free()
+
+
+## (i) Power grid: default single network, panel without battery and a cut cable.
+func _check_power_grid(economy: EconomyData) -> void:
+	var state: SimState = _fresh_state(economy)
+	var networks: Array[PowerNetwork] = PowerGrid.build(state)
+	_expect(networks.size() == 1, "i: the default base must be one network (got %d)" % networks.size())
+	if not networks.is_empty():
+		_expect(
+			networks[0].batteries.has(SimState.DEFAULT_BATTERY_ID),
+			"i: the default network must contain the installed battery"
+		)
+	_expect(
+		is_equal_approx(state.get_resource(SimState.ENERGY), state.get_energy_total()),
+		"i: the energy mirror must equal the battery total"
+	)
+
+	# Panel wired to a load but with no battery: production is discarded.
+	var no_battery: SimState = _fresh_state(economy)
+	no_battery.batteries.clear()
+	no_battery.power_links.append(
+		PowerLink.new(SimState.MACHINE_SOLAR_ARRAY, SimState.MACHINE_LIGHTS)
+	)
+	no_battery.tick = 0
+	SimTick.step(no_battery, economy)
+	_expect(
+		is_equal_approx(no_battery.get_energy_total(), 0.0),
+		"i: a panel without a battery must store nothing (got %f)"
+		% no_battery.get_energy_total()
+	)
+
+	# Cut cable: battery_1 powers only the lights, battery_2 only hydroponics.
+	var cut: SimState = _fresh_state(economy)
+	cut.batteries.clear()
+	cut.add_battery(&"battery_1")
+	cut.add_battery(&"battery_2")
+	cut.set_battery_charge(&"battery_1", 0.0)
+	cut.set_battery_charge(&"battery_2", 10.0)
+	cut.power_links.clear()
+	cut.power_links.append(PowerLink.new(SimState.MACHINE_LIGHTS, &"battery_1"))
+	cut.power_links.append(PowerLink.new(SimState.MACHINE_HYDROPONICS, &"battery_2"))
+	cut.tick = 12
+	var cut_networks: Array[PowerNetwork] = PowerGrid.build(cut)
+	_expect(
+		cut_networks.size() >= 2,
+		"i: a cut cable must split the grid (got %d networks)" % cut_networks.size()
+	)
+	SimTick.step(cut, economy)
+	_expect(
+		not _machine_of(cut, SimState.MACHINE_LIGHTS).powered,
+		"i: the lights on the empty battery network must power off"
+	)
+	_expect(
+		_machine_of(cut, SimState.MACHINE_HYDROPONICS).powered,
+		"i: hydroponics on the charged battery network must stay on"
+	)
+	_expect(
+		is_equal_approx(cut.get_resource(SimState.ENERGY), cut.get_energy_total()),
+		"i: the energy mirror must track both batteries after a tick"
+	)
+	print(
+		"sim_smoke: i) default=1 cut=%d energy=%.2f battery=%.2f"
+		% [cut_networks.size(), cut.get_resource(SimState.ENERGY), cut.get_energy_total()]
+	)
+
+
+## (j) The shielded suit multiplies the exterior radiation gain.
+func _check_suit_shield(economy: EconomyData) -> void:
+	var per_tick: float = economy.get_value(&"radiation_per_tick_exterior", 0.0)
+	var multiplier: float = economy.get_value(&"suit_v2_radiation_multiplier", 1.0)
+	_expect(multiplier < 1.0, "j: the shield row must reduce the dose (got %f)" % multiplier)
+
+	var basic: SimState = _fresh_state(economy)
+	_power_off_all(basic)
+	basic.is_outside = true
+	basic.suit_level = 0
+	for i: int in range(2):
+		SimTick.step(basic, economy)
+	_expect(
+		is_equal_approx(basic.radiation_dose, per_tick * 2.0),
+		"j: the basic suit must take the full dose (got %f, expected %f)"
+		% [basic.radiation_dose, per_tick * 2.0]
+	)
+
+	var shielded: SimState = _fresh_state(economy)
+	_power_off_all(shielded)
+	shielded.is_outside = true
+	shielded.suit_level = 1
+	for i: int in range(2):
+		SimTick.step(shielded, economy)
+	_expect(
+		is_equal_approx(shielded.radiation_dose, per_tick * 2.0 * multiplier),
+		"j: the shielded suit must take %f (got %f)"
+		% [per_tick * 2.0 * multiplier, shielded.radiation_dose]
+	)
+	print(
+		"sim_smoke: j) basic=%.2f shielded=%.2f multiplier=%.2f"
+		% [basic.radiation_dose, shielded.radiation_dose, multiplier]
+	)
 
 
 ## Fresh state seeded from the economy database.
