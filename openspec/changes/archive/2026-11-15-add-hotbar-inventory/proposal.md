@@ -26,6 +26,9 @@ completo.
   muestra con su icono pixel-art para poder probar el sistema.
 - La hotbar reutiliza las texturas ya aprobadas; la barra de vida usa la variante
   ámbar cuando la salud baja del 30 %.
+- La escena de partida pasa a montar este HUD en lugar del HUD anterior: vida
+  arriba en el centro, recursos arriba a la izquierda, Sol arriba a la derecha y
+  hotbar abajo.
 
 ## Capabilities
 
@@ -37,8 +40,11 @@ completo.
 
 ### Modified Capabilities
 
-Ninguna. `GameSim` solo gana dos getters de lectura; su comportamiento de tick no
-cambia.
+- `game-hud`: la partida pasa a usar este HUD. Se mantienen la lectura de
+  recursos y vitales, el reloj y la condición de capa superpuesta; se retiran de
+  esta versión el control de velocidad y pausa, el prompt de interacción, el
+  banner de evento y el aviso de comunicaciones, que quedan pospuestos.
+- `GameSim` solo gana dos getters de lectura; su comportamiento de tick no cambia.
 
 ## Impact
 
@@ -47,6 +53,8 @@ cambia.
   muestra).
 - `game/scenes/ui/hud.tscn`, `game/scenes/ui/hud.gd`,
   `game/scenes/ui/inventory_slot.tscn`, `game/scenes/ui/inventory_slot.gd`.
+- `game/scenes/ui/run_ui.tscn` y `game/scenes/ui/run_ui.gd`: montan el HUD nuevo
+  y dejan de instanciar `game_hud.tscn`.
 - `game/scripts/autoloads/game_sim.gd`: `get_health()` y `get_max_health()`.
 - `game/assets/images/items/` (3 iconos de muestra) y
   `art/sprites/items/build-items.lua` (generador Aseprite).

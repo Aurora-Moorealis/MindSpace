@@ -30,3 +30,14 @@
 - [x] 4.4 Validar el cambio con `openspec validate add-hotbar-inventory --strict`
 - [x] 4.5 Ampliar `hud_inventory_test.gd` con aserciones de recursos, Sol y multiplicador
 - [x] 4.6 Volver a arrancar la prueba y revisar la captura del HUD completo a 850×480
+
+## 5. Integración en la partida
+
+- [x] 5.1 Montar `scenes/ui/hud.tscn` en `run_ui.tscn` en lugar de `game_hud.tscn`
+- [x] 5.2 Quitar de `run_ui.gd` el binding al astronauta y la referencia al HUD anterior
+- [x] 5.3 Dejar `scenes/ui/game_hud/` sin instanciar y reflejar en la spec los requisitos pospuestos
+
+## 6. Verificación de la integración
+
+- [x] 6.1 Checker estricto y arranque de la escena jugable sin errores
+- [x] 6.2 Captura de la escena jugable a 850x480 con vida, recursos, Sol y hotbar

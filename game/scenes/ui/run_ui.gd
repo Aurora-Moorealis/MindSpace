@@ -7,10 +7,6 @@ extends CanvasLayer
 ## script owns the transitions around them (end of the run, restart, back to
 ## the menu) and the debug control that forces the run to end.
 
-## Astronaut of the playable scene that feeds the HUD interaction prompt.
-@export var astronaut_path: NodePath = ^"../Astronaut"
-
-@onready var _hud: GameHud = $GameHud
 @onready var _debug_button: Button = $DebugEndButton
 ## Typed as Control because evaluation.gd declares no class_name; its public
 ## API (present/hide_summary) and its signals are resolved at runtime.
@@ -18,10 +14,6 @@ extends CanvasLayer
 
 
 func _ready() -> void:
-	var astronaut: Astronaut = get_node_or_null(astronaut_path) as Astronaut
-	if astronaut == null:
-		push_error("RunUi: no Astronaut at '%s'." % String(astronaut_path))
-	_hud.bind_astronaut(astronaut)
 	GameSim.game_over.connect(_on_game_over)
 	GameSim.game_reset.connect(_on_game_reset)
 	_evaluation.restart_requested.connect(_on_restart_requested)

@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/run_ui.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/ui/game_hud/game_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="2_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/machine_panel/machine_panel.tscn" id="3_panel"]
 [ext_resource type="Script" path="res://scenes/ui/machine_panel/machine_panel_controller.gd" id="4_controller"]
 [ext_resource type="PackedScene" path="res://scenes/evaluation/evaluation.tscn" id="5_evaluation"]
@@ -10,7 +10,7 @@
 [node name="RunUi" type="CanvasLayer"]
 script = ExtResource("1_script")
 
-[node name="GameHud" parent="." instance=ExtResource("2_hud")]
+[node name="Hud" parent="." instance=ExtResource("2_hud")]
 
 [node name="DebugEndButton" type="Button" parent="."]
 visible = false
