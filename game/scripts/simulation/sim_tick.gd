@@ -4,8 +4,7 @@ extends RefCounted
 ## Deterministic advance of one simulation tick (contract v1).
 ## No randomness and no real time: same state plus same economy, same result.
 ## The step order is fixed: production, consumption, degradation, machine work
-## (repairs in progress), events (currently a no-op), consequences, death and
-## calendar facts.
+## (repairs in progress), events, consequences, death and calendar facts.
 
 const _FALLBACK_CAPACITY: float = 10.0
 const _FALLBACK_MAX_HEALTH: float = 100.0
@@ -17,7 +16,10 @@ const _FALLBACK_BLACKOUT_STEPS: float = 1.0
 
 ## Advances p_state one tick and returns the facts emitted by that tick.
 static func step(
-	state: SimState, economy: EconomyData, machines: MachineDatabase
+	state: SimState,
+	economy: EconomyData,
+	machines: MachineDatabase,
+	events: EventData = null
 ) -> Array[LogEntry]:
 	var facts: Array[LogEntry] = []
 	# A finished run keeps counting ticks but emits nothing else.
@@ -29,7 +31,7 @@ static func step(
 	_apply_consumption(state, economy, machines)
 	_apply_degradation(state, economy, facts)
 	_apply_machine_work(state, facts)
-	# Events: no-op in this version.
+	_apply_events(state, events, facts)
 	var radiation_damage_applied: bool = _apply_consequences(state, economy, facts)
 	_apply_death(state, economy, facts, radiation_damage_applied)
 	_apply_sol_facts(state, economy, facts)
@@ -189,9 +191,180 @@ static func _apply_machine_work(state: SimState, facts: Array[LogEntry]) -> void
 		var payload: Dictionary[Variant, Variant] = {}
 		payload[&"machine"] = id
 		facts.append(LogEntry.new(LogEntry.Type.REPAIR, state.tick, payload))
+## Step 6: event scheduler and active event effects.
+## Expire first, enqueue due rows, start what can start, then apply intensity.
+static func _apply_events(
+	state: SimState,
+	events: EventData,
+	facts: Array[LogEntry]
+) -> void:
+	if events == null:
+		state.active_events.clear()
+		state.pending_events.clear()
+		state.comms_blocked = false
+		return
+
+	var ordered: Array[EventRow] = _sorted_events(events)
+	_expire_active_events(state, facts)
+	_enqueue_due_events(state, ordered)
+	_start_ready_events(state, events, facts)
+	_apply_active_events(state, facts)
+	state.comms_blocked = _has_active_blackout(state)
 
 
-## Step 6: energy, oxygen, hunger, thirst and radiation consequences.
+## Sorted by onset and then id, so the cursor is stable and deterministic.
+static func _sorted_events(events: EventData) -> Array[EventRow]:
+	var ordered: Array[EventRow] = []
+	for row: EventRow in events.rows:
+		ordered.append(row)
+	ordered.sort_custom(
+		func(first: EventRow, second: EventRow) -> bool:
+			if first.onset_tick == second.onset_tick:
+				return String(first.id) < String(second.id)
+			return first.onset_tick < second.onset_tick
+	)
+	return ordered
+
+
+## Emits EVENT_ENDED for every active event whose window is over.
+static func _expire_active_events(state: SimState, facts: Array[LogEntry]) -> void:
+	var remaining: Array[ActiveEvent] = []
+	for active: ActiveEvent in state.active_events:
+		if active.row == null:
+			continue
+		if state.tick >= active.end_tick():
+			var payload: Dictionary[Variant, Variant] = {}
+			payload[&"id"] = active.row.id
+			payload[&"end_tick"] = state.tick
+			facts.append(LogEntry.new(LogEntry.Type.EVENT_ENDED, state.tick, payload))
+		else:
+			remaining.append(active)
+	state.active_events = remaining
+
+
+## Moves every row whose onset has arrived into the pending queue.
+static func _enqueue_due_events(state: SimState, ordered: Array[EventRow]) -> void:
+	while state.event_cursor < ordered.size():
+		var row: EventRow = ordered[state.event_cursor]
+		if row.onset_tick > state.tick:
+			break
+		state.pending_events.append(PendingEvent.new(row, state.tick))
+		state.event_cursor += 1
+
+
+## Starts pending events that are due and can overlap with every active event.
+## A blocked event waits until the latest active window ends plus a deterministic
+## delay derived from the run seed and the event id.
+static func _start_ready_events(
+	state: SimState,
+	events: EventData,
+	facts: Array[LogEntry]
+) -> void:
+	var still_pending: Array[PendingEvent] = []
+	for pending: PendingEvent in state.pending_events:
+		if pending.row == null:
+			continue
+		if pending.not_before_tick > state.tick:
+			still_pending.append(pending)
+			continue
+		if _can_start(state, events, pending.row):
+			state.active_events.append(ActiveEvent.new(pending.row, state.tick))
+			var payload: Dictionary[Variant, Variant] = {}
+			payload[&"id"] = pending.row.id
+			payload[&"archetype"] = pending.row.archetype
+			payload[&"target"] = pending.row.target_id
+			payload[&"started_tick"] = state.tick
+			facts.append(LogEntry.new(LogEntry.Type.EVENT_STARTED, state.tick, payload))
+		else:
+			pending.not_before_tick = (
+				_latest_active_end_tick(state) + _queue_delay(state, pending.row)
+			)
+			still_pending.append(pending)
+	state.pending_events = still_pending
+
+
+static func _can_start(state: SimState, events: EventData, row: EventRow) -> bool:
+	for active: ActiveEvent in state.active_events:
+		if active.row == null:
+			continue
+		if not events.can_overlap(row, active.row):
+			return false
+	return true
+
+
+static func _latest_active_end_tick(state: SimState) -> int:
+	var latest: int = state.tick
+	for active: ActiveEvent in state.active_events:
+		if active.row == null:
+			continue
+		latest = maxi(latest, active.end_tick())
+	return latest
+
+
+## Deterministic delay in [delay_min_ticks, delay_max_ticks].
+static func _queue_delay(state: SimState, row: EventRow) -> int:
+	var minimum: int = maxi(0, row.delay_min_ticks)
+	var maximum: int = maxi(minimum, row.delay_max_ticks)
+	if maximum <= minimum:
+		return minimum
+	var span: int = maximum - minimum + 1
+	var seed_text: String = "%d:%s" % [state.run_seed, String(row.id)]
+	return minimum + (_stable_hash(seed_text) % span)
+
+
+## FNV-1a over UTF-8 code points; stable across runs, unlike hash().
+static func _stable_hash(text: String) -> int:
+	var hash_value: int = 2166136261
+	for index: int in text.length():
+		hash_value = hash_value ^ text.unicode_at(index)
+		hash_value = (hash_value * 16777619) & 0xFFFFFFFF
+	return hash_value
+
+
+static func _apply_active_events(state: SimState, facts: Array[LogEntry]) -> void:
+	for active: ActiveEvent in state.active_events:
+		if active.row == null:
+			continue
+		var elapsed: int = state.tick - active.started_tick
+		_apply_event_effect(state, active.row, active.row.intensity_at(elapsed), facts)
+
+
+static func _apply_event_effect(
+	state: SimState,
+	row: EventRow,
+	delta: float,
+	facts: Array[LogEntry]
+) -> void:
+	match row.archetype:
+		EventRow.Archetype.MACHINE_BREAKDOWN:
+			var machine: MachineState = _machine(state, row.target_id)
+			if machine == null:
+				return
+			var previous_health: float = machine.health
+			machine.health = maxf(0.0, machine.health + delta)
+			if previous_health > 0.0 and machine.health <= 0.0:
+				machine.powered = false
+				var payload: Dictionary[Variant, Variant] = {}
+				payload[&"machine"] = row.target_id
+				payload[&"event"] = row.id
+				facts.append(LogEntry.new(LogEntry.Type.MACHINE_BREAKDOWN, state.tick, payload))
+		EventRow.Archetype.PRODUCTION_DROP, EventRow.Archetype.CONSUMPTION_SPIKE:
+			_subtract_resource(state, row.target_id, -delta)
+		EventRow.Archetype.RADIATION_WINDOW:
+			if state.is_outside:
+				state.radiation_dose += delta
+		EventRow.Archetype.COMMS_BLACKOUT:
+			pass
+
+
+static func _has_active_blackout(state: SimState) -> bool:
+	for active: ActiveEvent in state.active_events:
+		if active.row != null and active.row.archetype == EventRow.Archetype.COMMS_BLACKOUT:
+			return true
+	return false
+
+
+## Step 7: energy, oxygen, hunger, thirst and radiation consequences.
 ## Returns true when the radiation cap applied its damage this tick.
 static func _apply_consequences(
 	state: SimState,
@@ -276,7 +449,7 @@ static func _apply_radiation(
 	return false
 
 
-## Step 6 (death): the first tick that reaches zero health closes the run.
+## Step 8: the first tick that reaches zero health closes the run.
 static func _apply_death(
 	state: SimState,
 	economy: EconomyData,
@@ -313,7 +486,7 @@ static func _apply_death(
 	facts.append(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, over_payload))
 
 
-## Step 7: a SOL_COMPLETED fact at the end of every sol, whose length comes from
+## Step 9: a SOL_COMPLETED fact at the end of every sol, whose length comes from
 ## the same economy rows that drive the day/night phase.
 static func _apply_sol_facts(state: SimState, economy: EconomyData, facts: Array[LogEntry]) -> void:
 	var sol_length: int = state.get_sol_length(economy)

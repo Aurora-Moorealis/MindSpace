@@ -38,6 +38,7 @@ const _FALLBACK_THIRST: float = 100.0
 const _FALLBACK_DAY_LENGTH: float = 12.0
 const _FALLBACK_NIGHT_LENGTH: float = 12.0
 const _FALLBACK_MACHINE_HEALTH: float = 100.0
+const DEFAULT_RUN_SEED: int = 20261114
 
 enum DayPhase { DAY, NIGHT }
 
@@ -57,6 +58,11 @@ var player: PlayerStats = PlayerStats.new()
 var blackout_active: bool = false
 var game_over: bool = false
 var death_cause: StringName = &""
+var event_cursor: int = 0
+var active_events: Array[ActiveEvent] = []
+var pending_events: Array[PendingEvent] = []
+var comms_blocked: bool = false
+var run_seed: int = DEFAULT_RUN_SEED
 
 
 ## Restores a fresh run from the economy database: counters back to zero,
@@ -99,6 +105,11 @@ func reset_from_economy(economy: EconomyData) -> void:
 	blackout_active = false
 	game_over = false
 	death_cause = &""
+	event_cursor = 0
+	active_events.clear()
+	pending_events.clear()
+	comms_blocked = false
+	run_seed = DEFAULT_RUN_SEED
 
 
 ## Day or night for the current tick, derived from the day/night lengths.
