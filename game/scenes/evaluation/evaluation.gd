@@ -29,6 +29,7 @@ const MISSING_RESOURCE: String = "--"
 
 ## Fills every field with the current run summary and shows the overlay.
 func present() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	var summary: EvaluationSummary = EventLog.get_summary()
 	_reports_value.text = str(summary.reports_sent)
 	_submissions_value.text = str(summary.submissions_completed)

@@ -16,6 +16,8 @@ const SLOT_COUNT: int = 5
 const LOW_HEALTH_RATIO: float = 0.3
 const HELD_ICON_SIZE: Vector2 = Vector2(24.0, 24.0)
 const CAPACITY_FALLBACK: float = 10.0
+const RADIATION_THRESHOLD_FALLBACK: float = 30.0
+const RADIATION_WARNING_RATIO: float = 0.8
 ## Prompt text: the interact key plus the target name.
 const PROMPT_FORMAT: String = "E  %s"
 ## Prompt text for targets that are not machines.
@@ -49,6 +51,7 @@ var _slots: Array[InventorySlot] = []
 var _held_item: ItemData = null
 var _normal_health_fill: Texture2D = null
 var _clock_text: String = ""
+var _radiation_alarm_played: bool = false
 ## Astronaut that publishes the interaction target, or null until bound.
 var _astronaut: Astronaut = null
 ## Last interaction target received, kept so its name is only rebuilt on change.
@@ -99,7 +102,8 @@ func _input(event: InputEvent) -> void:
 			return
 		var digit_index: int = int(key_event.keycode) - int(KEY_1)
 		if digit_index >= 0 and digit_index < inventory.get_slot_count():
-			inventory.select(digit_index)
+			if inventory.select(digit_index):
+				AudioManager.play(AudioManager.Sfx.UI_CLICK)
 			get_viewport().set_input_as_handled()
 		return
 	if not event is InputEventMouseButton:
@@ -108,9 +112,16 @@ func _input(event: InputEvent) -> void:
 	if not mouse_event.pressed:
 		return
 	if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-		inventory.cycle_selection(-1)
+		_cycle_selection_with_sound(-1)
 	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-		inventory.cycle_selection(1)
+		_cycle_selection_with_sound(1)
+
+
+func _cycle_selection_with_sound(step: int) -> void:
+	var before: int = inventory.get_selected_index()
+	inventory.cycle_selection(step)
+	if inventory.get_selected_index() != before:
+		AudioManager.play(AudioManager.Sfx.UI_CLICK)
 
 
 ## Time-control keys. The buttons have no focus, so Space reaches this handler.
@@ -222,17 +233,23 @@ func _on_slot_clicked(index: int) -> void:
 	if _held_item == null:
 		var taken: ItemData = inventory.take_item(index)
 		if taken != null:
+			AudioManager.play(AudioManager.Sfx.UI_CLICK)
 			_set_held_item(taken)
 		else:
+			AudioManager.play(AudioManager.Sfx.UI_CLICK)
 			inventory.select(index)
 		return
 	var replaced: ItemData = inventory.get_item(index)
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	inventory.set_item(index, _held_item)
 	_set_held_item(replaced)
 	inventory.select(index)
 
 
 func _on_slot_right_clicked(_index: int) -> void:
+	if _held_item == null:
+		return
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_cancel_held_item()
 
 
@@ -240,6 +257,7 @@ func _on_slot_dropped(from_index: int, to_index: int) -> void:
 	if _held_item != null:
 		return
 	if inventory.move_item(from_index, to_index):
+		AudioManager.play(AudioManager.Sfx.UI_CLICK)
 		inventory.select(to_index)
 
 
@@ -265,6 +283,22 @@ func _cancel_held_item() -> void:
 
 func _on_sim_tick_advanced(_tick: int) -> void:
 	_refresh_stats()
+	_check_radiation_alarm()
+
+
+## Warns once when the cumulative dose reaches the warning band below the cap.
+func _check_radiation_alarm() -> void:
+	if _radiation_alarm_played:
+		return
+	var threshold: float = GameSim.get_economy().get_value(
+		&"radiation_threshold_cap", RADIATION_THRESHOLD_FALLBACK
+	)
+	if threshold <= 0.0:
+		return
+	if GameSim.state.radiation_dose < threshold * RADIATION_WARNING_RATIO:
+		return
+	_radiation_alarm_played = true
+	AudioManager.play(AudioManager.Sfx.RADIATION_ALARM)
 
 
 func _refresh_stats() -> void:
@@ -352,37 +386,50 @@ func _refresh_time_controls() -> void:
 	_pause_button.disabled = ended
 
 
-## Moves the speed one step inside X1..X10; a step past an end is ignored.
+## Moves the speed one step inside X1..X10000; a step past an end is ignored.
 func _step_speed(step: int) -> void:
 	if GameSim.state.game_over:
 		return
+	var changed: bool = false
 	match GameSim.speed:
 		GameSim.Speed.X1:
 			if step > 0:
 				GameSim.set_speed(GameSim.Speed.X5)
+				changed = true
 		GameSim.Speed.X5:
 			if step > 0:
 				GameSim.set_speed(GameSim.Speed.X10)
+				changed = true
 			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X1)
+				changed = true
 		GameSim.Speed.X10:
 			if step > 0:
 				GameSim.set_speed(GameSim.Speed.X100)
+				changed = true
 			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X5)
+				changed = true
 		GameSim.Speed.X100:
 			if step > 0:
 				GameSim.set_speed(GameSim.Speed.X1000)
+				changed = true
 			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X10)
+				changed = true
 		GameSim.Speed.X1000:
 			if step > 0:
 				GameSim.set_speed(GameSim.Speed.X10000)
+				changed = true
 			elif step < 0:
 				GameSim.set_speed(GameSim.Speed.X100)
+				changed = true
 		GameSim.Speed.X10000:
 			if step < 0:
 				GameSim.set_speed(GameSim.Speed.X1000)
+				changed = true
+	if changed:
+		AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_refresh_time_controls()
 	_refresh_clock(GameSim.state, GameSim.get_economy())
 
@@ -391,6 +438,7 @@ func _toggle_pause() -> void:
 	if GameSim.state.game_over:
 		return
 	GameSim.set_paused(not GameSim.paused)
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_refresh_time_controls()
 
 
@@ -456,6 +504,7 @@ func _refresh_health() -> void:
 
 func _on_game_reset() -> void:
 	_run_over = false
+	_radiation_alarm_played = false
 	_update_visibility()
 	inventory.reset()
 	_set_held_item(null)
