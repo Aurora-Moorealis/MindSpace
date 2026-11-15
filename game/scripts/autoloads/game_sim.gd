@@ -157,6 +157,26 @@ func register_battery(battery_id: StringName) -> void:
 	state.add_battery(battery_id)
 
 
+## Marks the astronaut as inside or outside. The tick reads this to decide
+## whether the exterior radiation row applies.
+func set_outside(value: bool) -> void:
+	state.is_outside = value
+
+
+func is_outside() -> bool:
+	return state.is_outside
+
+
+## Sets the equipped suit (0 basic, 1 shielded). The tick uses it to scale the
+## exterior radiation gain.
+func set_suit_level(level: int) -> void:
+	state.suit_level = clampi(level, 0, 1)
+
+
+func get_suit_level() -> int:
+	return state.suit_level
+
+
 ## Editable sheet of a machine, or null when the registry has no such id.
 func get_machine_data(id: StringName) -> MachineData:
 	if _machines == null:

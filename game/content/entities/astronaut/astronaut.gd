@@ -1,14 +1,30 @@
 class_name Astronaut
 extends CharacterBody2D
-## Player-controlled astronaut that walks across the generated lunar surface.
+
+## Player-controlled astronaut on the generated lunar surface.
 ##
 ## Movement is resolved against the [LunarMap] walkability flags instead of the
 ## TileSet physics layers: every substep tests a small collision box on the X
 ## axis first and on the Y axis afterwards, so blocked movement slides along the
 ## free axis. The map is the single source of truth for terrain and bounds.
+##
+## The astronaut also owns the player-side view of the run: it reports the suit
+## and the interior/exterior zone to [GameSim], picks the nearest interactable in
+## range and publishes the vitals the HUD reads. Survival rules stay in SimState
+## and the tick.
+
+signal vitals_changed()
+signal interaction_target_changed(target: Node)
+signal suit_changed(level: int)
+
+enum Suit { BASIC, SHIELDED }
 
 ## Walking speed in world pixels per second, before the player speed multiplier.
 @export var base_speed: float = 160.0
+## Suit the astronaut starts the run with.
+@export var suit: Suit = Suit.BASIC
+## Only used before the astronaut enters any exterior zone, for test scenes.
+@export var starts_outside: bool = false
 
 ## Side of the square collision box, in world pixels.
 const COLLISION_SIZE: float = 12.0
@@ -23,16 +39,30 @@ const FRAME_UP: int = 1
 const FRAME_LEFT: int = 2
 const FRAME_RIGHT: int = 3
 
+@onready var _sprite: Sprite2D = $Sprite2D
+@onready var _interact_sensor: Area2D = $InteractSensor
+@onready var _zone_sensor: Area2D = $ZoneSensor
+
 ## Map the astronaut walks on. Null until [method setup] is called.
 var _map: LunarMap = null
 ## Last facing frame, kept so it can be applied once the sprite is available.
 var _facing_frame: int = FRAME_DOWN
+var _targets: Array[Node] = []
+var _current_target: Node = null
+var _exterior_areas: Dictionary[Area2D, bool] = {}
+var _alive: bool = true
 
-@onready var _sprite: Sprite2D = $Sprite2D
 
-
-## Applies the current facing frame once the scene nodes exist.
 func _ready() -> void:
+	_interact_sensor.area_entered.connect(_on_interactable_entered)
+	_interact_sensor.area_exited.connect(_on_interactable_exited)
+	_zone_sensor.area_entered.connect(_on_zone_entered)
+	_zone_sensor.area_exited.connect(_on_zone_exited)
+	GameSim.tick_advanced.connect(_on_tick_advanced)
+	GameSim.game_reset.connect(_on_game_reset)
+	GameSim.game_over.connect(_on_game_over)
+	GameSim.set_outside(starts_outside)
+	_apply_suit()
 	_apply_frame(_facing_frame)
 
 
@@ -71,13 +101,61 @@ func move(direction: Vector2, delta: float) -> void:
 
 ## Reads the movement actions and walks while the simulation clock is running.
 func _physics_process(delta: float) -> void:
-	if GameSim.is_paused() or _map == null:
+	if not _alive or GameSim.is_paused() or _map == null:
 		return
 	var direction: Vector2 = Input.get_vector(
 		&"move_left", &"move_right", &"move_up", &"move_down"
 	)
 	if direction != Vector2.ZERO:
 		move(direction, delta)
+
+
+## Calls interact on the current target while the game is being played.
+func _unhandled_input(event: InputEvent) -> void:
+	if not _alive or GameSim.is_paused():
+		return
+	if event.is_action_pressed(&"interact"):
+		_interact()
+
+
+## Current interaction target, or null when no machine is in range.
+func get_interaction_target() -> Node:
+	return _current_target
+
+
+func is_alive() -> bool:
+	return _alive
+
+
+func get_suit() -> Suit:
+	return suit
+
+
+## Changes the equipped suit and applies it to the run.
+func set_suit(value: Suit) -> void:
+	suit = value
+	_apply_suit()
+
+
+## Marks the astronaut as outside; used by the zone areas and by test scenes.
+func set_outside(value: bool) -> void:
+	GameSim.set_outside(value)
+
+
+func get_health() -> float:
+	return GameSim.state.health
+
+
+func get_oxygen() -> float:
+	return GameSim.state.get_resource(SimState.OXYGEN)
+
+
+func get_hunger() -> float:
+	return GameSim.state.hunger
+
+
+func get_thirst() -> float:
+	return GameSim.state.thirst
 
 
 ## Returns whether the collision box centered on [param candidate] lies fully on
@@ -118,3 +196,93 @@ func _apply_frame(frame: int) -> void:
 	if _sprite == null:
 		return
 	_sprite.frame = frame
+
+
+func _interact() -> void:
+	if _current_target == null:
+		return
+	if not _current_target.has_method(&"interact"):
+		return
+	_current_target.interact(self)
+
+
+func _on_interactable_entered(area: Area2D) -> void:
+	_add_target(area)
+
+
+func _on_interactable_exited(area: Area2D) -> void:
+	_remove_target(area)
+
+
+func _add_target(area: Area2D) -> void:
+	var candidate: Node = area.get_parent()
+	if candidate == null or not candidate.has_method(&"interact"):
+		return
+	if not _targets.has(candidate):
+		_targets.append(candidate)
+	_refresh_target()
+
+
+func _remove_target(area: Area2D) -> void:
+	var candidate: Node = area.get_parent()
+	if candidate == null:
+		return
+	_targets.erase(candidate)
+	_refresh_target()
+
+
+## Keeps the closest valid target and notifies listeners when it changes.
+func _refresh_target() -> void:
+	var nearest: Node = null
+	var nearest_distance: float = INF
+	var valid_targets: Array[Node] = []
+	for target: Node in _targets:
+		if not is_instance_valid(target):
+			continue
+		valid_targets.append(target)
+		var node_2d: Node2D = target as Node2D
+		if node_2d == null:
+			continue
+		var distance: float = global_position.distance_squared_to(node_2d.global_position)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest = target
+	_targets = valid_targets
+	if nearest == _current_target:
+		return
+	_current_target = nearest
+	interaction_target_changed.emit(_current_target)
+
+
+func _on_zone_entered(area: Area2D) -> void:
+	if not area.is_in_group(&"exterior_zones"):
+		return
+	_exterior_areas[area] = true
+	GameSim.set_outside(true)
+
+
+func _on_zone_exited(area: Area2D) -> void:
+	if not area.is_in_group(&"exterior_zones"):
+		return
+	_exterior_areas.erase(area)
+	GameSim.set_outside(not _exterior_areas.is_empty())
+
+
+func _on_tick_advanced(_tick: int) -> void:
+	vitals_changed.emit()
+
+
+func _on_game_over(_cause: StringName) -> void:
+	_alive = false
+	velocity = Vector2.ZERO
+
+
+func _on_game_reset() -> void:
+	_alive = true
+	_apply_suit()
+	GameSim.set_outside(starts_outside or not _exterior_areas.is_empty())
+
+
+func _apply_suit() -> void:
+	GameSim.set_suit_level(int(suit))
+	suit_changed.emit(int(suit))
