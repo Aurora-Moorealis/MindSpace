@@ -27,12 +27,16 @@ static func step(
 		state.tick += 1
 		return facts
 
-	_apply_production(state, economy)
-	_apply_consumption(state, economy, machines)
+	var networks: Array[PowerNetwork] = PowerGrid.build(state)
+	_apply_production(state, economy, networks)
+	_apply_consumption(state, economy, machines, networks)
+	state.sync_energy_resource()
 	_apply_degradation(state, economy, facts)
 	_apply_machine_work(state, facts)
 	_apply_events(state, events, facts)
-	var radiation_damage_applied: bool = _apply_consequences(state, economy, facts)
+	var radiation_damage_applied: bool = _apply_consequences(
+		state, economy, networks, facts
+	)
 	_apply_death(state, economy, facts, radiation_damage_applied)
 	_apply_sol_facts(state, economy, facts)
 	state.tick += 1
@@ -40,20 +44,21 @@ static func step(
 
 
 ## Step 2: machines that are powered and healthy produce during the day.
-## Each output is the economy base plus the machine production delta.
-static func _apply_production(state: SimState, economy: EconomyData) -> void:
+## Each output is the economy base plus the machine production delta. Solar
+## output is stored in the batteries of the panel's own network.
+static func _apply_production(
+	state: SimState, economy: EconomyData, networks: Array[PowerNetwork]
+) -> void:
 	var is_day: bool = state.get_phase(economy) == SimState.DayPhase.DAY
 	var solar: MachineState = _machine(state, SimState.MACHINE_SOLAR_ARRAY)
 	if is_day and _is_operational(solar):
 		var solar_base: float = economy.get_value(
 			&"solar_output_per_tick", _FALLBACK_SOLAR_OUTPUT
 		)
-		_add_resource(
-			state,
-			SimState.ENERGY,
-			_effective_output(solar, SimState.ENERGY, solar_base),
-			economy
-		)
+		var solar_output: float = _effective_output(solar, SimState.ENERGY, solar_base)
+		for network: PowerNetwork in networks:
+			if network.has_node(SimState.MACHINE_SOLAR_ARRAY):
+				network.add_charge(state, economy, solar_output)
 	var hydroponics: MachineState = _machine(state, SimState.MACHINE_HYDROPONICS)
 	if _is_operational(hydroponics):
 		var food_base: float = economy.get_value(&"hydroponics_food_output_per_tick", 0.0)
@@ -87,7 +92,10 @@ static func _apply_production(state: SimState, economy: EconomyData) -> void:
 ## Invalid entries are sanitized on read: null, empty/unknown resources and
 ## duplicated resources are ignored, and a negative amount counts as zero.
 static func _apply_consumption(
-	state: SimState, economy: EconomyData, machines: MachineDatabase
+	state: SimState,
+	economy: EconomyData,
+	machines: MachineDatabase,
+	networks: Array[PowerNetwork]
 ) -> void:
 	_subtract_resource(
 		state, SimState.OXYGEN, economy.get_value(&"oxygen_consumption_per_tick", 0.0)
@@ -100,19 +108,20 @@ static func _apply_consumption(
 	)
 	state.hunger = maxf(0.0, state.hunger - economy.get_value(&"hunger_drain_per_tick", 0.0))
 	state.thirst = maxf(0.0, state.thirst - economy.get_value(&"thirst_drain_per_tick", 0.0))
-	var energy_drain: float = 0.0
-	for id: StringName in SimState.MACHINE_IDS:
-		var machine: MachineState = _machine(state, id)
-		if not _is_operational(machine):
-			continue
-		var data: MachineData = null
-		if machines != null:
-			data = machines.get_machine(id)
-		# A missing sheet was already reported at boot: consume nothing.
-		if data == null:
-			continue
-		energy_drain += _apply_machine_consumption(state, machine, data)
-	_subtract_resource(state, SimState.ENERGY, energy_drain)
+	for network: PowerNetwork in networks:
+		var energy_drain: float = 0.0
+		for id: StringName in network.nodes:
+			var machine: MachineState = _machine(state, id)
+			if not _is_operational(machine):
+				continue
+			var data: MachineData = null
+			if machines != null:
+				data = machines.get_machine(id)
+			# A missing sheet was already reported at boot: consume nothing.
+			if data == null:
+				continue
+			energy_drain += _apply_machine_consumption(state, machine, data)
+		network.spend_charge(state, energy_drain)
 
 
 ## Applies the sanitized consumption of one machine and returns its energy
@@ -369,9 +378,10 @@ static func _has_active_blackout(state: SimState) -> bool:
 static func _apply_consequences(
 	state: SimState,
 	economy: EconomyData,
+	networks: Array[PowerNetwork],
 	facts: Array[LogEntry]
 ) -> bool:
-	_apply_energy_consequences(state, economy, facts)
+	_apply_energy_consequences(state, economy, networks, facts)
 	if state.get_resource(SimState.OXYGEN) <= 0.0:
 		if state.suit_reserve_ticks > 0:
 			state.suit_reserve_ticks -= 1
@@ -384,30 +394,48 @@ static func _apply_consequences(
 	return _apply_radiation(state, economy, facts)
 
 
-## Blackout bookkeeping: one BLACKOUT fact per episode plus the shutdown order.
+## Blackout bookkeeping per network: one BLACKOUT fact per episode and network,
+## plus the shutdown order applied only inside the depleted network. The legacy
+## blackout_active flag stays true while any network is in blackout.
 static func _apply_energy_consequences(
 	state: SimState,
 	economy: EconomyData,
+	networks: Array[PowerNetwork],
 	facts: Array[LogEntry]
 ) -> void:
-	if state.get_resource(SimState.ENERGY) <= 0.0:
-		if not state.blackout_active:
-			state.blackout_active = true
+	var any_blackout: bool = false
+	for network: PowerNetwork in networks:
+		if not network.has_load(state):
+			state.blackout_networks[network.id] = false
+			continue
+		if network.total_charge(state) > 0.0:
+			state.blackout_networks[network.id] = false
+			continue
+		any_blackout = true
+		if not bool(state.blackout_networks.get(network.id, false)):
+			state.blackout_networks[network.id] = true
 			var payload: Dictionary[Variant, Variant] = {}
+			payload[&"network"] = network.id
 			facts.append(LogEntry.new(LogEntry.Type.BLACKOUT, state.tick, payload))
-		_shut_down_machines(state, economy)
-	else:
-		state.blackout_active = false
+		_shut_down_machines(state, economy, network)
+	state.blackout_active = any_blackout
 
 
-## Powers off up to blackout_steps_per_tick machines of the priority list.
-static func _shut_down_machines(state: SimState, economy: EconomyData) -> void:
+## Powers off up to blackout_steps_per_tick machines of the priority list,
+## restricted to the machines that belong to the depleted network.
+static func _shut_down_machines(
+	state: SimState,
+	economy: EconomyData,
+	network: PowerNetwork
+) -> void:
 	var raw_steps: float = economy.get_value(&"blackout_steps_per_tick", _FALLBACK_BLACKOUT_STEPS)
 	var steps: int = int(maxf(1.0, raw_steps))
 	var turned_off: int = 0
 	for id: StringName in SimState.BLACKOUT_ORDER:
 		if turned_off >= steps:
 			break
+		if not network.has_node(id):
+			continue
 		var machine: MachineState = _machine(state, id)
 		if not _is_operational(machine):
 			continue

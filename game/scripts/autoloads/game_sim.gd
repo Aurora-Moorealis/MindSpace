@@ -8,6 +8,7 @@ extends Node
 signal tick_advanced(tick: int)
 signal game_over(cause: StringName)
 signal game_reset()
+signal power_grid_changed()
 
 const ECONOMY_PATH: String = "res://databases/economy.tres"
 const MACHINES_PATH: String = "res://databases/machines.tres"
@@ -128,6 +129,32 @@ func get_rate() -> float:
 
 func get_economy() -> EconomyData:
 	return _economy
+
+
+## Replaces the cable layout of the run. The argument is copied, so callers can
+## rebuild their list without mutating the simulation.
+func set_power_links(links: Array[PowerLink]) -> void:
+	state.power_links.clear()
+	for link: PowerLink in links:
+		if link == null or not link.is_valid():
+			continue
+		state.power_links.append(PowerLink.new(link.a, link.b))
+	power_grid_changed.emit()
+
+
+## Copy of the current cable layout.
+func get_power_links() -> Array[PowerLink]:
+	var result: Array[PowerLink] = []
+	for link: PowerLink in state.power_links:
+		result.append(PowerLink.new(link.a, link.b))
+	return result
+
+
+## Registers an extra battery in the run.
+func register_battery(battery_id: StringName) -> void:
+	if battery_id == &"":
+		return
+	state.add_battery(battery_id)
 
 
 ## Editable sheet of a machine, or null when the registry has no such id.
