@@ -1,0 +1,48 @@
+{
+  "view": "hydroponics_zoom",
+  "size": [288, 192],
+  "tile": [96, 64],
+  "scale": 3,
+  "layers": {
+    "back": "hydroponics_zoom_back.png",
+    "front_cap": "hydroponics_zoom_front_cap.png",
+    "rear_cap": "hydroponics_zoom_rear_cap.png",
+    "cover": "hydroponics_zoom_cover.png",
+    "ui_mock": "hydroponics_zoom_ui.png"
+  },
+  "front_cap": {
+    "file": "hydroponics_zoom_front_cap.png",
+    "canvas": [288, 192],
+    "placement": [0, 0],
+    "side": "left",
+    "z": "above",
+    "note": "oval end cap nearest the camera; draw it over the glass"
+  },
+  "rear_cap": {
+    "file": "hydroponics_zoom_rear_cap.png",
+    "canvas": [288, 192],
+    "placement": [0, 0],
+    "side": "right",
+    "z": "behind",
+    "note": "thin far-end ring; draw it behind the back so plants cover it"
+  },
+  "grid": {
+    "panels": 4,
+    "tiers": 3,
+    "cell_size": [36, 34]
+  },
+  "cells": [
+    { "id": "A1", "rect": [83, 36, 36, 34] },
+    { "id": "A2", "rect": [129, 36, 36, 34] },
+    { "id": "A3", "rect": [175, 36, 36, 34] },
+    { "id": "A4", "rect": [219, 36, 36, 34] },
+    { "id": "B1", "rect": [83, 82, 36, 34] },
+    { "id": "B2", "rect": [129, 82, 36, 34] },
+    { "id": "B3", "rect": [175, 82, 36, 34] },
+    { "id": "B4", "rect": [219, 82, 36, 34] },
+    { "id": "C1", "rect": [83, 128, 36, 34] },
+    { "id": "C2", "rect": [129, 128, 36, 34] },
+    { "id": "C3", "rect": [175, 128, 36, 34] },
+    { "id": "C4", "rect": [219, 128, 36, 34] }
+  ]
+}

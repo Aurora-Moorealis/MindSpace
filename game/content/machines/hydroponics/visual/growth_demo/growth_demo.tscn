@@ -1,0 +1,144 @@
+[gd_scene format=3 uid="uid://c48xlx2njcttm"]
+
+[ext_resource type="Texture2D" uid="uid://dad56rwih3f3a" path="res://content/machines/hydroponics/art/variants/rack_v4_back.png" id="1_back"]
+[ext_resource type="Texture2D" uid="uid://bmw6ssqafi2y1" path="res://content/machines/hydroponics/art/variants/rack_v4_cover.png" id="2_cover"]
+[ext_resource type="Texture2D" uid="uid://dd2u30vwns73k" path="res://content/map/greenhouse/art/growth/cells_v4/cell_v4_stage_1_seed.png" id="3_seed"]
+[ext_resource type="FontFile" uid="uid://bgw38lw6qllqp" path="res://assets/fonts/silkscreen/Silkscreen-Regular.ttf" id="7_font"]
+[ext_resource type="Script" uid="uid://dsp8o2tepqxlb" path="res://content/machines/hydroponics/visual/growth_demo/growth_demo.gd" id="8_script"]
+[ext_resource type="Texture2D" path="res://content/machines/hydroponics/visual/growth_demo/cell_hover.png" id="9_hover"]
+
+[node name="GrowthDemo" type="Node2D" unique_id=1637658065]
+script = ExtResource("8_script")
+
+[node name="Bg" type="ColorRect" parent="." unique_id=1458505131]
+z_index = -10
+offset_right = 850.0
+offset_bottom = 480.0
+mouse_filter = 2
+color = Color(0.113725, 0.145098, 0.211765, 1)
+
+[node name="Title" type="Label" parent="." unique_id=433338532]
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 680.0
+offset_bottom = 42.0
+theme_override_colors/font_color = Color(0.847059, 0.886275, 0.941176, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 16
+text = "HYDROPONICS"
+
+[node name="Status" type="Label" parent="." unique_id=1688169236]
+offset_left = 24.0
+offset_top = 48.0
+offset_right = 820.0
+offset_bottom = 64.0
+theme_override_colors/font_color = Color(0.956863, 0.760784, 0.352941, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 8
+text = "VITRINA v4  -  MAQUINA DE CULTIVO"
+
+[node name="Scaled" type="Node2D" parent="." unique_id=1778941805]
+texture_filter = 1
+position = Vector2(281, 144)
+scale = Vector2(3, 3)
+
+[node name="Back" type="Sprite2D" parent="Scaled" unique_id=917839994]
+z_index = -5
+texture = ExtResource("1_back")
+centered = false
+
+[node name="Plants" type="Node2D" parent="Scaled" unique_id=1817934160]
+z_index = 0
+
+[node name="A1" type="Sprite2D" parent="Scaled/Plants" unique_id=323458921]
+visible = false
+position = Vector2(18, 12)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="A2" type="Sprite2D" parent="Scaled/Plants" unique_id=2142200174]
+visible = false
+position = Vector2(36, 12)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="A3" type="Sprite2D" parent="Scaled/Plants" unique_id=22105832]
+visible = false
+position = Vector2(54, 12)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="A4" type="Sprite2D" parent="Scaled/Plants" unique_id=977180350]
+visible = false
+position = Vector2(70, 13)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="B1" type="Sprite2D" parent="Scaled/Plants" unique_id=900797467]
+visible = false
+position = Vector2(18, 27)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="B2" type="Sprite2D" parent="Scaled/Plants" unique_id=537768249]
+visible = false
+position = Vector2(36, 27)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="B3" type="Sprite2D" parent="Scaled/Plants" unique_id=1682761321]
+visible = false
+position = Vector2(54, 26)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="B4" type="Sprite2D" parent="Scaled/Plants" unique_id=1721295544]
+visible = false
+position = Vector2(70, 26)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="C1" type="Sprite2D" parent="Scaled/Plants" unique_id=733454075]
+visible = false
+position = Vector2(18, 42)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="C2" type="Sprite2D" parent="Scaled/Plants" unique_id=841456254]
+visible = false
+position = Vector2(36, 41)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="C3" type="Sprite2D" parent="Scaled/Plants" unique_id=1665552282]
+visible = false
+position = Vector2(54, 40)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="C4" type="Sprite2D" parent="Scaled/Plants" unique_id=38845722]
+visible = false
+position = Vector2(70, 39)
+texture = ExtResource("3_seed")
+centered = false
+
+[node name="Cover" type="Sprite2D" parent="Scaled" unique_id=1469676544]
+z_index = 1
+texture = ExtResource("2_cover")
+centered = false
+
+[node name="Hover" type="Sprite2D" parent="Scaled"]
+z_index = 2
+visible = false
+texture = ExtResource("9_hover")
+centered = false
+
+[node name="Hint" type="Label" parent="." unique_id=156904826]
+offset_left = 24.0
+offset_top = 440.0
+offset_right = 826.0
+offset_bottom = 456.0
+theme_override_colors/font_color = Color(0.560784, 0.67451, 0.74902, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 8
+text = "HAZ CLIC EN LA VITRINA PARA ABRIR LA INTERFAZ"
