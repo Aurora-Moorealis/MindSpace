@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://saj1awlku8o0g"]
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://cswjwowkmf6ye"]
 
 [ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_mission"]
 [ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_mission"]

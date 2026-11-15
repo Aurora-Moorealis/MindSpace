@@ -56,7 +56,7 @@
 [ext_resource type="Resource" uid="uid://d3e6nsdeflf6n" path="res://databases/economy_rows/water_recycler_output_per_tick.tres" id="54_water_recycler_output_per_tick"]
 [ext_resource type="Resource" uid="uid://bqg3s8n5a2x1m" path="res://databases/economy_rows/suit_v2_radiation_multiplier.tres" id="55_suit_v2_radiation_multiplier"]
 [ext_resource type="Resource" uid="uid://c0h4rvstf0od1" path="res://databases/economy_rows/hydroponics_harvest_food.tres" id="56_hydroponics_harvest_food"]
-[ext_resource type="Resource" uid="uid://saj1awlku8o0g" path="res://databases/economy_rows/mission_length_ticks.tres" id="57_mission_length_ticks"]
+[ext_resource type="Resource" uid="uid://cswjwowkmf6ye" path="res://databases/economy_rows/mission_length_ticks.tres" id="57_mission_length_ticks"]
 
 [resource]
 script = ExtResource("2_economy_data")

@@ -242,12 +242,12 @@ con la partida terminada.
 
 ### Requirement: Indicador del objetivo de misión
 
-El HUD SHALL mostrar, bajo la barra de vida y en la parte superior central, un
-indicador con el objetivo de misión vigente y las horas de misión restantes. El
-texto SHALL proceder de la tabla de strings y NO SHALL tapar la barra de vida,
-la tira de recursos ni el reloj. El indicador SHALL actualizarse al avanzar un
-tick y al reiniciar la partida, y NO SHALL mostrarse cuando la partida haya
-terminado.
+El HUD SHALL mostrar, en la parte superior derecha y debajo del reloj y de sus
+controles de tiempo, un indicador alineado a la derecha con el objetivo de misión
+vigente y las horas de misión restantes. El texto SHALL proceder de la tabla de
+strings y NO SHALL tapar la barra de vida, la tira de recursos, el reloj ni los
+controles de tiempo. El indicador SHALL actualizarse al avanzar un tick y al
+reiniciar la partida, y NO SHALL mostrarse cuando la partida haya terminado.
 
 #### Scenario: Inicio de la misión
 
@@ -263,6 +263,11 @@ terminado.
 
 - **WHEN** el jugador vuelve a jugar después de una partida terminada
 - **THEN** el indicador vuelve a mostrar la duración completa de la misión
+
+#### Scenario: Posición en pantalla
+
+- **WHEN** el HUD se muestra en una partida
+- **THEN** el indicador queda en la esquina superior derecha, debajo del reloj y de los controles de tiempo, sin taparlos
 
 #### Scenario: Partida terminada
 

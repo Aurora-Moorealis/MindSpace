@@ -80,18 +80,18 @@ modo que cada píxel artístico ocupe un bloque cuadrado de píxeles de pantalla
 - **WHEN** la ventana no es un múltiplo entero del lienzo
 - **THEN** el arte se sigue viendo a escala entera y el espacio sobrante queda en bandas, nunca estirado a una fracción
 
-### Requirement: Arranque en la partida
+### Requirement: Arranque en el menú
 
-El juego SHALL arrancar en la escena jugable del outpost sin intervención del
-jugador. El menú de entrada NO SHALL ser la primera pantalla y SHALL seguir siendo
-accesible desde la evaluación de la misión.
+El juego SHALL arrancar en la pantalla de entrada y NO SHALL entrar directamente
+en el outpost. El menú SHALL ofrecer la acción de iniciar partida para entrar en
+el flujo de selección de mundo.
 
 #### Scenario: Arranque limpio
 
 - **WHEN** el ejecutable del juego arranca
-- **THEN** se muestra la escena jugable con el outpost y el HUD, sin pasar por el menú
+- **THEN** se muestra la pantalla de entrada con el título y las acciones, no el outpost
 
-#### Scenario: Vuelta al menú
+#### Scenario: Inicio del flujo
 
-- **WHEN** el jugador elige volver al menú desde la evaluación de la misión
-- **THEN** se muestra la pantalla de entrada y desde ella se puede iniciar el flujo de mundos
+- **WHEN** el jugador activa "Start game" en el menú
+- **THEN** se abre la pantalla de selección de mundo
