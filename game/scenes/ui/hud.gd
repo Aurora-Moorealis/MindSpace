@@ -35,6 +35,7 @@ const INTERACT_FALLBACK: String = "Interact"
 @onready var _food_value: Label = %FoodValue
 @onready var _energy_value: Label = %EnergyValue
 @onready var _clock_label: Label = %ClockLabel
+@onready var _objective_label: Label = %ObjectiveLabel
 @onready var _prompt_panel: PanelContainer = %Prompt
 @onready var _prompt_label: Label = %PromptLabel
 @onready var _speed_down_button: Button = %SpeedDownButton
@@ -291,6 +292,10 @@ func _refresh_stats() -> void:
 		economy.get_value(&"capacity_energy", CAPACITY_FALLBACK)
 	)
 	_refresh_clock(state, economy)
+	_objective_label.text = UiText.mission_objective_label(
+		state.mission_length_ticks,
+		state.get_mission_ticks_left()
+	)
 
 
 func _update_bar(

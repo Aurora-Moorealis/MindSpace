@@ -63,7 +63,24 @@ static func end_cause_label(cause: StringName) -> String:
 			return "Injuries"
 		&"debug":
 			return "Mission ended from debug control"
+		&"mission_complete":
+			return "Mission clock completed"
 	return "Unknown cause"
+
+
+## Mission objective line for the in-game HUD.
+static func mission_objective_label(total: int, remaining: int) -> String:
+	return "MISSION  SURVIVE %dh  %dh LEFT" % [total, remaining]
+
+
+## Result line for the end-of-run evaluation.
+static func result_label(result: SimState.RunResult) -> String:
+	match result:
+		SimState.RunResult.VICTORY:
+			return "Mission accomplished"
+		SimState.RunResult.DEFEAT:
+			return "Mission failed"
+	return "Mission in progress"
 
 
 ## Reason a repair cannot be started, or "" when it can. Checks run in the same

@@ -3,8 +3,8 @@ extends SceneTree
 ## Integration smoke test for the simulation core (tasks 7.1 and 8.2).
 ## Loads the real economy and machine databases, drives SimTick over fresh
 ## states, feeds the facts into a private EventLog instance and asserts the run
-## contract: numerical soundness, determinism, deaths, blackout order, radiation
-## and the evaluation counters.
+## contract: numerical soundness, determinism, deaths, mission outcomes,
+## blackout order and recovery, radiation and the evaluation counters.
 ## Run: godot --headless --path game --script res://scripts/dev/sim_smoke.gd
 ## Exit code 0 when every check passes, 1 otherwise.
 
@@ -41,9 +41,14 @@ func _init() -> void:
 		return
 
 	_check_300_ticks(economy, machines)
+	_check_mission_state(economy)
+	_check_mission_victory(economy, machines)
+	_check_mission_defeat(economy, machines)
+	_check_mission_death_priority(economy, machines)
 	_check_determinism(economy, machines)
 	_check_hypoxia_death(economy, machines)
 	_check_blackout_order(economy, machines)
+	_check_blackout_recovery(economy, machines)
 	_check_radiation(economy, machines)
 	_check_summary_counters(economy, machines)
 	_check_sol_from_economy(machines)
@@ -55,8 +60,14 @@ func _init() -> void:
 	quit(1 if _failures > 0 else 0)
 
 
-## (a) 300 ticks leave a numerically sound state, even when the crew dies.
+## (a) A passive run on the real economy wins: 300 ticks leave a numerically
+## sound state, close the mission clock and end in victory.
 func _check_300_ticks(economy: EconomyData, machines: MachineDatabase) -> void:
+	_expect(
+		is_equal_approx(economy.get_value(&"mission_length_ticks", -1.0), 300.0),
+		"a: the real economy must define a 300-tick mission (got %f)"
+		% economy.get_value(&"mission_length_ticks", -1.0)
+	)
 	var state: SimState = _fresh_state(economy)
 	var facts: Array[LogEntry] = []
 	for i: int in range(RUN_TICKS):
@@ -76,8 +87,19 @@ func _check_300_ticks(economy: EconomyData, machines: MachineDatabase) -> void:
 		is_finite(state.hunger) and is_finite(state.thirst),
 		"a: hunger and thirst must be finite (got %f / %f)" % [state.hunger, state.thirst]
 	)
+	_expect(state.game_over, "a: 300 ticks must close the run")
+	_expect(
+		state.run_result == SimState.RunResult.VICTORY,
+		"a: a passive run on the real economy must end in victory (got %d)"
+		% state.run_result
+	)
+	var game_over_count: int = _count_facts(facts, LogEntry.Type.GAME_OVER)
+	_expect(
+		game_over_count == 1,
+		"a: the run must emit exactly one GAME_OVER (got %d)" % game_over_count
+	)
 	print(
-		"sim_smoke: a) ticks=%d facts=%d health=%.2f dose=%.2f dead=%s cause=%s"
+		"sim_smoke: a) ticks=%d facts=%d health=%.2f dose=%.2f dead=%s cause=%s result=%d over=%d"
 		% [
 			state.tick,
 			facts.size(),
@@ -85,7 +107,186 @@ func _check_300_ticks(economy: EconomyData, machines: MachineDatabase) -> void:
 			state.radiation_dose,
 			str(state.game_over),
 			str(state.death_cause),
+			state.run_result,
+			game_over_count,
 		]
+	)
+
+
+## (k) Mission clock and run result reset together with the economy.
+func _check_mission_state(economy: EconomyData) -> void:
+	var state: SimState = _fresh_state(economy)
+	_expect(
+		state.run_result == SimState.RunResult.IN_PROGRESS,
+		"k: a fresh run must be in progress"
+	)
+	_expect(
+		state.mission_length_ticks == 300,
+		"k: mission length must be 300 (got %d)" % state.mission_length_ticks
+	)
+	_expect(
+		state.get_mission_ticks_left() == 300,
+		"k: a fresh run must have 300 mission ticks left (got %d)"
+		% state.get_mission_ticks_left()
+	)
+	state.tick = 1
+	_expect(
+		state.get_mission_ticks_left() == 299,
+		"k: one elapsed tick must leave 299 (got %d)"
+		% state.get_mission_ticks_left()
+	)
+	state.run_result = SimState.RunResult.VICTORY
+	state.reset_from_economy(economy)
+	_expect(
+		state.run_result == SimState.RunResult.IN_PROGRESS,
+		"k: a reset must clear the run result"
+	)
+	_expect(
+		state.tick == 0 and state.get_mission_ticks_left() == 300,
+		"k: a reset must restore the mission clock"
+	)
+	print(
+		"sim_smoke: k) mission_length=%d result=%d"
+		% [state.mission_length_ticks, state.run_result]
+	)
+
+
+## (l) Surviving the mission clock closes the run as a victory.
+func _check_mission_victory(economy: EconomyData, machines: MachineDatabase) -> void:
+	var safe: EconomyData = _safe_economy(RUN_TICKS)
+	var state: SimState = _fresh_state(safe)
+	var facts: Array[LogEntry] = []
+	for i: int in range(RUN_TICKS):
+		facts.append_array(SimTick.step(state, safe, machines))
+	_expect(
+		state.run_result == SimState.RunResult.VICTORY,
+		"l: surviving the mission clock must end in victory (got %d)" % state.run_result
+	)
+	_expect(
+		state.tick == RUN_TICKS,
+		"l: a victory run must end at tick %d (got %d)" % [RUN_TICKS, state.tick]
+	)
+	_expect(
+		state.death_cause == &"mission_complete",
+		"l: a victory must record mission_complete (got %s)" % str(state.death_cause)
+	)
+	_expect(
+		state.mission_length_ticks == int(economy.get_value(&"mission_length_ticks", -1.0)),
+		"l: the synthetic mission must mirror the real economy (%d != %f)"
+		% [state.mission_length_ticks, economy.get_value(&"mission_length_ticks", -1.0)]
+	)
+	var game_overs: Array[LogEntry] = _facts_of_type(facts, LogEntry.Type.GAME_OVER)
+	_expect(
+		game_overs.size() == 1,
+		"l: a victory must emit exactly one GAME_OVER (got %d)" % game_overs.size()
+	)
+	if game_overs.size() == 1:
+		var payload: Dictionary[Variant, Variant] = game_overs[0].payload
+		var result_raw: Variant = payload.get(&"result")
+		var cause_raw: Variant = payload.get(&"cause")
+		var resources_raw: Variant = payload.get(&"resources")
+		_expect(
+			result_raw == &"victory",
+			"l: the GAME_OVER result must be victory (got %s)" % str(result_raw)
+		)
+		_expect(
+			cause_raw == &"mission_complete",
+			"l: the GAME_OVER cause must be mission_complete (got %s)" % str(cause_raw)
+		)
+		_expect(
+			typeof(resources_raw) == TYPE_DICTIONARY,
+			"l: the GAME_OVER payload must carry a resources dictionary (got %s)"
+			% type_string(typeof(resources_raw))
+		)
+		_expect(
+			_resources_from_payload(payload).size() == RESOURCE_IDS.size(),
+			"l: the victory payload must carry every resource (got %d)"
+			% _resources_from_payload(payload).size()
+		)
+	var end_tick: int = state.tick
+	var extra: Array[LogEntry] = SimTick.step(state, safe, machines)
+	_expect(
+		extra.is_empty(),
+		"l: a finished run must not emit facts (got %d)" % extra.size()
+	)
+	print(
+		"sim_smoke: l) ticks=%d result=%d cause=%s over=%d"
+		% [end_tick, state.run_result, str(state.death_cause), game_overs.size()]
+	)
+
+
+## (m) A death before the mission clock closes the run as a defeat.
+func _check_mission_defeat(economy: EconomyData, machines: MachineDatabase) -> void:
+	var state: SimState = _fresh_state(economy)
+	state.is_outside = true
+	var facts: Array[LogEntry] = []
+	var steps: int = 0
+	while not state.game_over and steps < RUN_TICKS:
+		facts.append_array(SimTick.step(state, economy, machines))
+		steps += 1
+	_expect(
+		state.game_over,
+		"m: staying outside must end the run within %d steps" % RUN_TICKS
+	)
+	_expect(
+		state.run_result == SimState.RunResult.DEFEAT,
+		"m: a death must end in defeat (got %d)" % state.run_result
+	)
+	_expect(
+		state.tick < RUN_TICKS,
+		"m: the death must happen before the mission clock (tick %d)" % state.tick
+	)
+	_expect(
+		state.death_cause == &"radiation",
+		"m: the death cause must be radiation (got %s)" % str(state.death_cause)
+	)
+	var game_overs: Array[LogEntry] = _facts_of_type(facts, LogEntry.Type.GAME_OVER)
+	_expect(
+		game_overs.size() == 1,
+		"m: a defeat must emit exactly one GAME_OVER (got %d)" % game_overs.size()
+	)
+	if game_overs.size() == 1:
+		var result_raw: Variant = game_overs[0].payload.get(&"result")
+		_expect(
+			result_raw == &"defeat",
+			"m: the GAME_OVER result must be defeat (got %s)" % str(result_raw)
+		)
+	print(
+		"sim_smoke: m) steps=%d death_tick=%d result=%d cause=%s"
+		% [steps, state.tick, state.run_result, str(state.death_cause)]
+	)
+
+
+## (n) A fatal last tick stays a defeat: death runs before the mission clock.
+func _check_mission_death_priority(economy: EconomyData, machines: MachineDatabase) -> void:
+	var state: SimState = _fresh_state(economy)
+	state.mission_length_ticks = 1
+	state.health = 0.0
+	var facts: Array[LogEntry] = SimTick.step(state, economy, machines)
+	_expect(
+		state.run_result == SimState.RunResult.DEFEAT,
+		"n: a fatal last tick must end in defeat (got %d)" % state.run_result
+	)
+	_expect(
+		state.death_cause != &"mission_complete",
+		"n: a fatal last tick must not report mission_complete (got %s)"
+		% str(state.death_cause)
+	)
+	var game_overs: Array[LogEntry] = _facts_of_type(facts, LogEntry.Type.GAME_OVER)
+	_expect(
+		game_overs.size() == 1,
+		"n: the fatal last tick must emit exactly one GAME_OVER (got %d)"
+		% game_overs.size()
+	)
+	if game_overs.size() == 1:
+		var result_raw: Variant = game_overs[0].payload.get(&"result")
+		_expect(
+			result_raw == &"defeat",
+			"n: the GAME_OVER result must be defeat (got %s)" % str(result_raw)
+		)
+	print(
+		"sim_smoke: n) tick=%d result=%d cause=%s"
+		% [state.tick, state.run_result, str(state.death_cause)]
 	)
 
 
@@ -280,6 +481,76 @@ func _check_blackout_order(economy: EconomyData, machines: MachineDatabase) -> v
 		]
 	)
 	print("sim_smoke: d) blackouts=%d order=%s" % [blackouts, str(BLACKOUT_EXPECTED_ORDER)])
+
+
+## (o) A recharged network powers the machines back in reverse blackout order,
+## one per tick, skips a broken machine and powers nothing while charge is zero.
+func _check_blackout_recovery(economy: EconomyData, machines: MachineDatabase) -> void:
+	var state: SimState = _fresh_state(economy)
+	# Night keeps the working solar array from masking the blackout.
+	state.tick = 12
+	state.set_battery_charge(SimState.DEFAULT_BATTERY_ID, 0.0)
+	for index: int in range(BLACKOUT_EXPECTED_ORDER.size()):
+		SimTick.step(state, economy, machines)
+	for id: StringName in BLACKOUT_EXPECTED_ORDER:
+		_expect(
+			not _machine_of(state, id).powered,
+			"o: the blackout must power off %s" % id
+		)
+
+	var capacity: float = economy.get_value(
+		&"capacity_energy", PowerNetwork.FALLBACK_CAPACITY
+	)
+	var recovery_order: Array[StringName] = []
+	for index: int in range(BLACKOUT_EXPECTED_ORDER.size() - 1, -1, -1):
+		recovery_order.append(BLACKOUT_EXPECTED_ORDER[index])
+	state.set_battery_charge(SimState.DEFAULT_BATTERY_ID, capacity)
+	for step: int in range(recovery_order.size()):
+		SimTick.step(state, economy, machines)
+		var restored_id: StringName = recovery_order[step]
+		_expect(
+			_machine_of(state, restored_id).powered,
+			"o: recovery step %d must power on %s" % [step + 1, restored_id]
+		)
+		for pending_index: int in range(step + 1, recovery_order.size()):
+			var waiting_id: StringName = recovery_order[pending_index]
+			_expect(
+				not _machine_of(state, waiting_id).powered,
+				"o: recovery step %d must keep %s powered off" % [step + 1, waiting_id]
+			)
+
+	# A broken machine is skipped: the charged network cannot power it on.
+	var o2: MachineState = _machine_of(state, SimState.MACHINE_O2_SYSTEM)
+	o2.health = 0.0
+	o2.powered = false
+	state.set_battery_charge(SimState.DEFAULT_BATTERY_ID, capacity)
+	SimTick.step(state, economy, machines)
+	_expect(
+		not o2.powered,
+		"o: a broken O2 system must stay off while the network has charge"
+	)
+
+	# Repairing it puts it back inside the recovery order: O2 comes first again.
+	o2.health = MachineState.MAX_HEALTH
+	state.set_battery_charge(SimState.DEFAULT_BATTERY_ID, capacity)
+	SimTick.step(state, economy, machines)
+	_expect(o2.powered, "o: a repaired O2 system must power on again")
+
+	# A network that stays at zero charge powers nothing on.
+	state.tick = 12
+	state.set_battery_charge(SimState.DEFAULT_BATTERY_ID, 0.0)
+	for id: StringName in BLACKOUT_EXPECTED_ORDER:
+		_machine_of(state, id).powered = false
+	SimTick.step(state, economy, machines)
+	for id: StringName in BLACKOUT_EXPECTED_ORDER:
+		_expect(
+			not _machine_of(state, id).powered,
+			"o: a network at zero charge must not power on %s" % id
+		)
+	print(
+		"sim_smoke: o) recovery=%s capacity=%.2f energy=%.2f"
+		% [str(recovery_order), capacity, state.get_energy_total()]
+	)
 
 
 ## (e) Radiation only accumulates outside, caps max_health and finally kills.
@@ -556,6 +827,15 @@ func _count_facts(entries: Array[LogEntry], type: LogEntry.Type) -> int:
 	return count
 
 
+## Facts of one type, in emission order.
+func _facts_of_type(entries: Array[LogEntry], type: LogEntry.Type) -> Array[LogEntry]:
+	var result: Array[LogEntry] = []
+	for entry: LogEntry in entries:
+		if entry.type == type:
+			result.append(entry)
+	return result
+
+
 ## Comparable list of the (type, tick, payload) tuples of a fact sequence.
 func _fact_signature(entries: Array[LogEntry]) -> Array[String]:
 	var signature: Array[String] = []
@@ -625,12 +905,42 @@ func _check_economy_fallback() -> void:
 	print("sim_smoke: h) out-of-range and missing rows fall back")
 
 
+## Synthetic economy that keeps the crew alive for a whole mission: mission
+## clock, sol length and full tanks, with no consumption, production,
+## degradation, radiation or event rows.
+func _safe_economy(mission_ticks: int) -> EconomyData:
+	var economy: EconomyData = EconomyData.new()
+	economy.rows.append(_row_with_max(&"mission_length_ticks", float(mission_ticks), 1000.0))
+	economy.rows.append(_row_with_max(&"day_length_ticks", 12.0, 100.0))
+	economy.rows.append(_row_with_max(&"night_length_ticks", 12.0, 100.0))
+	economy.rows.append(_row_with_max(&"initial_health", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"max_health", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"initial_oxygen", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"capacity_oxygen", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"initial_water", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"capacity_water", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"initial_food", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"capacity_food", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"initial_energy", 100.0, 100.0))
+	economy.rows.append(_row_with_max(&"capacity_energy", 100.0, 100.0))
+	return economy
+
+
 ## Economy row with 100 as its upper bound.
 func _row(id: StringName, value: float) -> EconomyRow:
 	var row: EconomyRow = EconomyRow.new()
 	row.id = id
 	row.value = value
 	row.max_value = 100.0
+	return row
+
+
+## Economy row with an explicit upper bound; the lower bound stays at 0.
+func _row_with_max(id: StringName, value: float, max_value: float) -> EconomyRow:
+	var row: EconomyRow = EconomyRow.new()
+	row.id = id
+	row.value = value
+	row.max_value = max_value
 	return row
 
 

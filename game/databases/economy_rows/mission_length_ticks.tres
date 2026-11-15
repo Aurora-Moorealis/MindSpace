@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://saj1awlku8o0g"]
+
+[ext_resource type="Script" path="res://resources/common/data_provenance.gd" id="1_mission"]
+[ext_resource type="Script" path="res://resources/economy/economy_row.gd" id="2_mission"]
+
+[sub_resource type="Resource" id="Resource_mission"]
+script = ExtResource("1_mission")
+
+[resource]
+script = ExtResource("2_mission")
+id = &"mission_length_ticks"
+value = 300.0
+min_value = 1.0
+max_value = 1000.0
+unit = "ticks"
+provenance = SubResource("Resource_mission")

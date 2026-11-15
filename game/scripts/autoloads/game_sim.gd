@@ -105,16 +105,20 @@ func reset_game() -> void:
 
 
 ## Ends the run from a debug control, exactly like a fatal tick would: the state
-## is marked over with cause "debug", one GAME_OVER fact with the final resources
-## is recorded, the clock freezes and game_over is emitted.
+## is marked over as a defeat with cause "debug", one GAME_OVER fact with the
+## final resources, cause and result is recorded, the clock freezes and
+## game_over is emitted.
 ## Returns false and writes nothing when the run already ended.
 func force_end_run() -> bool:
 	if state.game_over:
 		return false
 	state.game_over = true
 	state.death_cause = &"debug"
+	state.run_result = SimState.RunResult.DEFEAT
 	var payload: Dictionary[Variant, Variant] = {}
 	payload[&"resources"] = state.resources.duplicate()
+	payload[&"cause"] = &"debug"
+	payload[&"result"] = &"defeat"
 	EventLog.log_entry(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, payload))
 	paused = true
 	game_over.emit(state.death_cause)

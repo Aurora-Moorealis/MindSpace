@@ -9,7 +9,7 @@ script = ExtResource("1_m248q")
 [resource]
 script = ExtResource("2_r2x7j")
 id = &"solar_output_per_tick"
-value = 1.5
+value = 4.0
 max_value = 100.0
 unit = "u"
 provenance = SubResource("Resource_rglmk")

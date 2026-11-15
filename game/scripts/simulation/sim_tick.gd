@@ -39,6 +39,7 @@ static func step(
 		state, economy, networks, facts
 	)
 	_apply_death(state, economy, facts, radiation_damage_applied)
+	_apply_mission_end(state, facts)
 	_apply_sol_facts(state, economy, facts)
 	state.tick += 1
 	return facts
@@ -396,7 +397,8 @@ static func _apply_consequences(
 
 
 ## Blackout bookkeeping per network: one BLACKOUT fact per episode and network,
-## plus the shutdown order applied only inside the depleted network. The legacy
+## plus the shutdown order applied only inside the depleted network. A network
+## that holds charge again powers its machines back in reverse order. The legacy
 ## blackout_active flag stays true while any network is in blackout.
 static func _apply_energy_consequences(
 	state: SimState,
@@ -411,6 +413,7 @@ static func _apply_energy_consequences(
 			continue
 		if network.total_charge(state) > 0.0:
 			state.blackout_networks[network.id] = false
+			_restore_machines(state, economy, network)
 			continue
 		any_blackout = true
 		if not bool(state.blackout_networks.get(network.id, false)):
@@ -442,6 +445,32 @@ static func _shut_down_machines(
 			continue
 		machine.powered = false
 		turned_off += 1
+
+
+## Powers on up to blackout_steps_per_tick machines of the priority list in
+## reverse order, restricted to the machines that belong to the recharged
+## network. Already powered machines and broken machines are skipped, so a
+## breakdown waits until it is repaired.
+static func _restore_machines(
+	state: SimState,
+	economy: EconomyData,
+	network: PowerNetwork
+) -> void:
+	var raw_steps: float = economy.get_value(&"blackout_steps_per_tick", _FALLBACK_BLACKOUT_STEPS)
+	var steps: int = int(maxf(1.0, raw_steps))
+	var order: Array[StringName] = SimState.BLACKOUT_ORDER
+	var restored: int = 0
+	for index: int in range(order.size() - 1, -1, -1):
+		if restored >= steps:
+			break
+		var id: StringName = order[index]
+		if not network.has_node(id):
+			continue
+		var machine: MachineState = _machine(state, id)
+		if machine == null or machine.powered or machine.is_broken():
+			continue
+		machine.powered = true
+		restored += 1
 
 
 ## Radiation is cumulative and never decays; the cap lowers max_health.
@@ -513,16 +542,37 @@ static func _apply_death(
 	elif state.thirst <= 0.0:
 		cause = &"dehydration"
 	state.game_over = true
+	state.run_result = SimState.RunResult.DEFEAT
 	state.death_cause = cause
 	var death_payload: Dictionary[Variant, Variant] = {}
 	death_payload[&"cause"] = cause
 	facts.append(LogEntry.new(LogEntry.Type.DEATH, state.tick, death_payload))
 	var over_payload: Dictionary[Variant, Variant] = {}
 	over_payload[&"resources"] = state.resources.duplicate()
+	over_payload[&"cause"] = cause
+	over_payload[&"result"] = &"defeat"
 	facts.append(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, over_payload))
 
 
-## Step 9: a SOL_COMPLETED fact at the end of every sol, whose length comes from
+## Step 9: the mission clock closes the run in victory when it reaches the
+## configured length with the astronaut alive. Death has already run, so a
+## fatal last tick stays a defeat and never produces a second GAME_OVER.
+static func _apply_mission_end(state: SimState, facts: Array[LogEntry]) -> void:
+	if state.game_over:
+		return
+	if state.tick + 1 < state.mission_length_ticks:
+		return
+	state.game_over = true
+	state.run_result = SimState.RunResult.VICTORY
+	state.death_cause = &"mission_complete"
+	var payload: Dictionary[Variant, Variant] = {}
+	payload[&"resources"] = state.resources.duplicate()
+	payload[&"cause"] = state.death_cause
+	payload[&"result"] = &"victory"
+	facts.append(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, payload))
+
+
+## Step 10: a SOL_COMPLETED fact at the end of every sol, whose length comes from
 ## the same economy rows that drive the day/night phase.
 static func _apply_sol_facts(state: SimState, economy: EconomyData, facts: Array[LogEntry]) -> void:
 	var sol_length: int = state.get_sol_length(economy)
