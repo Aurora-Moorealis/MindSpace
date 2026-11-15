@@ -1,9 +1,9 @@
 # Eventos
 
-Registro de eventos data-driven del juego. **Esta entrega es solo de datos**:
-define las clases `EventRow`/`EventData`, el registro `events.tres` y un
-validador headless. El scheduler y los efectos en `SimTick` se implementan en
-otra iteración.
+Registro de eventos data-driven y scheduler determinista del juego. Incluye las
+clases `EventRow`/`EventData`, el registro `events.tres`, la validación headless
+y la aplicación de eventos en `SimTick` (ventanas, cola, solape, retraso
+determinista y efectos por arquetipo).
 
 ## Estructura
 
@@ -13,16 +13,19 @@ otra iteración.
 | `game/resources/events/event_data.gd` | `EventData`: registro, consultas y validación |
 | `game/databases/events.tres` | Índice del registro |
 | `game/databases/events_rows/*.tres` | Una fila por archivo |
-| `game/scripts/dev/events_check.gd` | Validador headless |
+| `game/scripts/simulation/active_event.gd` | Evento activo con su tick de inicio real |
+| `game/scripts/simulation/pending_event.gd` | Evento en cola y su tick mínimo de inicio |
+| `game/scripts/dev/events_check.gd` | Validador headless del registro |
+| `game/scripts/dev/events_runtime_check.gd` | Validador headless del scheduler |
 
 ## Arquetipos
 
-| Arquetipo | Target | Efecto que aplicará el scheduler |
+| Arquetipo | Target | Efecto del scheduler |
 | --- | --- | --- |
 | `MACHINE_BREAKDOWN` | Máquina | Delta negativo a la salud de la máquina |
-| `PRODUCTION_DROP` | Recurso | Delta negativo a la producción de ese recurso |
-| `CONSUMPTION_SPIKE` | Recurso | Delta negativo extra al consumo de ese recurso |
-| `RADIATION_WINDOW` | `radiation` | Delta positivo a la dosis de radiación |
+| `PRODUCTION_DROP` | Recurso | Resta neta del recurso objetivo (delta negativo) |
+| `CONSUMPTION_SPIKE` | Recurso | Resta neta del recurso objetivo (delta negativo) |
+| `RADIATION_WINDOW` | `radiation` | Delta positivo a la dosis de radiación, solo en el exterior |
 | `COMMS_BLACKOUT` | Ninguno | Solo marca `comms_blocked`; no bloquea informes |
 
 `PRODUCTION_DROP` y `CONSUMPTION_SPIKE` apuntan a un recurso, no a una máquina.
@@ -38,7 +41,7 @@ qué recurso baja.
 | `target_type` | enum | `MACHINE`, `RESOURCE` o `NONE` |
 | `target_id` | `StringName` | Máquina, recurso o vacío según el arquetipo |
 | `onset_tick` | `int` | Tick absoluto desde el inicio; `>= 0` |
-| `duration_ticks` | `int` | `>= 1` |
+| `duration_ticks` | `int` | `>= 1`; la ventana debe terminar dentro de los 300 ticks de misión |
 | `intensity_start` | `float` | Delta del primer tick, con signo |
 | `intensity_peak` | `float` | Delta máximo, con signo |
 | `intensity_end` | `float` | Delta del último tick, con signo |
@@ -115,10 +118,11 @@ solapamiento, interpolación y procedencia.
 
 ## Runtime y prueba visual
 
-`GameSim` carga `events.tres` al arrancar y se lo pasa a `SimTick.step()`. El
-scheduler vive en `SimTick`: expira eventos, encola los que vencen, respeta el
-solape y el retraso determinista, y aplica la intensidad de cada arquetipo.
-`GameSim` publica los hechos `EVENT_STARTED`/`EVENT_ENDED` en `EventLog`.
+`GameSim` carga `events.tres` al arrancar y se lo pasa a
+`SimTick.step(state, economy, machines, events)`. El scheduler vive en `SimTick`:
+expira eventos, encola los que vencen, respeta el solape y el retraso
+determinista, y aplica la intensidad de cada arquetipo. `GameSim` publica los
+hechos `EVENT_STARTED`/`EVENT_ENDED` en `EventLog`.
 
 Escena local de prueba (ignorada por Git):
 
