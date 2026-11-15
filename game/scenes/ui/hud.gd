@@ -9,7 +9,7 @@ extends CanvasLayer
 
 const SLOT_COUNT: int = 5
 const LOW_HEALTH_RATIO: float = 0.3
-const HELD_ICON_SIZE: Vector2 = Vector2(32.0, 32.0)
+const HELD_ICON_SIZE: Vector2 = Vector2(24.0, 24.0)
 const CAPACITY_FALLBACK: float = 10.0
 
 @export var low_health_fill: Texture2D = null
