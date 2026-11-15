@@ -25,3 +25,5 @@ terminada.
 | [pantalla-configuracion](pantalla-configuracion.md) | Media | Menú |
 | [selector-mision](selector-mision.md) | Media | Menú, `submissions.tres` |
 | [intro-stills](intro-stills.md) | Media | Menú |
+| [crateres-visibles](crateres-visibles.md) | Media | `add-lunar-map-tile-render`, arte de cráteres |
+| [minerales-mapa](minerales-mapa.md) | Media | `add-lunar-map-tile-render`, misión/POIs |
