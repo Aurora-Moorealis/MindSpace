@@ -1,0 +1,111 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://content/outpost/outpost.gd" id="1_outpost"]
+[ext_resource type="PackedScene" path="res://content/machines/solar_array/solar_array.tscn" id="2_solar"]
+[ext_resource type="PackedScene" path="res://content/machines/battery/battery.tscn" id="3_battery"]
+[ext_resource type="PackedScene" path="res://content/machines/machine_station.tscn" id="4_station"]
+[ext_resource type="PackedScene" path="res://content/machines/hydroponics/hydroponics_station.tscn" id="5_hydroponics"]
+[ext_resource type="PackedScene" path="res://content/machines/power_cable/power_cable.tscn" id="6_cable"]
+[ext_resource type="Script" path="res://scripts/simulation/power_grid_controller.gd" id="7_grid"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_shelter"]
+size = Vector2(520, 520)
+
+[node name="Outpost" type="Node2D"]
+script = ExtResource("1_outpost")
+
+[node name="Shelter" type="Area2D" parent="." groups=["shelter_zones"]]
+collision_layer = 8
+monitoring = false
+
+[node name="Shape" type="CollisionShape2D" parent="Shelter"]
+shape = SubResource("RectangleShape2D_shelter")
+
+[node name="Stations" type="Node2D" parent="."]
+
+[node name="SolarArray" parent="Stations" instance=ExtResource("2_solar")]
+position = Vector2(208, 0)
+port_offset = Vector2(-75, -51)
+
+[node name="Battery" parent="Stations" instance=ExtResource("3_battery")]
+position = Vector2(0, -120)
+port_offset = Vector2(32, 44)
+
+[node name="Lights" parent="Stations" instance=ExtResource("4_station")]
+position = Vector2(147, 147)
+machine_id = &"lights"
+port_offset = Vector2(-56, -36)
+
+[node name="WaterRecycler" parent="Stations" instance=ExtResource("4_station")]
+position = Vector2(0, 208)
+machine_id = &"water_recycler"
+port_offset = Vector2(0, -36)
+
+[node name="O2System" parent="Stations" instance=ExtResource("4_station")]
+position = Vector2(-147, 147)
+machine_id = &"o2_system"
+port_offset = Vector2(56, -36)
+
+[node name="CommsConsole" parent="Stations" instance=ExtResource("4_station")]
+position = Vector2(-208, 0)
+machine_id = &"comms_console"
+port_offset = Vector2(56, -36)
+
+[node name="RepairBench" parent="Stations" instance=ExtResource("4_station")]
+position = Vector2(-147, -147)
+machine_id = &"repair_bench"
+port_offset = Vector2(56, 36)
+
+[node name="StormShelter" parent="Stations" instance=ExtResource("4_station")]
+position = Vector2(0, -208)
+machine_id = &"storm_shelter"
+port_offset = Vector2(0, 36)
+
+[node name="Hydroponics" parent="Stations" instance=ExtResource("5_hydroponics")]
+position = Vector2(147, -147)
+port_offset = Vector2(-56, 36)
+
+[node name="Cables" type="Node2D" parent="."]
+
+[node name="SolarToBattery" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/SolarArray")
+endpoint_b = NodePath("../../Stations/Battery")
+horizontal_first = true
+
+[node name="BatteryToLights" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/Lights")
+horizontal_first = false
+
+[node name="BatteryToWaterRecycler" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/WaterRecycler")
+horizontal_first = true
+
+[node name="BatteryToO2System" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/O2System")
+horizontal_first = true
+
+[node name="BatteryToCommsConsole" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/CommsConsole")
+horizontal_first = true
+
+[node name="BatteryToRepairBench" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/RepairBench")
+horizontal_first = true
+
+[node name="BatteryToStormShelter" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/StormShelter")
+horizontal_first = false
+
+[node name="BatteryToHydroponics" parent="Cables" instance=ExtResource("6_cable")]
+endpoint_a = NodePath("../../Stations/Battery")
+endpoint_b = NodePath("../../Stations/Hydroponics")
+horizontal_first = true
+
+[node name="PowerGrid" type="Node" parent="."]
+script = ExtResource("7_grid")

@@ -198,8 +198,8 @@ func _check_registry() -> void:
 	)
 
 	_expect(
-		_economy.rows.size() == 53,
-		"registry: economy must keep 53 rows (got %d)" % _economy.rows.size()
+		_economy.rows.size() == 55,
+		"registry: economy must keep 55 rows (got %d)" % _economy.rows.size()
 	)
 	_expect(
 		_economy.validate_rows().is_empty(),

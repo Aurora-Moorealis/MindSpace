@@ -6,15 +6,6 @@ es el punto desde el que se navega a cualquier otra fase.
 
 ## Requirements
 
-### Requirement: Arranque en el menú
-
-El juego SHALL arrancar en la pantalla de entrada sin intervención del jugador.
-
-#### Scenario: Arranque limpio
-
-- **WHEN** el ejecutable del juego arranca
-- **THEN** se muestra la pantalla de entrada con su fondo y su título, sin pasar por ninguna otra escena
-
 ### Requirement: Contenido de la pantalla de entrada
 
 La pantalla SHALL mostrar el título del juego, un subtítulo y las acciones de
@@ -88,3 +79,19 @@ modo que cada píxel artístico ocupe un bloque cuadrado de píxeles de pantalla
 
 - **WHEN** la ventana no es un múltiplo entero del lienzo
 - **THEN** el arte se sigue viendo a escala entera y el espacio sobrante queda en bandas, nunca estirado a una fracción
+
+### Requirement: Arranque en el menú
+
+El juego SHALL arrancar en la pantalla de entrada y NO SHALL entrar directamente
+en el outpost. El menú SHALL ofrecer la acción de iniciar partida para entrar en
+el flujo de selección de mundo.
+
+#### Scenario: Arranque limpio
+
+- **WHEN** el ejecutable del juego arranca
+- **THEN** se muestra la pantalla de entrada con el título y las acciones, no el outpost
+
+#### Scenario: Inicio del flujo
+
+- **WHEN** el jugador activa "Start game" en el menú
+- **THEN** se abre la pantalla de selección de mundo

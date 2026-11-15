@@ -35,7 +35,7 @@ offset_bottom = 64.0
 theme_override_colors/font_color = Color(0.956863, 0.760784, 0.352941, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 8
-text = "VITRINA v4  -  MAQUINA DE CULTIVO"
+text = "VITRINE v4  -  CULTIVATION MACHINE"
 
 [node name="Scaled" type="Node2D" parent="." unique_id=1778941805]
 texture_filter = 1
@@ -141,4 +141,4 @@ offset_bottom = 456.0
 theme_override_colors/font_color = Color(0.560784, 0.67451, 0.74902, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 8
-text = "HAZ CLIC EN LA VITRINA PARA ABRIR LA INTERFAZ"
+text = "CLICK THE VITRINE TO OPEN THE INTERFACE"

@@ -1,0 +1,205 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/machine_panel/machine_panel.gd" id="1_panel"]
+[ext_resource type="Theme" path="res://themes/pixel_theme.tres" id="2_theme"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+bg_color = Color(0.058824, 0.090196, 0.121569, 0.97)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.290196, 0.658824, 0.705882, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_disabled"]
+bg_color = Color(0.117647, 0.14902, 0.180392, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.290196, 0.32549, 0.364706, 1)
+
+[node name="MachinePanel" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_panel")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.68)
+mouse_filter = 2
+
+[node name="Frame" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -216.0
+offset_right = 300.0
+offset_bottom = 216.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="Margin" type="MarginContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="Column" type="VBoxContainer" parent="Frame/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="Frame/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="Frame/Margin/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Machine"
+
+[node name="CloseButton" type="Button" parent="Frame/Margin/Column/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_disabled_color = Color(0.619608, 0.698039, 0.784314, 1)
+theme_override_styles/disabled = SubResource("StyleBoxFlat_disabled")
+text = "Close"
+
+[node name="HintLabel" type="Label" parent="Frame/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.619608, 0.698039, 0.784314, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 3
+text = "Hint"
+
+[node name="Stats" type="GridContainer" parent="Frame/Margin/Column"]
+layout_mode = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 2
+columns = 2
+
+[node name="HealthCaption" type="Label" parent="Frame/Margin/Column/Stats"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.619608, 0.698039, 0.784314, 1)
+text = "Health"
+
+[node name="HealthValue" type="Label" parent="Frame/Margin/Column/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "100 / 100"
+
+[node name="StatusCaption" type="Label" parent="Frame/Margin/Column/Stats"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.619608, 0.698039, 0.784314, 1)
+text = "Status"
+
+[node name="StatusValue" type="Label" parent="Frame/Margin/Column/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Running"
+
+[node name="UpgradesCaption" type="Label" parent="Frame/Margin/Column/Stats"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.619608, 0.698039, 0.784314, 1)
+text = "Upgrades"
+
+[node name="UpgradeValue" type="Label" parent="Frame/Margin/Column/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+
+[node name="RepairSection" type="VBoxContainer" parent="Frame/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RepairCostLabel" type="Label" parent="Frame/Margin/Column/RepairSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.619608, 0.698039, 0.784314, 1)
+theme_override_font_sizes/font_size = 14
+text = "Repair cost: 0.00 energy"
+
+[node name="RepairProgress" type="ProgressBar" parent="Frame/Margin/Column/RepairSection"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+show_percentage = false
+
+[node name="RepairButton" type="Button" parent="Frame/Margin/Column/RepairSection"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_disabled_color = Color(0.619608, 0.698039, 0.784314, 1)
+theme_override_styles/disabled = SubResource("StyleBoxFlat_disabled")
+text = "Repair"
+
+[node name="RepairReason" type="Label" parent="Frame/Margin/Column/RepairSection"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.721569, 0.34902, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 3
+text = "Reason"
+
+[node name="UpgradesTitle" type="Label" parent="Frame/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Upgrades"
+
+[node name="UpgradesScroll" type="ScrollContainer" parent="Frame/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="UpgradesList" type="VBoxContainer" parent="Frame/Margin/Column/UpgradesScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="NoUpgradesLabel" type="Label" parent="Frame/Margin/Column"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.619608, 0.698039, 0.784314, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 3
+text = "No upgrades available for this machine."
+
+[node name="ExtraButton" type="Button" parent="Frame/Margin/Column"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_disabled_color = Color(0.619608, 0.698039, 0.784314, 1)
+theme_override_styles/disabled = SubResource("StyleBoxFlat_disabled")
+text = "Open panel"

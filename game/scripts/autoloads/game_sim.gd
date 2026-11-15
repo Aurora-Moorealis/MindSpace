@@ -14,9 +14,9 @@ const ECONOMY_PATH: String = "res://databases/economy.tres"
 const MACHINES_PATH: String = "res://databases/machines.tres"
 const EVENTS_PATH: String = "res://databases/events.tres"
 const SECONDS_PER_TICK: float = 60.0
-const MAX_TICKS_PER_FRAME: int = 10
+const MAX_TICKS_PER_FRAME: int = 400
 
-enum Speed { X1, X5, X10 }
+enum Speed { X1, X5, X10, X100, X1000, X10000 }
 
 var state: SimState = SimState.new()
 var speed: Speed = Speed.X1
@@ -104,6 +104,27 @@ func reset_game() -> void:
 	new_game()
 
 
+## Ends the run from a debug control, exactly like a fatal tick would: the state
+## is marked over as a defeat with cause "debug", one GAME_OVER fact with the
+## final resources, cause and result is recorded, the clock freezes and
+## game_over is emitted.
+## Returns false and writes nothing when the run already ended.
+func force_end_run() -> bool:
+	if state.game_over:
+		return false
+	state.game_over = true
+	state.death_cause = &"debug"
+	state.run_result = SimState.RunResult.DEFEAT
+	var payload: Dictionary[Variant, Variant] = {}
+	payload[&"resources"] = state.resources.duplicate()
+	payload[&"cause"] = &"debug"
+	payload[&"result"] = &"defeat"
+	EventLog.log_entry(LogEntry.new(LogEntry.Type.GAME_OVER, state.tick, payload))
+	paused = true
+	game_over.emit(state.death_cause)
+	return true
+
+
 func set_speed(value: Speed) -> void:
 	speed = value
 
@@ -123,12 +144,28 @@ func get_rate() -> float:
 			return 5.0
 		Speed.X10:
 			return 10.0
+		Speed.X100:
+			return 100.0
+		Speed.X1000:
+			return 1000.0
+		Speed.X10000:
+			return 10000.0
 		_:
 			return 1.0
 
 
 func get_economy() -> EconomyData:
 	return _economy
+
+
+## Current health of the astronaut, read-only for the HUD.
+func get_health() -> float:
+	return state.health
+
+
+## Health ceiling of the current run, read-only for the HUD.
+func get_max_health() -> float:
+	return state.max_health
 
 
 ## Replaces the cable layout of the run. The argument is copied, so callers can
@@ -337,6 +374,36 @@ func _spend_energy(amount: float) -> void:
 		SimState.ENERGY,
 		maxf(0.0, state.get_resource(SimState.ENERGY) - maxf(0.0, amount))
 	)
+
+
+## Adds a resource on behalf of a player action outside the tick (a harvest, a
+## handout) and clamps it to the capacity of that resource, so a full store
+## never overflows.
+## Non-positive amounts change nothing; a resource without a capacity row in the
+## economy is left untouched instead of guessing a limit.
+func add_resource_clamped(id: StringName, amount: float) -> void:
+	if amount <= 0.0:
+		return
+	if id == SimState.ENERGY:
+		var energy: float = state.get_energy_total() + amount
+		state.set_energy_total(clampf(energy, 0.0, state.battery_capacity))
+		return
+	var capacity: float = _resource_capacity(id)
+	if capacity <= 0.0:
+		return
+	var current: float = state.get_resource(id)
+	state.set_resource(id, clampf(current + amount, 0.0, capacity))
+
+
+## Capacity row of one resource, or a non-positive value when the economy has no
+## usable row for it.
+func _resource_capacity(id: StringName) -> float:
+	if _economy == null:
+		return 0.0
+	var row_id: StringName = StringName("capacity_" + String(id))
+	return _economy.get_value(row_id, 0.0)
+
+
 func get_events() -> EventData:
 	return _events
 

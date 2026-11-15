@@ -1,0 +1,258 @@
+{
+  "meta": {
+    "title": "NASA reference data pack — Junior Astronaut Mission Trainer",
+    "challenge": "NASA Space Apps Challenge 2026 — Build a Junior Astronaut Mission Trainer",
+    "compiled": "2026-11-15",
+    "intended_use": "Reference values for game/databases/sources and for the in-game Data Sources panel. Values are archived snapshots, not live feeds.",
+    "license_note": "NASA data is generally public domain (U.S. Government work). Verify each source page and credit the instrument/mission."
+  },
+  "radiation": {
+    "lunar_surface_gcr_absorbed_dose_rate_uGy_per_h": 13.1,
+    "lunar_surface_gcr_absorbed_dose_mGy_per_day": 0.314,
+    "lunar_surface_dose_equivalent_mSv_per_day_unshielded": 0.84,
+    "lunar_surface_dose_equivalent_mSv_per_day_20g_cm2_regolith": 0.6,
+    "lunar_surface_measured_total_dose_equivalent_mSv_per_day": 1.369,
+    "iss_absorbed_dose_rate_uGy_per_h": 4.65,
+    "iss_absorbed_dose_mGy_per_day": 0.112,
+    "iss_dose_equivalent_mSv_per_day": 0.731,
+    "artemis1_hera_mean_absorbed_dose_rate_uGy_per_h": 19.5,
+    "artemis1_hera_absorbed_dose_mGy_per_day": 0.468,
+    "artemis1_hera_total_mGy_over_25_days": 11.897,
+    "career_effective_dose_limit_mSv": 600,
+    "solar_particle_event_limit_mSv": 250,
+    "shielding": {
+      "4_g_cm2_regolith": "SPE dose reduced below current 30-day limits (Matthia 2024)",
+      "10_g_cm2_regolith": "factor 2 safety margin for SPE (Matthia 2024)",
+      "20_g_cm2_regolith": "GCR dose equivalent ~0.6 mSv/day (Matthia 2024)"
+    },
+    "sources": [
+      {
+        "name": "LRO CRaTER via NASA RadLab",
+        "url": "https://visualization.osdr.nasa.gov/radlab/api/?celestial_body=Moon&instrument=CRaTER&absorbed_dose_rate&timestamp%3E=2010-01-01&timestamp%3C2010-02-01&format=json",
+        "note": "January 2010 mean 13.099 uGy/h = 0.314 mGy/day (absorbed dose in silicon/water conversion as served by RadLab)."
+      },
+      {
+        "name": "Chang'E-4 LND lunar surface dosimetry",
+        "url": "https://www.science.org/doi/10.1126/sciadv.aaz1334",
+        "note": "13.2 +/- 1 uGy/h total absorbed dose; 1369 uSv/day dose equivalent on the lunar surface."
+      },
+      {
+        "name": "Matthia et al. 2024, Radiation Exposure and Shielding Effects on the Lunar Surface",
+        "url": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2024SW004095",
+        "note": "0.84 mSv/day unshielded; 0.6 mSv/day at ~20 g/cm2; >4 g/cm2 regolith keeps SPE below 30-day limits."
+      },
+      {
+        "name": "NASA-STD-3001 Vol. 1 Rev. B, section 4.8",
+        "url": "https://www.nasa.gov/wp-content/uploads/2020/10/2022-01-05_nasa-std-3001_vol.1_rev._b_final_draft_with_signature_010522.pdf",
+        "note": "600 mSv career limit (all ages/sexes); 250 mSv design reference SPE limit."
+      },
+      {
+        "name": "ISS DosTel via NASA RadLab",
+        "url": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=ISS&timestamp%3E=2024-06-01T00:00&timestamp%3C2024-06-01T01:00&absorbed_dose_rate&instrument&format=json",
+        "note": "1 June 2024 mean 4.65 uGy/h = 0.112 mGy/day inside ISS."
+      },
+      {
+        "name": "Artemis I HERA via NASA RadLab",
+        "url": "https://visualization.osdr.nasa.gov/radlab/api/?celestial_body=Moon&instrument=HERA-HSU1&absorbed_dose_rate&timestamp&format=json",
+        "note": "16 Nov-11 Dec 2022: mean 19.5 uGy/h; total ~11.9 mGy over the mission."
+      }
+    ]
+  },
+  "life_support": {
+    "oxygen_kg_per_person_day": 0.84,
+    "oxygen_g_per_person_hour": 35.0,
+    "water_total_kg_per_person_day": 4.35,
+    "water_breakdown_kg_per_person_day": {
+      "drinking": 2.0,
+      "food_rehydration": 0.5,
+      "medical": 0.05,
+      "personal_hygiene": 0.4,
+      "urinal_flush": 0.3,
+      "water_in_food": 0.7,
+      "metabolic_water": 0.4
+    },
+    "water_g_per_person_hour": 181.25,
+    "food_solids_kg_per_person_day": 0.62,
+    "food_g_per_person_hour": 25.83,
+    "packaged_food_kg_per_person_day": 2.39,
+    "co2_kg_per_person_day": 1.0,
+    "iss_water_recovery_percent": 93.5,
+    "iss_water_recovery_percent_with_bpa": 98.0,
+    "iss_oxygen_recovery_percent_from_co2": 42.0,
+    "mission_12_5_days_consumables": {
+      "oxygen_kg": 10.5,
+      "water_kg": 54.4,
+      "food_solids_kg": 7.75
+    },
+    "sources": [
+      {
+        "name": "NASA NTRS 20090034853, Life Support Systems",
+        "url": "https://ntrs.nasa.gov/api/citations/20090034853/downloads/20090034853.pdf"
+      },
+      {
+        "name": "NASA BVAD-derived numbers (Frontiers 2024)",
+        "url": "https://www.frontiersin.org/journals/space-technologies/articles/10.3389/frspt.2024.1461389/full"
+      },
+      {
+        "name": "NASA ISS water recovery milestone",
+        "url": "https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/"
+      }
+    ]
+  },
+  "environment": {
+    "earth_moon_distance_km": 384400,
+    "light_delay_one_way_s": 1.282,
+    "light_delay_round_trip_s": 2.564,
+    "solar_irradiance_W_per_m2": 1361.0,
+    "lunar_day_hours": 708.7,
+    "lunar_day_earth_days": 29.53,
+    "equatorial_daylight_earth_days": 14.75,
+    "equatorial_night_earth_days": 14.75,
+    "polar_illumination_percent": "80-90",
+    "polar_eclipse_max_hours": 100,
+    "surface_temperature_max_C": 127,
+    "surface_temperature_min_C": -173,
+    "surface_gravity_m_per_s2": 1.62,
+    "atmosphere": "none (exosphere)",
+    "dust": "abrasive, electrostatically charged, no wind; EDS removed 82% from thermal radiator and 97% from glass in the 2025 lunar demo",
+    "sources": [
+      {
+        "name": "NASA Moon Facts",
+        "url": "https://science.nasa.gov/moon/facts/"
+      },
+      {
+        "name": "NASA SVS, 100 Lunar Days",
+        "url": "https://svs.gsfc.nasa.gov/12739/"
+      },
+      {
+        "name": "NASA NTRS, Illumination conditions at the lunar poles",
+        "url": "https://ntrs.nasa.gov/api/citations/20170007365/downloads/20170007365.pdf"
+      },
+      {
+        "name": "NASA, Electrodynamic Dust Shield on the Moon",
+        "url": "https://www.nasa.gov/image-article/nasas-dust-shield-successfully-repels-lunar-regolith-on-moon/"
+      }
+    ]
+  },
+  "power": {
+    "artemis_south_pole_illumination": "80-90% of the year",
+    "vsat_10_kW_array": {
+      "initial_power_kW": 10,
+      "operational_kW": 5,
+      "battery_kWh": 7,
+      "design_darkness_hours": 100
+    },
+    "fission_surface_power_kW": 40,
+    "artemis_base_camp_power_kWe": "<100",
+    "sources": [
+      {
+        "name": "NASA Lunar Surface Technology",
+        "url": "https://www.nasa.gov/lunar-surface-technology/"
+      },
+      {
+        "name": "NASA NTRS, Relocatable 10 kW Solar Array for Lunar South Pole Missions",
+        "url": "https://ntrs.nasa.gov/api/citations/20210011743/downloads/NASA-TM-20210011743.pdf"
+      },
+      {
+        "name": "NASA Fission Surface Power",
+        "url": "https://www.nasa.gov/exploration-systems-development-mission-directorate/fission-surface-power/"
+      }
+    ]
+  },
+  "space_weather_events": [
+    {
+      "id": "2024-05-G5",
+      "label": "G5 geomagnetic storm, May 2024",
+      "kp_max": 9.0,
+      "flares": [
+        "X1.6 on 2024-05-03",
+        "M9.1 on 2024-05-04",
+        "X1.3 on 2024-05-05"
+      ],
+      "cme_speed_km_per_s": "800-970",
+      "sep_onset_utc": "2024-05-09T13:59Z",
+      "sep_events_through": "2024-05-13",
+      "source_url": "https://api.nasa.gov/DONKI/GST?startDate=2024-05-01&endDate=2024-06-01&api_key=DEMO_KEY",
+      "game_use": "Worst-case storm card; 1-2 day CME lead time; shelter decision."
+    },
+    {
+      "id": "2026-10-17-CME",
+      "label": "O-type CME, 17 October 2026",
+      "cme_speed_km_per_s": 1048,
+      "half_angle_deg": 38,
+      "direction": "-99/-4 HEEQ (not Earth-directed)",
+      "linked_flares": [
+        "M1.3 on 2026-10-16",
+        "M1.6 on 2026-10-19"
+      ],
+      "radiation_belt_enhancement_pfu": ">1000",
+      "kp_max": 3.67,
+      "source_url": "https://api.nasa.gov/DONKI/notifications?startDate=2026-10-15&endDate=2026-11-15&api_key=DEMO_KEY",
+      "game_use": "Quiet-week card: a fast CME can miss; not every event is a crisis."
+    },
+    {
+      "id": "1989-reference-SPE",
+      "label": "NASA design reference solar particle event (October 1989)",
+      "limit_mSv": 250,
+      "source_url": "https://www.nasa.gov/wp-content/uploads/2020/10/2022-01-05_nasa-std-3001_vol.1_rev._b_final_draft_with_signature_010522.pdf",
+      "game_use": "Storm magnitude calibrates the 250 mSv mission budget."
+    }
+  ],
+  "osdr_studies": [
+    {
+      "accession": "OSD-804",
+      "title": "37-Day microgravity exposure in 16-Week female C57BL/6J mice during NASA Rodent Research 1 is associated with bone loss specific to weight-bearing skeletal sites",
+      "finding": "Bone loss at weight-bearing sites (femur and vertebrae) after 37 days.",
+      "game_use": "Science Log: long missions cost bone; exercise and nutrition matter."
+    },
+    {
+      "accession": "OSD-471",
+      "title": "Spaceflight-Induced Bone Loss Alters Failure Mode and Reduces Bending Strength in Murine Spinal Segments from Bion-M1",
+      "finding": "30-day Bion-M1 flight reduced vertebral bone volume fraction, bone mineral density and bending strength.",
+      "game_use": "Science Log: bone loss is not just a number; it changes structural strength."
+    },
+    {
+      "accession": "OSD-195",
+      "title": "Effects of 21 days of bedrest on human skeletal muscle gene expression",
+      "finding": "21 days of bed rest changes human muscle gene expression.",
+      "game_use": "Science Log: unloading costs muscle; daily exercise is a countermeasure."
+    },
+    {
+      "accession": "OSD-946",
+      "title": "Exercise Training Attenuates the Muscle Mitochondria Genomic Response to Bed Rest",
+      "finding": "Exercise blunts the mitochondrial response to bed rest.",
+      "game_use": "Science Log: exercise is a real countermeasure, not flavor."
+    },
+    {
+      "accession": "OSD-53",
+      "title": "Spaceflight Modulates Gene Expression in Astronauts",
+      "finding": "Spaceflight changes gene expression in astronauts.",
+      "game_use": "Science Log: the body adapts to space in measurable ways."
+    },
+    {
+      "accession": "OSD-656",
+      "title": "SpaceX Inspiration4 Urine Inflammation Panel (Multiplex, NULISAseq)",
+      "finding": "Inflammation markers measured in Inspiration4 crew urine.",
+      "game_use": "Science Log: immune/inflammation monitoring is part of crew health."
+    }
+  ],
+  "apis": {
+    "nasa_open_apis": "https://api.nasa.gov/",
+    "donki": "https://api.nasa.gov/DONKI/notifications?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&api_key=DEMO_KEY",
+    "osdr_search": "https://osdr.nasa.gov/osdr/data/search?term=KEYWORD",
+    "radlab": "https://visualization.osdr.nasa.gov/radlab/api/",
+    "moon_trek": "https://trek.nasa.gov/moon/",
+    "moon_trek_wmts_example": "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg",
+    "nasa_image_library": "https://images.nasa.gov/",
+    "rate_limits": {
+      "default_per_hour": 1000,
+      "demo_key_per_hour": 30,
+      "demo_key_per_day": 50
+    },
+    "known_issues": [
+      "The DONKI FLR endpoint returned HTTP 404 during this review; CME, GST, SEP and notifications worked.",
+      "The Mars Rover API and the Earth API are archived on api.nasa.gov as of 2026.",
+      "The legacy APOD API will be archived on 2026-12-01; use the new APOD endpoint."
+    ]
+  }
+}

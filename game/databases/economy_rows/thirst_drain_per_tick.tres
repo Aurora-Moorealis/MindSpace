@@ -9,7 +9,7 @@ script = ExtResource("1_nrdat")
 [resource]
 script = ExtResource("2_r5da3")
 id = &"thirst_drain_per_tick"
-value = 0.5
+value = 0.3
 max_value = 100.0
 unit = "%"
 provenance = SubResource("Resource_1l55p")

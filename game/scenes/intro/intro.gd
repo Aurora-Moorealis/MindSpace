@@ -162,6 +162,7 @@ func _show_part(index: int) -> void:
 
 
 func _on_next_pressed() -> void:
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	if _index < TITLES.size() - 1:
 		_show_part(_index + 1)
 		return
@@ -171,6 +172,7 @@ func _on_next_pressed() -> void:
 func _on_skip_pressed() -> void:
 	if _skipped:
 		return
+	AudioManager.play(AudioManager.Sfx.UI_CLICK)
 	_skipped = true
 	if _animation_tween != null and _animation_tween.is_valid():
 		_animation_tween.kill()
@@ -190,6 +192,7 @@ func _on_accept_pressed() -> void:
 	if _starting:
 		return
 	_starting = true
+	AudioManager.play(AudioManager.Sfx.UI_OPEN)
 	_accept_button.disabled = true
 	_accept_note.text = "Mission accepted. The base arrives in the next step."
 
@@ -199,6 +202,7 @@ func _on_accept_pressed() -> void:
 
 	var error: Error = get_tree().change_scene_to_file(GAME_SCENE)
 	if error != OK:
+		AudioManager.play(AudioManager.Sfx.UI_DENY)
 		_accept_note.text = "The base could not be reached. Please try again."
 		_accept_button.disabled = false
 		_starting = false
@@ -207,4 +211,5 @@ func _on_accept_pressed() -> void:
 func _go_back() -> void:
 	if _starting:
 		return
+	AudioManager.play(AudioManager.Sfx.UI_CLOSE)
 	get_tree().change_scene_to_file(WORLDS_SCENE)

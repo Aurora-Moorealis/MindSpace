@@ -41,9 +41,13 @@ const _FALLBACK_THIRST: float = 100.0
 const _FALLBACK_DAY_LENGTH: float = 12.0
 const _FALLBACK_NIGHT_LENGTH: float = 12.0
 const _FALLBACK_MACHINE_HEALTH: float = 100.0
+const _FALLBACK_MISSION_LENGTH: int = 300
 const DEFAULT_RUN_SEED: int = 20261114
 
 enum DayPhase { DAY, NIGHT }
+## How the run ended. IN_PROGRESS is the only live state; VICTORY and DEFEAT
+## are terminal and are frozen together with game_over.
+enum RunResult { IN_PROGRESS, VICTORY, DEFEAT }
 
 var tick: int = 0
 var resources: Dictionary[StringName, float] = {}
@@ -65,7 +69,11 @@ var battery_capacity: float = _FALLBACK_CAPACITY
 var blackout_active: bool = false
 var blackout_networks: Dictionary[StringName, bool] = {}
 var game_over: bool = false
+## Cause that ended the run, not only a death: it is &"mission_complete" when
+## the mission clock runs out with the astronaut alive.
 var death_cause: StringName = &""
+var run_result: RunResult = RunResult.IN_PROGRESS
+var mission_length_ticks: int = _FALLBACK_MISSION_LENGTH
 var event_cursor: int = 0
 var active_events: Array[ActiveEvent] = []
 var pending_events: Array[PendingEvent] = []
@@ -121,6 +129,11 @@ func reset_from_economy(economy: EconomyData) -> void:
 	blackout_active = false
 	game_over = false
 	death_cause = &""
+	run_result = RunResult.IN_PROGRESS
+	mission_length_ticks = maxi(
+		1,
+		int(economy.get_value(&"mission_length_ticks", float(_FALLBACK_MISSION_LENGTH)))
+	)
 	event_cursor = 0
 	active_events.clear()
 	pending_events.clear()
@@ -153,6 +166,11 @@ func _night_length(economy: EconomyData) -> int:
 ## A run is alive until the tick declares it over.
 func is_alive() -> bool:
 	return not game_over
+
+
+## Mission ticks still ahead; 0 once the mission clock is over.
+func get_mission_ticks_left() -> int:
+	return maxi(0, mission_length_ticks - tick)
 
 
 func get_resource(id: StringName) -> float:

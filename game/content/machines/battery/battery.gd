@@ -22,6 +22,18 @@ func _ready() -> void:
 	_charge_mask.name = "ChargeMask"
 	add_child(_charge_mask)
 	super._ready()
+	_detach_from_interactables()
+
+
+## The battery belongs to the power grid but has no machine panel, so it must not
+## show up as an interaction target of the astronaut. MachineBase registers every
+## machine in the "interactables" group and builds an InteractionArea, so the
+## battery undoes both right after the base is ready.
+func _detach_from_interactables() -> void:
+	remove_from_group(&"interactables")
+	var area: Area2D = get_node_or_null("InteractionArea") as Area2D
+	if area != null:
+		area.queue_free()
 
 
 ## A new run clears every extra battery; this scene puts itself back in the grid.

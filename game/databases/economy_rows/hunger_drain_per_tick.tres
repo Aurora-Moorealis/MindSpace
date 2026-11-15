@@ -9,7 +9,7 @@ script = ExtResource("1_406n5")
 [resource]
 script = ExtResource("2_m0ce8")
 id = &"hunger_drain_per_tick"
-value = 0.5
+value = 0.3
 max_value = 100.0
 unit = "%"
 provenance = SubResource("Resource_3ukbv")

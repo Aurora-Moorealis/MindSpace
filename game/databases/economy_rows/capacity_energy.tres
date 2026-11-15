@@ -9,7 +9,7 @@ script = ExtResource("1_4f3hr")
 [resource]
 script = ExtResource("2_6ha7x")
 id = &"capacity_energy"
-value = 10.0
+value = 26.0
 max_value = 100.0
 unit = "u"
 provenance = SubResource("Resource_sb8bm")
