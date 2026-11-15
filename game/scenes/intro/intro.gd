@@ -6,6 +6,7 @@ extends Control
 ## chosen world name from the previous screen replaces {name} in the texts.
 
 const WORLDS_SCENE: String = "res://scenes/worlds/worlds.tscn"
+const GAME_SCENE: String = "res://scenes/base/base.tscn"
 
 const TITLES: Array[String] = [
 	"Notice",
@@ -47,10 +48,13 @@ const BODIES: Array[String] = [
 var _world_name: String = "astronaut"
 var _index: int = 0
 var _skipped: bool = false
+var _starting: bool = false
 var _animation_tween: Tween = null
 
 
 func _ready() -> void:
+	# Safety belt: the intro must never advance simulation ticks.
+	GameSim.set_paused(true)
 	var world: World = WorldStore.selected
 	if world != null and not world.name.is_empty():
 		_world_name = world.name
@@ -183,9 +187,24 @@ func _show_accept() -> void:
 
 
 func _on_accept_pressed() -> void:
+	if _starting:
+		return
+	_starting = true
 	_accept_button.disabled = true
 	_accept_note.text = "Mission accepted. The base arrives in the next step."
 
+	await get_tree().create_timer(0.8).timeout
+	if not is_inside_tree():
+		return
+
+	var error: Error = get_tree().change_scene_to_file(GAME_SCENE)
+	if error != OK:
+		_accept_note.text = "The base could not be reached. Please try again."
+		_accept_button.disabled = false
+		_starting = false
+
 
 func _go_back() -> void:
+	if _starting:
+		return
 	get_tree().change_scene_to_file(WORLDS_SCENE)

@@ -90,3 +90,19 @@ confirmar la misión del mundo elegido.
 
 - **WHEN** el jugador cancela la introducción
 - **THEN** el juego regresa a la pantalla de mundos
+
+### Requirement: Entrada al mundo jugable
+
+Al aceptar la misión en la pantalla final, la introducción SHALL abrir la escena
+jugable de la superficie lunar después de mostrar la confirmación. La
+introducción SHALL dejar de ser la última pantalla del flujo.
+
+#### Scenario: Aceptar la misión
+
+- **WHEN** el jugador pulsa la acción de aceptar en la última parte y se muestra la confirmación
+- **THEN** el juego abre la escena jugable y la introducción desaparece
+
+#### Scenario: Cancelar antes de aceptar
+
+- **WHEN** el jugador cancela la introducción antes de aceptar
+- **THEN** el juego sigue regresando a la pantalla de mundos

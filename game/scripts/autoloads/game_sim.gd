@@ -19,7 +19,9 @@ enum Speed { X1, X5, X10 }
 
 var state: SimState = SimState.new()
 var speed: Speed = Speed.X1
-var paused: bool = false
+## The clock boots frozen: menus and the intro must never advance ticks before
+## a playable scene calls start_run().
+var paused: bool = true
 
 var _economy: EconomyData = null
 var _machines: MachineDatabase = null
@@ -64,6 +66,9 @@ func advance_tick() -> void:
 	for fact: LogEntry in facts:
 		if fact.type == LogEntry.Type.GAME_OVER:
 			game_over.emit(state.death_cause)
+			# Freeze the real-time clock on death. advance_tick()/advance_ticks()
+			# remain manual harness APIs and keep stepping if called directly.
+			paused = true
 			break
 
 
@@ -73,11 +78,25 @@ func advance_ticks(count: int) -> void:
 
 
 ## Starts a clean run: fresh state, empty accumulator and empty ledger.
+## It does not change the clock by itself: the caller decides when to run.
 func new_game() -> void:
 	state.reset_from_economy(_economy)
 	_time_accumulator = 0.0
 	EventLog.reset()
 	game_reset.emit()
+
+
+## Starts a playable run: resets the simulation and then enables the clock.
+func start_run() -> void:
+	new_game()
+	paused = false
+
+
+## Freezes the clock and leaves the exterior state when the playable scene ends,
+## so no later scene keeps consuming resources or radiation.
+func stop_run() -> void:
+	paused = true
+	state.is_outside = false
 
 
 func reset_game() -> void:
