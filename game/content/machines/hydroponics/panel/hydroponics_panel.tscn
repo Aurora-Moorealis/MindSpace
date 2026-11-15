@@ -132,7 +132,7 @@ offset_bottom = 348.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.576471, 0.627451, 0.639216, 1)
 theme_override_font_sizes/font_size = 8
-text = "Click an empty cell to plant, a mature plant to harvest and a growing plant to remove."
+text = "Click an empty cell to plant, a growing plant to remove and a mature plant for its actions."
 
 [node name="BackButton" type="Button" parent="."]
 layout_mode = 1

@@ -1,3 +1,4 @@
+class_name Evaluation
 extends Control
 
 ## End-of-run mission evaluation overlay.

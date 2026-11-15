@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxl8esa1mwjxd"
-path="res://.godot/imported/oxygen_cartridge.png-2824f28850768d8b4cf4ab474337df77.ctex"
+path="res://.godot/imported/oxygen_cartridge.png-fec19327d4f7fbdf4685988d6e8bd1b0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/items/oxygen_cartridge.png"
-dest_files=["res://.godot/imported/oxygen_cartridge.png-2824f28850768d8b4cf4ab474337df77.ctex"]
+source_file="res://content/items/oxygen_cartridge/oxygen_cartridge.png"
+dest_files=["res://.godot/imported/oxygen_cartridge.png-fec19327d4f7fbdf4685988d6e8bd1b0.ctex"]
 
 [params]
 

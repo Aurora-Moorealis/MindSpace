@@ -2,15 +2,23 @@ class_name HydroponicsPanel
 extends Control
 
 ## Cultivation screen of the hydroponics machine. It shows the twelve cells in a
-## 3x4 grid with the growth stage of each one and performs the single action the
-## cell admits: sow an empty cell, harvest a mature plant or pull out a growing
-## one.
+## 3x4 grid with the growth stage of each one. An empty cell is sown with a
+## click, a growing plant is pulled out with a click and a mature plant opens a
+## small menu with harvest and remove, so the player can discard it too.
 ##
 ## The panel never owns the state: the station does. Every action asks the
 ## station again, so a machine that broke while the panel was open cannot be
 ## planted or harvested by a stale button.
+##
+## Removal is allowed even when the machine is broken or unpowered: a mature
+## cell of a stopped machine still offers its remove action.
 
 signal closed()
+
+const ACTION_HARVEST: int = 0
+const ACTION_REMOVE: int = 1
+const HARVEST_TEXT: String = "Harvest"
+const REMOVE_TEXT: String = "Remove"
 
 const STAGES: Array[Texture2D] = [
 	preload("res://content/map/greenhouse/art/growth/cells_v4/cell_v4_stage_1_seed.png"),
@@ -41,11 +49,15 @@ var _cells: Array[Button] = []
 var _plants: Array[TextureRect] = []
 var _normal_style: StyleBoxFlat = null
 var _hover_style: StyleBoxFlat = null
+## Menu of the mature cell actions, and the cell it acts on while it is open.
+var _actions: PopupMenu = null
+var _action_index: int = -1
 
 
 func _ready() -> void:
 	_build_styles()
 	_build_cells()
+	_build_actions()
 	_back_button.pressed.connect(_on_back_pressed)
 	if not GameSim.tick_advanced.is_connected(_on_tick_advanced):
 		GameSim.tick_advanced.connect(_on_tick_advanced)
@@ -106,18 +118,62 @@ func _build_cells() -> void:
 		_plants.append(plant)
 
 
-## One click does whatever the cell admits right now. The station validates the
-## action again, so a disabled machine rejects planting and harvesting.
+## One click on an empty cell sows it and one on a growing plant removes it. A
+## mature plant opens the action menu instead, because it admits two actions.
 func _on_cell_pressed(index: int) -> void:
 	if _station == null or _station.cultivation == null:
 		return
 	var stage: int = _station.cultivation.stage_of(index)
 	if stage == 0:
 		_station.plant_cell(index)
+		_refresh()
 	elif stage >= HydroponicsState.STAGE_COUNT:
-		_station.harvest_cell(index)
+		_open_actions(index)
 	else:
 		_station.remove_cell(index)
+		_refresh()
+
+
+## Builds the popup menu shared by every mature cell.
+func _build_actions() -> void:
+	_actions = PopupMenu.new()
+	_actions.name = "CellActions"
+	_actions.id_pressed.connect(_on_action_pressed)
+	add_child(_actions)
+
+
+## Shows the harvest and remove actions of one mature cell. Harvest is disabled
+## while the machine cannot cultivate; remove stays available, so a mature cell
+## of a broken machine is never left without an action.
+func _open_actions(index: int) -> void:
+	if _actions == null or _station == null:
+		return
+	_action_index = index
+	_actions.clear()
+	_actions.add_item(HARVEST_TEXT, ACTION_HARVEST)
+	_actions.set_item_disabled(
+		_actions.get_item_index(ACTION_HARVEST), not _station.can_cultivate()
+	)
+	_actions.add_item(REMOVE_TEXT, ACTION_REMOVE)
+	var cell_rect: Rect2 = _cells[index].get_global_rect()
+	cell_rect.position -= get_global_rect().position
+	var anchor: Vector2i = Vector2i(
+		Vector2(cell_rect.position.x, cell_rect.position.y + cell_rect.size.y)
+	)
+	_actions.popup_on_parent(Rect2i(anchor, Vector2i.ZERO))
+
+
+## Runs the action chosen in the menu. Both actions revalidate in the station.
+func _on_action_pressed(action_id: int) -> void:
+	var index: int = _action_index
+	_action_index = -1
+	if index < 0 or _station == null:
+		return
+	match action_id:
+		ACTION_HARVEST:
+			_station.harvest_cell(index)
+		ACTION_REMOVE:
+			_station.remove_cell(index)
 	_refresh()
 
 
@@ -144,7 +200,9 @@ func _refresh() -> void:
 		var stage: int = _stage_of(index)
 		_plants[index].texture = STAGES[stage - 1] if stage > 0 else null
 		_cells[index].tooltip_text = "%s: %s" % [_cell_id(index), STAGE_NAMES[stage]]
-		var actionable: bool = running or (stage > 0 and stage < HydroponicsState.STAGE_COUNT)
+		# A planted cell always admits removing it, even with the machine broken
+		# or unpowered; an empty cell only admits planting while it runs.
+		var actionable: bool = running or stage > 0
 		_cells[index].modulate = Color.WHITE if actionable else COLOR_DIM
 
 

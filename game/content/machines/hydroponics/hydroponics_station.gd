@@ -28,11 +28,12 @@ func _ready() -> void:
 	GameSim.game_reset.connect(_on_game_reset)
 
 
-## A new run starts with every cell empty and the harvest counter at zero.
+## A new run starts with every cell empty and the harvest counter at zero. The
+## state is recreated, not reset, so its growth intervals use the new run seed.
 func _on_game_reset() -> void:
 	if cultivation == null:
 		return
-	cultivation.reset()
+	cultivation = HydroponicsState.new(GameSim.state.run_seed)
 
 
 ## One simulation tick: the base refreshes the silhouette and the cells grow
@@ -42,6 +43,12 @@ func _on_tick_advanced(tick: int) -> void:
 	if not can_cultivate():
 		return
 	cultivation.advance_tick()
+
+
+## The world sprite paints the rack, so only the cable port is drawn in code,
+## with the same color and radius the generic station uses.
+func _draw() -> void:
+	draw_circle(port_offset, MachineStation.PORT_RADIUS, MachineStation.PORT_COLOR)
 
 
 ## True when the machine exists, is healthy, is powered and the run is alive.

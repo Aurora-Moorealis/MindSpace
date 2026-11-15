@@ -6,11 +6,20 @@ extends CanvasLayer
 ## The HUD owns the run's inventory. Gameplay gets it with `get_inventory()` and
 ## adds items with `add_item()`. Clicks pick and place one item at a time; drag
 ## and drop swaps slots. The health bar mirrors GameSim on every tick.
+##
+## It also shows the interaction prompt of the bound astronaut and the time
+## controls (pause and speed). The prompt visibility is evaluated every frame
+## because the astronaut's input lock has no signal; the time controls are
+## refreshed every frame because the clock can be paused without a tick.
 
 const SLOT_COUNT: int = 5
 const LOW_HEALTH_RATIO: float = 0.3
 const HELD_ICON_SIZE: Vector2 = Vector2(24.0, 24.0)
 const CAPACITY_FALLBACK: float = 10.0
+## Prompt text: the interact key plus the target name.
+const PROMPT_FORMAT: String = "E  %s"
+## Prompt text for targets that are not machines.
+const INTERACT_FALLBACK: String = "Interact"
 
 @export var low_health_fill: Texture2D = null
 
@@ -26,6 +35,12 @@ const CAPACITY_FALLBACK: float = 10.0
 @onready var _food_value: Label = %FoodValue
 @onready var _energy_value: Label = %EnergyValue
 @onready var _clock_label: Label = %ClockLabel
+@onready var _prompt_panel: PanelContainer = %Prompt
+@onready var _prompt_label: Label = %PromptLabel
+@onready var _speed_down_button: Button = %SpeedDownButton
+@onready var _speed_up_button: Button = %SpeedUpButton
+@onready var _pause_button: Button = %PauseButton
+@onready var _speed_value: Label = %SpeedValue
 
 var inventory: Inventory = Inventory.new(SLOT_COUNT)
 
@@ -33,6 +48,10 @@ var _slots: Array[InventorySlot] = []
 var _held_item: ItemData = null
 var _normal_health_fill: Texture2D = null
 var _clock_text: String = ""
+## Astronaut that publishes the interaction target, or null until bound.
+var _astronaut: Astronaut = null
+## Last interaction target received, kept so its name is only rebuilt on change.
+var _interaction_target: Node = null
 
 
 func _ready() -> void:
@@ -43,9 +62,14 @@ func _ready() -> void:
 	GameSim.tick_advanced.connect(_on_sim_tick_advanced)
 	GameSim.game_reset.connect(_on_game_reset)
 	GameSim.game_over.connect(_on_game_over)
+	_speed_down_button.pressed.connect(_on_speed_down_pressed)
+	_speed_up_button.pressed.connect(_on_speed_up_pressed)
+	_pause_button.pressed.connect(_on_pause_pressed)
 	_refresh_slots()
 	_set_held_item(null)
 	_refresh_stats()
+	_refresh_time_controls()
+	_refresh_prompt()
 
 
 func _process(_delta: float) -> void:
@@ -53,6 +77,9 @@ func _process(_delta: float) -> void:
 		_held_icon.position = get_viewport().get_mouse_position() - HELD_ICON_SIZE * 0.5
 	# The multiplier can change between ticks, so the clock is refreshed here too.
 	_refresh_clock(GameSim.state, GameSim.get_economy())
+	# The input lock and the pause flag change without a tick.
+	_sync_prompt_visibility()
+	_refresh_time_controls()
 
 
 func _input(event: InputEvent) -> void:
@@ -79,6 +106,45 @@ func _input(event: InputEvent) -> void:
 		inventory.cycle_selection(-1)
 	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		inventory.cycle_selection(1)
+
+
+## Time-control keys. The buttons have no focus, so Space reaches this handler.
+func _unhandled_input(event: InputEvent) -> void:
+	if GameSim.state.game_over:
+		return
+	if event.is_action_pressed(&"speed_up"):
+		_step_speed(1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"speed_down"):
+		_step_speed(-1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"pause"):
+		_toggle_pause()
+		get_viewport().set_input_as_handled()
+
+
+## Switches the astronaut that supplies the interaction prompt. A null argument
+## detaches the current one and hides the prompt.
+func bind_astronaut(astronaut: Astronaut) -> void:
+	if _astronaut != null and is_instance_valid(_astronaut):
+		if _astronaut.interaction_target_changed.is_connected(
+			_on_interaction_target_changed
+		):
+			_astronaut.interaction_target_changed.disconnect(
+				_on_interaction_target_changed
+			)
+	_astronaut = null
+	_interaction_target = null
+	if astronaut != null and is_instance_valid(astronaut):
+		_astronaut = astronaut
+		if not _astronaut.interaction_target_changed.is_connected(
+			_on_interaction_target_changed
+		):
+			_astronaut.interaction_target_changed.connect(
+				_on_interaction_target_changed
+			)
+		_interaction_target = _astronaut.get_interaction_target()
+	_refresh_prompt()
 
 
 ## Inventory used by the run. Never null while the HUD is alive.
@@ -246,13 +312,105 @@ func _clock_text_for(state: SimState, economy: EconomyData) -> String:
 
 
 func _speed_text() -> String:
-	match int(GameSim.speed):
-		1:
+	match GameSim.speed:
+		GameSim.Speed.X5:
 			return "x5"
-		2:
+		GameSim.Speed.X10:
 			return "x10"
-		_:
-			return "x1"
+	return "x1"
+
+
+## Mirrors the clock state in the time controls and locks them after game over.
+func _refresh_time_controls() -> void:
+	_speed_value.text = _speed_text()
+	_pause_button.text = "Resume" if GameSim.paused else "Pause"
+	var ended: bool = GameSim.state.game_over
+	_speed_down_button.disabled = ended
+	_speed_up_button.disabled = ended
+	_pause_button.disabled = ended
+
+
+## Moves the speed one step inside X1..X10; a step past an end is ignored.
+func _step_speed(step: int) -> void:
+	if GameSim.state.game_over:
+		return
+	match GameSim.speed:
+		GameSim.Speed.X1:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X5)
+		GameSim.Speed.X5:
+			if step > 0:
+				GameSim.set_speed(GameSim.Speed.X10)
+			elif step < 0:
+				GameSim.set_speed(GameSim.Speed.X1)
+		GameSim.Speed.X10:
+			if step < 0:
+				GameSim.set_speed(GameSim.Speed.X5)
+	_refresh_time_controls()
+	_refresh_clock(GameSim.state, GameSim.get_economy())
+
+
+func _toggle_pause() -> void:
+	if GameSim.state.game_over:
+		return
+	GameSim.set_paused(not GameSim.paused)
+	_refresh_time_controls()
+
+
+func _on_speed_down_pressed() -> void:
+	_step_speed(-1)
+
+
+func _on_speed_up_pressed() -> void:
+	_step_speed(1)
+
+
+func _on_pause_pressed() -> void:
+	_toggle_pause()
+
+
+func _on_interaction_target_changed(target: Node) -> void:
+	_interaction_target = target
+	_refresh_prompt()
+
+
+## Rebuilds the prompt text from the current target and syncs its visibility.
+## With no target the text is cleared so a stale name is never shown.
+func _refresh_prompt() -> void:
+	var text: String = ""
+	if _has_target():
+		text = PROMPT_FORMAT % _target_display_name()
+	_prompt_label.text = text
+	_sync_prompt_visibility()
+
+
+## Shows the prompt only with a live target, a live run and unlocked input.
+func _sync_prompt_visibility() -> void:
+	var ready_to_show: bool = (
+		_astronaut != null
+		and is_instance_valid(_astronaut)
+		and _has_target()
+		and not GameSim.state.game_over
+		and not _astronaut.is_input_locked()
+	)
+	_prompt_panel.visible = ready_to_show
+
+
+func _has_target() -> bool:
+	return _interaction_target != null and is_instance_valid(_interaction_target)
+
+
+## Visible name of the target: the machine sheet when it has a machine id,
+## otherwise the generic interaction text.
+func _target_display_name() -> String:
+	if not _has_target():
+		return INTERACT_FALLBACK
+	var raw_machine_id: Variant = _interaction_target.get(&"machine_id")
+	if raw_machine_id is StringName:
+		var machine_id: StringName = raw_machine_id
+		if machine_id != &"":
+			return UiText.display_name(GameSim.get_machine_data(machine_id))
+	return INTERACT_FALLBACK
 
 
 func _refresh_health() -> void:
@@ -265,6 +423,8 @@ func _on_game_reset() -> void:
 	_set_held_item(null)
 	_refresh_slots()
 	_refresh_stats()
+	_refresh_time_controls()
+	_refresh_prompt()
 
 
 ## Hides the layer so the mission summary is not covered by the HUD.

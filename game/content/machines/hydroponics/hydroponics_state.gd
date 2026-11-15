@@ -82,13 +82,11 @@ func plant(index: int) -> bool:
 	return true
 
 
-## Pulls out a plant that is still growing: the cell ends up empty. Returns false
-## when the cell is empty, out of range or mature, because a mature plant is
-## harvested instead of removed.
+## Pulls out a planted cell at any stage, mature included. It produces no food:
+## a mature plant discarded this way is simply lost. Returns false when the cell
+## is empty or out of range.
 func remove(index: int) -> bool:
 	if not _is_valid(index) or not _planted[index]:
-		return false
-	if _stages[index] >= STAGE_COUNT:
 		return false
 	_clear(index)
 	return true

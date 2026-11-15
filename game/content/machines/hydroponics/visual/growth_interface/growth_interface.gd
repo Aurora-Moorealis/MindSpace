@@ -171,9 +171,11 @@ func _plant(index: int) -> void:
 	zoom_cells[index].visible = true
 
 
+## Hides the cell sprite only when the state accepted the removal; otherwise the
+## next frame would make it visible again.
 func _clear(index: int) -> void:
-	_state.remove(index)
-	zoom_cells[index].visible = false
+	if _state.remove(index):
+		zoom_cells[index].visible = false
 
 
 func _cell_id(index: int) -> String:

@@ -7,13 +7,16 @@ extends CanvasLayer
 ## script owns the transitions around them (end of the run, restart, back to
 ## the menu) and the debug control that forces the run to end.
 
+## Node that owns the astronaut the HUD follows for the interaction prompt.
+@export var astronaut_path: NodePath = ^"../Astronaut"
+
+@onready var _hud: IngameHud = $Hud
 @onready var _debug_button: Button = $DebugEndButton
-## Typed as Control because evaluation.gd declares no class_name; its public
-## API (present/hide_summary) and its signals are resolved at runtime.
-@onready var _evaluation: Control = $Evaluation
+@onready var _evaluation: Evaluation = $Evaluation
 
 
 func _ready() -> void:
+	_bind_hud_astronaut()
 	GameSim.game_over.connect(_on_game_over)
 	GameSim.game_reset.connect(_on_game_reset)
 	_evaluation.restart_requested.connect(_on_restart_requested)
@@ -22,6 +25,20 @@ func _ready() -> void:
 	# debug builds and never takes focus from the game.
 	_debug_button.visible = OS.is_debug_build()
 	_debug_button.pressed.connect(GameSim.force_end_run)
+
+
+## Hands the astronaut to the HUD so it can show the interaction prompt. The
+## scene still runs without it, but the prompt stays hidden and the miss is
+## reported because it means the scene is wired wrong.
+func _bind_hud_astronaut() -> void:
+	var astronaut: Astronaut = get_node_or_null(astronaut_path) as Astronaut
+	if astronaut == null:
+		push_error(
+			"RunUi: astronaut not found at %s; the interaction prompt stays hidden."
+			% astronaut_path
+		)
+		return
+	_hud.bind_astronaut(astronaut)
 
 
 ## Shows the mission summary over the frozen scene.
