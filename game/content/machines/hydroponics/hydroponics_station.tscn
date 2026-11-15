@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://content/machines/hydroponics/hydroponics_station.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://content/machines/hydroponics/panel/hydroponics_panel.tscn" id="2_panel"]
+[ext_resource type="PackedScene" path="res://content/machines/hydroponics/panel/growth_panel.tscn" id="2_panel"]
 [ext_resource type="Texture2D" uid="uid://c2ar17afjmwm0" path="res://content/machines/hydroponics/art/sprites/hydroponics_rack.png" id="3_rack"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hydroponics"]
