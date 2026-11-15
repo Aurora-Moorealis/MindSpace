@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MachineData" format=3 uid="uid://jamq6oqww6t2"]
+
+[ext_resource type="Script" uid="uid://dmblq510c6d0g" path="res://resources/machines/machine_consumption.gd" id="1_j6rh7"]
+[ext_resource type="Script" uid="uid://c6qp2kj8q22sr" path="res://resources/machines/machine_data.gd" id="2_mkqt6"]
+[ext_resource type="Script" uid="uid://bqda65rb8oaxb" path="res://resources/machines/upgrade_data.gd" id="3_owmv1"]
+
+[sub_resource type="Resource" id="Resource_kvqv2"]
+script = ExtResource("1_j6rh7")
+resource = &"energy"
+amount_per_tick = 0.2
+
+[resource]
+script = ExtResource("2_mkqt6")
+id = &"lights"
+display_name_key = &"lights"
+hint_text = ""
+repair_ticks = 1
+repair_energy_cost = 1.0
+consumption = Array[ExtResource("1_j6rh7")]([SubResource("Resource_kvqv2")])
+upgrades = Array[ExtResource("3_owmv1")]([])
