@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MachineData" format=3 uid="uid://c88ve3f6eff86"]
+
+[ext_resource type="Script" uid="uid://dmblq510c6d0g" path="res://resources/machines/machine_consumption.gd" id="1_sfgfp"]
+[ext_resource type="Script" uid="uid://c6qp2kj8q22sr" path="res://resources/machines/machine_data.gd" id="2_5d8tt"]
+[ext_resource type="Script" uid="uid://bqda65rb8oaxb" path="res://resources/machines/upgrade_data.gd" id="3_obgex"]
+
+[sub_resource type="Resource" id="Resource_o24fs"]
+script = ExtResource("1_sfgfp")
+resource = &"energy"
+amount_per_tick = 0.4
+
+[resource]
+script = ExtResource("2_5d8tt")
+id = &"water_recycler"
+display_name_key = &"water_recycler"
+hint_text = ""
+repair_ticks = 1
+repair_energy_cost = 1.0
+consumption = Array[ExtResource("1_sfgfp")]([SubResource("Resource_o24fs")])
+upgrades = Array[ExtResource("3_obgex")]([])

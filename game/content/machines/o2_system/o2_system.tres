@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MachineData" format=3 uid="uid://f271ktefrlpe"]
+
+[ext_resource type="Script" uid="uid://dmblq510c6d0g" path="res://resources/machines/machine_consumption.gd" id="1_2crb3"]
+[ext_resource type="Script" uid="uid://c6qp2kj8q22sr" path="res://resources/machines/machine_data.gd" id="2_xupv7"]
+[ext_resource type="Script" uid="uid://bqda65rb8oaxb" path="res://resources/machines/upgrade_data.gd" id="3_ahgtu"]
+
+[sub_resource type="Resource" id="Resource_cpop4"]
+script = ExtResource("1_2crb3")
+resource = &"energy"
+amount_per_tick = 0.5
+
+[resource]
+script = ExtResource("2_xupv7")
+id = &"o2_system"
+display_name_key = &"o2_system"
+hint_text = ""
+repair_ticks = 1
+repair_energy_cost = 1.0
+consumption = Array[ExtResource("1_2crb3")]([SubResource("Resource_cpop4")])
+upgrades = Array[ExtResource("3_ahgtu")]([])

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EconomyRow" format=3 uid="uid://bkjqu42g66a38"]
+
+[ext_resource type="Script" uid="uid://1u06ynyjmppe" path="res://resources/common/data_provenance.gd" id="1_ltgf7"]
+[ext_resource type="Script" uid="uid://baqjbonlmftup" path="res://resources/economy/economy_row.gd" id="2_ytych"]
+
+[sub_resource type="Resource" id="Resource_inyal"]
+script = ExtResource("1_ltgf7")
+
+[resource]
+script = ExtResource("2_ytych")
+id = &"player_max_thirst"
+value = 100.0
+min_value = 1.0
+max_value = 1000.0
+unit = "%"
+provenance = SubResource("Resource_inyal")

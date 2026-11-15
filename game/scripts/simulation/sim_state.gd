@@ -2,7 +2,8 @@ class_name SimState
 extends RefCounted
 
 ## Mutable state of one simulation run (contract v1.1).
-## Holds data and derived queries only; SimTick is the sole writer.
+## Holds data and derived queries only: SimTick is the only writer during a
+## tick and GameSim the only writer outside it (player sub-tick actions).
 
 const OXYGEN: StringName = &"oxygen"
 const WATER: StringName = &"water"
@@ -51,13 +52,16 @@ var thirst: float = 0.0
 var suit_reserve_ticks: int = 0
 var is_outside: bool = false
 var machines: Dictionary[StringName, MachineState] = {}
+## Player statistics and their upgrade-driven multipliers.
+var player: PlayerStats = PlayerStats.new()
 var blackout_active: bool = false
 var game_over: bool = false
 var death_cause: StringName = &""
 
 
 ## Restores a fresh run from the economy database: counters back to zero,
-## resources at their (clamped) initial values and every machine healthy.
+## resources at their (clamped) initial values, player stats at their base
+## values and every machine healthy, powered and free of repairs or upgrades.
 func reset_from_economy(economy: EconomyData) -> void:
 	tick = 0
 	resources.clear()
@@ -69,8 +73,13 @@ func reset_from_economy(economy: EconomyData) -> void:
 	max_health = economy.get_value(&"max_health", _FALLBACK_HEALTH)
 	radiation_dose = 0.0
 	peak_radiation = 0.0
-	hunger = economy.get_value(&"initial_hunger", _FALLBACK_HUNGER)
-	thirst = economy.get_value(&"initial_thirst", _FALLBACK_THIRST)
+	player.reset_from_economy(economy)
+	hunger = clampf(
+		economy.get_value(&"initial_hunger", _FALLBACK_HUNGER), 0.0, player.max_hunger
+	)
+	thirst = clampf(
+		economy.get_value(&"initial_thirst", _FALLBACK_THIRST), 0.0, player.max_thirst
+	)
 	suit_reserve_ticks = int(economy.get_value(&"suit_reserve_ticks", 0.0))
 	is_outside = false
 	machines.clear()
@@ -80,6 +89,12 @@ func reset_from_economy(economy: EconomyData) -> void:
 		machine.health = _machine_initial_health(economy, id)
 		machine.powered = true
 		machine.upgrade_level = 0
+		machine.repair_ticks_total = 0
+		machine.repair_work_done = 0.0
+		machine.applied_upgrades.clear()
+		machine.power_delta = 0.0
+		machine.degradation_delta = 0.0
+		machine.output_deltas.clear()
 		machines[id] = machine
 	blackout_active = false
 	game_over = false

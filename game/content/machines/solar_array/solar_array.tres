@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MachineData" format=3 uid="uid://xum5tma1iqx4"]
+
+[ext_resource type="Script" uid="uid://dmblq510c6d0g" path="res://resources/machines/machine_consumption.gd" id="1_nlau7"]
+[ext_resource type="Script" uid="uid://c6qp2kj8q22sr" path="res://resources/machines/machine_data.gd" id="2_4p2kr"]
+[ext_resource type="Script" uid="uid://bqda65rb8oaxb" path="res://resources/machines/upgrade_data.gd" id="3_5nly1"]
+
+[resource]
+script = ExtResource("2_4p2kr")
+id = &"solar_array"
+display_name_key = &"solar_array"
+hint_text = ""
+repair_ticks = 1
+repair_energy_cost = 1.0
+consumption = Array[ExtResource("1_nlau7")]([])
+upgrades = Array[ExtResource("3_5nly1")]([])
